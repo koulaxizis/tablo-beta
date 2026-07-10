@@ -1,6 +1,6 @@
 {
   "en": {
-    "site_title": "tablo",
+    "site_title": "Tablo",
     "site_tagline": "Mini board games for quiet moments",
     "games_intro": "Relax with classic board games. All work offline.",
     "settings": "Settings",
@@ -25,7 +25,7 @@
     "btn_play_again": "Play Again",
     "btn_install": "Install",
     "btn_dismiss": "Dismiss",
-    "install_prompt": "Install tablo for offline play!",
+    "install_prompt": "Install Tablo for offline play!",
     "install_app": "Install App",
     "memory_moves": "Moves",
     "memory_time": "Time",
@@ -33,10 +33,10 @@
     "memory_congrats": "Completed!",
     "toast_restarted": "Game restarted",
     "footer_privacy_badge": "Open Source · No Tracking · No Ads · Privacy First",
-    "footer_motto": "Play freely, enjoy life"
+    "footer_motto": "Play freely, enjoy life."
   },
   "el": {
-    "site_title": "tablo",
+    "site_title": "Tablo",
     "site_tagline": "Μίνι board games για στιγμές ηρεμίας",
     "games_intro": "Ξεκουράσου με κλασικά board games. Όλα δουλεύουν offline.",
     "settings": "Ρυθμίσεις",
@@ -61,7 +61,7 @@
     "btn_play_again": "Παίξε ξανά",
     "btn_install": "Εγκατάσταση",
     "btn_dismiss": "Απόρριψη",
-    "install_prompt": "Εγκατέστησε το tablo για offline παιχνίδι!",
+    "install_prompt": "Εγκατέστησε το Tablo για offline παιχνίδι!",
     "install_app": "Εγκατάσταση",
     "memory_moves": "Κινήσεις",
     "memory_time": "Χρόνος",
@@ -69,10 +69,10 @@
     "memory_congrats": "Ολοκληρώθηκε!",
     "toast_restarted": "Το παιχνίδι επανεκκινήθηκε",
     "footer_privacy_badge": "Ανοιχτός Κώδικας · Χωρίς Παρακολούθηση · Χωρίς Διαφημίσεις · Απόρρητο Πρώτα",
-    "footer_motto": "Παίξε ελεύθερα, απόλαυσε τη ζωή"
+    "footer_motto": "Παίξε ελεύθερα, απόλαυσε τη ζωή."
   },
   "es": {
-    "site_title": "tablo",
+    "site_title": "Tablo",
     "site_tagline": "Mini juegos de mesa para momentos tranquilos",
     "games_intro": "Relájate con juegos de mesa clásicos. Todos funcionan sin conexión.",
     "settings": "Configuración",
@@ -97,7 +97,7 @@
     "btn_play_again": "Jugar de nuevo",
     "btn_install": "Instalar",
     "btn_dismiss": "Descartar",
-    "install_prompt": "¡Instala tablo para jugar sin conexión!",
+    "install_prompt": "¡Instala Tablo para jugar sin conexión!",
     "install_app": "Instalar App",
     "memory_moves": "Movimientos",
     "memory_time": "Tiempo",
@@ -105,10 +105,10 @@
     "memory_congrats": "¡Completado!",
     "toast_restarted": "Juego reiniciado",
     "footer_privacy_badge": "Código Abierto · Sin Rastreo · Sin Anuncios · Privacidad Primero",
-    "footer_motto": "Juega libremente, disfruta la vida"
+    "footer_motto": "Juega libremente, disfruta la vida."
   },
   "it": {
-    "site_title": "tablo",
+    "site_title": "Tablo",
     "site_tagline": "Mini giochi da tavolo per momenti tranquilli",
     "games_intro": "Rilassati con giochi da tavolo classici. Tutti funzionano offline.",
     "settings": "Impostazioni",
@@ -133,7 +133,7 @@
     "btn_play_again": "Gioca Ancora",
     "btn_install": "Installa",
     "btn_dismiss": "Ignora",
-    "install_prompt": "Installa tablo per giocare offline!",
+    "install_prompt": "Installa Tablo per giocare offline!",
     "install_app": "Installa App",
     "memory_moves": "Mosse",
     "memory_time": "Tempo",
@@ -141,10 +141,10 @@
     "memory_congrats": "Completato!",
     "toast_restarted": "Gioco ricominciato",
     "footer_privacy_badge": "Codice Aperto · Nessun Tracciamento · Nessuna Pubblicità · Privacy Prima",
-    "footer_motto": "Gioca liberamente, goditi la vita"
+    "footer_motto": "Gioca liberamente, goditi la vita."
   },
   "fr": {
-    "site_title": "tablo",
+    "site_title": "Tablo",
     "site_tagline": "Mini jeux de société pour moments calmes",
     "games_intro": "Détendez-vous avec des jeux de société classiques. Tous fonctionnent hors ligne.",
     "settings": "Paramètres",
@@ -169,7 +169,7 @@
     "btn_play_again": "Rejouer",
     "btn_install": "Installer",
     "btn_dismiss": "Ignorer",
-    "install_prompt": "Installez tablo pour jouer hors ligne!",
+    "install_prompt": "Installez Tablo pour jouer hors ligne!",
     "install_app": "Installer",
     "memory_moves": "Coups",
     "memory_time": "Temps",
@@ -177,10 +177,10 @@
     "memory_congrats": "Terminé!",
     "toast_restarted": "Jeu redémarré",
     "footer_privacy_badge": "Code Ouvert · Sans Suivi · Sans Publicité · Confidentialité D'abord",
-    "footer_motto": "Jouez librement, profitez de la vie"
+    "footer_motto": "Jouez librement, profitez de la vie."
   },
   "de": {
-    "site_title": "tablo",
+    "site_title": "Tablo",
     "site_tagline": "Mini Brettspiele für ruhige Momente",
     "games_intro": "Entspanne dich mit klassischen Brettspielen. Alle funktionieren offline.",
     "settings": "Einstellungen",
@@ -205,7 +205,7 @@
     "btn_play_again": "Nochmal spielen",
     "btn_install": "Installieren",
     "btn_dismiss": "Abbrechen",
-    "install_prompt": "Installiere tablo für Offline-Spiele!",
+    "install_prompt": "Installiere Tablo für Offline-Spiele!",
     "install_app": "App Installieren",
     "memory_moves": "Züge",
     "memory_time": "Zeit",
@@ -213,6 +213,6 @@
     "memory_congrats": "Abgeschlossen!",
     "toast_restarted": "Spiel neu gestartet",
     "footer_privacy_badge": "Open Source · Kein Tracking · Keine Werbung · Datenschutz Zuerst",
-    "footer_motto": "Spiele frei, genieße das Leben"
+    "footer_motto": "Spiele frei, genieße das Leben."
   }
 }

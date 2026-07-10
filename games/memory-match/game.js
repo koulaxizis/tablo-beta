@@ -1,5 +1,5 @@
 // ============================================
-// tablo — Memory Match Game
+// Tablo — Memory Match Game
 // ============================================
 
 (function() {
@@ -102,7 +102,7 @@
     
     var back = document.createElement('div');
     back.className = 'card-back';
-    back.innerHTML = '<i class="fa fa-question-circle" style="font-size:28px;color:var(--text-secondary);"></i>';
+    back.innerHTML = '<i class="fa fa-question-circle"></i>';
     
     card.appendChild(front);
     card.appendChild(back);
@@ -211,7 +211,7 @@
     congratsModal.classList.remove('visible');
   }
 
-  // EXPOSE INITGAME GLOBALLY
+  // EXPOSE INIT GAME GLOBALLY
   window.initGame = function() {
     updateBestScore();
     resetGame();

@@ -1,5 +1,5 @@
 /* ============================================
-   tablo — Memory Match Game Styles
+   Tablo — Memory Match Game Styles
    ============================================ */
 
 /* ===== BACK HOME LINK ===== */
@@ -81,7 +81,7 @@
 /* ===== MEMORY GAME BOARD ===== */
 .memory-game {
   display: grid;
-  grid-template-columns: repeat(GRID_SIZE, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   max-width: 500px;
   width: 100%;
@@ -132,10 +132,6 @@
 .card-front {
   background: var(--bg-panel);
   transform: rotateY(180deg);
-}
-
-.card-front::after {
-  content: attr(data-emoji);
   font-size: clamp(28px, 8vw, 48px);
 }
 
@@ -144,7 +140,7 @@
   border-color: var(--accent);
 }
 
-.card-back::after {
+.card-back i {
   font-size: clamp(28px, 8vw, 48px);
   color: #fff;
 }
@@ -326,9 +322,8 @@
     font-size: 18px;
   }
   
-  .memory-card .card-front::after,
-  .memory-card .card-back::after {
-    font-size: 24px;
+  .memory-game {
+    max-width: 400px;
   }
   
   .game-controls {
@@ -364,13 +359,11 @@
     flex-direction: column;
     gap: 16px;
   }
-}
-
-/* ===== GRID SIZE DYNAMIC ===== */
-.memory-game.grid-4 {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.memory-game.grid-3 {
-  grid-template-columns: repeat(3, 1fr);
+  
+  .back-home {
+    top: 70px;
+    left: 12px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
 }
