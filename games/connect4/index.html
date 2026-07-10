@@ -28,18 +28,22 @@
         <span class="stat-value" id="current-player">1</span>
       </div>
       <div class="stat-item">
-        <span class="stat-label" data-i18n="connect4_turn">Turn</span>
+        <span class="stat-label" data-i18n="connect4_status">Status</span>
         <span class="stat-value" id="turn-status" data-i18n="connect4_your_turn">Your turn</span>
       </div>
       <div class="stat-item">
-        <span class="stat-label" data-i18n="connect4_wins">Wins</span>
-        <span class="stat-value" id="wins-p1">0</span> / <span id="wins-p2">0</span>
+        <span class="stat-label" data-i18n="connect4_score">Score</span>
+        <span class="stat-value"><span style="color:var(--color-p1)" id="wins-p1">0</span> - <span style="color:var(--color-p2)" id="wins-p2">0</span></span>
       </div>
     </div>
 
     <div class="connect4-board" id="board"></div>
 
     <div class="game-controls">
+      <select id="game-mode" class="game-mode-select">
+        <option value="human" data-i18n="connect4_vs_human">2 Players</option>
+        <option value="ai" data-i18n="connect4_vs_ai">vs Computer</option>
+      </select>
       <button class="game-btn primary" id="btn-reset" data-i18n="connect4_reset">Reset Game</button>
     </div>
 
@@ -47,25 +51,11 @@
 
   <div id="tablo-footer"></div>
 
-  <!-- Winner Modal -->
   <div class="winner-modal" id="winner-modal">
     <div class="winner-overlay"></div>
     <div class="winner-content">
-      <div class="winner-icon" id="winner-icon">🎉</div>
+      <div class="winner-icon" id="winner-icon">🏆</div>
       <h2 class="winner-title" id="winner-title"></h2>
-      <p class="winner-message" data-i18n="connect4_winner_msg">Congratulations!</p>
-      <div class="winner-stats">
-        <div class="winner-stat-row">
-          <div class="winner-stat">
-            <div class="winner-stat-label">Player 1</div>
-            <div class="winner-stat-value" id="final-wins-p1">0</div>
-          </div>
-          <div class="winner-stat">
-            <div class="winner-stat-label">Player 2</div>
-            <div class="winner-stat-value" id="final-wins-p2">0</div>
-          </div>
-        </div>
-      </div>
       <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
     </div>
   </div>

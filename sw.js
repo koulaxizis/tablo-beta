@@ -26,7 +26,10 @@
     './assets/images/favicon.svg',
     './games/memory-match/index.html',
     './games/memory-match/game.js',
-    './games/memory-match/styles.css'
+    './games/memory-match/styles.css',
+	'./games/connect4/index.html',
+	'./games/connect4/game.js',
+	'./games/connect4/styles.css'
   ];
 
   // ========== INSTALL ==========

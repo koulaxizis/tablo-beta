@@ -43,3 +43,5 @@
 /* ===== UI ===== */
 .fa-times:before         { content: '\f00d'; }
 .fa-download:before      { content: '\f019'; }
+
+.fa-lightbulb-o:before { content: '\f0eb'; }

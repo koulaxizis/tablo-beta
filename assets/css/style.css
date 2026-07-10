@@ -511,6 +511,17 @@ body.landing-page {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ===== INTRO TEXT ===== */
+.game-intro {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 500;
+  max-width: 600px;
+  margin: 0 auto 1rem;
+  line-height: 1.6;
+}
+
 /* ===== LIGHT THEME ===== */
 [data-theme="light"] {
   --bg-dark: #faf9f7;
