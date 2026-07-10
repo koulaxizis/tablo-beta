@@ -29,29 +29,44 @@
     <div class="games-grid">
 
       <a href="./games/memory-match/index.html" class="game-card">
+        <div class="game-card-badges">
+          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
+        </div>
         <div class="game-icon"><i class="fa fa-lightbulb-o"></i></div>
         <h3 class="game-name" data-i18n="game_memory_name">Memory Match</h3>
         <p class="game-desc" data-i18n="game_memory_desc">Find matching cards</p>
+        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
       </a>
 
       <a href="./games/connect4/index.html" class="game-card">
+        <div class="game-card-badges">
+          <span class="players-badge pvp-ai" data-i18n="badge_players_2p_ai">2P · AI</span>
+        </div>
         <div class="game-icon"><i class="fa fa-bars"></i></div>
         <h3 class="game-name" data-i18n="game_connect4_name">Connect 4</h3>
-        <p class="game-desc" data-i18n="game_connect4_desc">Four in a row · 2 players</p>
+        <p class="game-desc" data-i18n="game_connect4_desc">Four in a row</p>
+        <p class="game-players-info" data-i18n="badge_players_info_pvp_ai">PvP or PvAI</p>
       </a>
 
-      <a href="#" class="game-card coming-soon">
-        <div class="game-icon"><i class="fa fa-square-o"></i></div>
-        <h3 class="game-name" data-i18n="game_sudoku_name">Sudoku</h3>
-        <p class="game-desc" data-i18n="game_sudoku_desc">Classic number puzzle</p>
-        <span class="badge" data-i18n="badge_coming_soon">Soon</span>
-      </a>
-
-      <a href="#" class="game-card coming-soon">
+      <a href="./games/dots-and-lines/index.html" class="game-card">
+        <div class="game-card-badges">
+          <span class="players-badge pvp" data-i18n="badge_players_2p">2P</span>
+        </div>
         <div class="game-icon"><i class="fa fa-dot-circle-o"></i></div>
         <h3 class="game-name" data-i18n="game_dots_name">Dots & Lines</h3>
         <p class="game-desc" data-i18n="game_dots_desc">Draw and connect</p>
-        <span class="badge" data-i18n="badge_coming_soon">Soon</span>
+        <p class="game-players-info" data-i18n="badge_players_info_pvp">PvP</p>
+      </a>
+
+      <a href="#" class="game-card coming-soon">
+        <div class="game-card-badges">
+          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
+          <span class="badge" data-i18n="badge_coming_soon">Soon</span>
+        </div>
+        <div class="game-icon"><i class="fa fa-square-o"></i></div>
+        <h3 class="game-name" data-i18n="game_sudoku_name">Sudoku</h3>
+        <p class="game-desc" data-i18n="game_sudoku_desc">Classic number puzzle</p>
+        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
       </a>
 
     </div>

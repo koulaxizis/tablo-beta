@@ -29,7 +29,10 @@
     './games/memory-match/styles.css',
 	'./games/connect4/index.html',
 	'./games/connect4/game.js',
-	'./games/connect4/styles.css'
+	'./games/connect4/styles.css',
+	'./games/dots-and-lines/index.html',
+	'./games/dots-and-lines/game.js',
+	'./games/dots-and-lines/styles.css'
   ];
 
   // ========== INSTALL ==========

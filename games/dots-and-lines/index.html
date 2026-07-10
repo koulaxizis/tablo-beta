@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dots & Lines - Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/icons.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+
+  <div id="tablo-header"></div>
+
+  <a href="../../index.html" class="back-home">
+    <i class="fa fa-arrow-left"></i>
+    <span data-i18n="btn_back_home">Back to Games</span>
+  </a>
+
+  <div class="game-wrapper">
+
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="dots_player">Player</span>
+        <span class="stat-value" id="current-player">1</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="dots_score_p1">P1 Score</span>
+        <span class="stat-value" style="color:var(--color-p1)" id="score-p1">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="dots_score_p2">P2 Score</span>
+        <span class="stat-value" style="color:var(--color-p2)" id="score-p2">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="dots_boxes_total">Boxes</span>
+        <span class="stat-value" id="boxes-total">0/0</span>
+      </div>
+    </div>
+
+    <svg id="game-svg" viewBox="0 0 320 320" class="game-svg"></svg>
+
+    <div class="game-controls">
+      <select id="grid-size" class="grid-size-select">
+        <option value="4" data-i18n="dots_size_small">Small (4×4)</option>
+        <option value="5" selected data-i18n="dots_size_medium">Medium (5×5)</option>
+        <option value="6" data-i18n="dots_size_large">Large (6×6)</option>
+      </select>
+      <button class="game-btn primary" id="btn-reset" data-i18n="dots_reset">Reset Game</button>
+    </div>
+
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="winner-modal">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon" id="winner-icon">🏆</div>
+      <h2 class="winner-title" id="winner-title"></h2>
+      <p class="winner-message" id="winner-message"></p>
+      <div class="winner-final-score">
+        <span class="final-p1"><span style="color:var(--color-p1)">P1:</span> <span id="final-score-p1">0</span></span>
+        <span class="final-p2"><span style="color:var(--color-p2)">P2:</span> <span id="final-score-p2">0</span></span>
+      </div>
+      <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+
+  <script>
+    fetch('../../assets/js/translations.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.TABLO_TRANSLATIONS = data;
+        if (typeof window.applyTabloTranslations === 'function') {
+          window.applyTabloTranslations();
+        }
+        var gameScript = document.createElement('script');
+        gameScript.src = 'game.js';
+        gameScript.onload = function() {
+          if (typeof initGame === 'function') {
+            initGame();
+          }
+        };
+        document.body.appendChild(gameScript);
+      })
+      .catch(function(e) { console.error('Failed to load:', e); });
+  </script>
+
+</body>
+</html>
