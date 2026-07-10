@@ -1,6 +1,5 @@
 // ============================================
-// tablo — Service Worker
-// Offline caching for PWA
+// tablo — Service Worker (Resilient)
 // ============================================
 
 (function() {
@@ -18,25 +17,32 @@
     './assets/js/header.js',
     './assets/js/footer.js',
     './assets/js/main.js',
+    './assets/js/pwa-install.js',
     './assets/js/translations.json',
     './assets/fonts/nunito-regular.woff2',
     './assets/fonts/nunito-semibold.woff2',
     './assets/fonts/nunito-bold.woff2',
     './assets/fonts/forkawesome-webfont.woff2',
-    './assets/images/favicon.svg'
-	'./games/memory-match/styles.css'
+    './assets/images/favicon.svg',
+    './games/memory-match/index.html',
+    './games/memory-match/game.js',
+    './games/memory-match/styles.css'
   ];
 
   // ========== INSTALL ==========
   self.addEventListener('install', function(event) {
     event.waitUntil(
-      caches.open(CACHE_NAME)
-        .then(function(cache) {
-          return cache.addAll(ASSETS_TO_CACHE);
+      Promise.all(
+        ASSETS_TO_CACHE.map(function(url) {
+          return caches.open(CACHE_NAME).then(function(cache) {
+            return cache.add(url).catch(function(err) {
+              console.warn('SW: Failed to cache', url, err);
+            });
+          });
         })
-        .then(function() {
-          return self.skipWaiting();
-        })
+      ).then(function() {
+        return self.skipWaiting();
+      })
     );
   });
 
@@ -75,6 +81,9 @@
             });
             return response;
           });
+        }).catch(function() {
+          // Offline fallback
+          return caches.match('./index.html');
         })
     );
   });
