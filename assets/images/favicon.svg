@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2dd4bf;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#5eead4;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="64" height="64" rx="12" fill="#16222e"/>
+  
+  <!-- Grid pattern (4x4) representing memory cards -->
+  <g fill="url(#grad)">
+    <rect x="8" y="8" width="12" height="12" rx="3"/>
+    <rect x="22" y="8" width="12" height="12" rx="3"/>
+    <rect x="36" y="8" width="12" height="12" rx="3"/>
+    <rect x="50" y="8" width="8" height="12" rx="3"/>
+    
+    <rect x="8" y="22" width="12" height="12" rx="3"/>
+    <rect x="22" y="22" width="12" height="12" rx="3"/>
+    <rect x="36" y="22" width="12" height="12" rx="3"/>
+    <rect x="50" y="22" width="8" height="12" rx="3"/>
+    
+    <rect x="8" y="36" width="12" height="12" rx="3"/>
+    <rect x="22" y="36" width="12" height="12" rx="3"/>
+    <rect x="36" y="36" width="12" height="12" rx="3"/>
+    <rect x="50" y="36" width="8" height="12" rx="3"/>
+    
+    <rect x="8" y="50" width="12" height="6" rx="3"/>
+    <rect x="22" y="50" width="12" height="6" rx="3"/>
+    <rect x="36" y="50" width="12" height="6" rx="3"/>
+    <rect x="50" y="50" width="8" height="6" rx="3"/>
+  </g>
+  
+  <!-- Center highlight (two matching cards) -->
+  <circle cx="28" cy="28" r="4" fill="#fff" opacity="0.6"/>
+  <circle cx="40" cy="28" r="4" fill="#fff" opacity="0.6"/>
+</svg>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Match - tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/icons.css">
+  <link rel="stylesheet" href="styles.css"> 
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  
+  <div id="tablo-header"></div>
+  
+  <a href="../../index.html" class="back-home">
+    <i class="fa fa-arrow-left"></i>
+    <span data-i18n="btn_back_home">Back to Games</span>
+  </a>
+  
+  <div class="game-wrapper">
+    
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="memory_moves">Moves</span>
+        <span class="stat-value" id="moves">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="memory_time">Time</span>
+        <span class="stat-value" id="timer">00:00</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="memory_best">Best</span>
+        <span class="stat-value" id="best-score">--/--</span>
+      </div>
+    </div>
+    
+    <div class="memory-game" id="game-board"></div>
+    
+    <div class="game-controls">
+      <button class="game-btn primary" id="btn-restart" data-i18n="btn_restart">Restart</button>
+    </div>
+    
+  </div>
+  
+  <div id="tablo-footer"></div>
+  
+  <!-- Congrats Modal -->
+  <div class="congrats-modal" id="congrats-modal">
+    <div class="congrats-overlay"></div>
+    <div class="congrats-content">
+      <div class="congrats-icon">🎉</div>
+      <h2 class="congrats-title" data-i18n="memory_congrats">Completed!</h2>
+      <div class="congrats-stats">
+        <div class="congrats-stat-row">
+          <div class="congrats-stat">
+            <div class="congrats-stat-label" data-i18n="memory_moves">Moves</div>
+            <div class="congrats-stat-value" id="final-moves">0</div>
+          </div>
+          <div class="congrats-stat">
+            <div class="congrats-stat-label" data-i18n="memory_time">Time</div>
+            <div class="congrats-stat-value" id="final-time">00:00</div>
+          </div>
+        </div>
+      </div>
+      <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
+    </div>
+  </div>
+  
+  <!-- Toast -->
+  <div class="tablo-toast" id="toast"></div>
+  
+  <!-- Load Core Assets -->
+  <script src="../../assets/js/config.js"></script>
+  <script>
+    // Load Header/Footer/Translations
+    document.addEventListener('DOMContentLoaded', function() {
+      var headerScript = document.createElement('script');
+      headerScript.src = '../../assets/js/header.js';
+      document.body.appendChild(headerScript);
+      
+      var footerScript = document.createElement('script');
+      footerScript.src = '../../assets/js/footer.js';
+      document.body.appendChild(footerScript);
+      
+      // Load translations
+      fetch('../../assets/js/translations.json')
+        .then(r => r.json())
+        .then(data => {
+          window.TABLO_TRANSLATIONS = data;
+          applyTranslations();
+          initGame();
+        });
+    });
+    
+    function applyTranslations() {
+      var lang = localStorage.getItem('tablo-language') || 'en';
+      var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+      if (!t) return;
+      
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+    }
+  </script>
+  
+  <!-- Game Logic -->
+  <script src="game.js"></script>
+  
+</body>
+</html>

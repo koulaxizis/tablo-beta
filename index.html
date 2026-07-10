@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tablo — Mini Board Games</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="./assets/css/icons.css">
+  <meta name="theme-color" content="#0f1923">
+  <meta name="description" content="Relax with classic board games. Sudoku, Connect 4, Memory Match, and more. All work offline.">
+</head>
+<body class="landing-page">
+  
+  <div id="tablo-header"></div>
+  
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-logo">
+      <img src="./assets/images/favicon.svg" alt="tablo" />
+    </div>
+    <h1 data-i18n="site_title">tablo</h1>
+    <p data-i18n="site_tagline">Mini board games for quiet moments</p>
+  </section>
+  
+  <!-- Intro Text -->
+  <section class="container">
+    <p class="tools-intro" data-i18n="games_intro">Relax with classic board games. All work offline.</p>
+  </section>
+  
+  <!-- Games Grid -->
+  <section class="container">
+    <div class="games-grid">
+      
+      <!-- Memory Match Card -->
+      <a href="./games/memory-match/index.html" class="game-card">
+        <div class="game-icon">
+          <i class="fa fa-th"></i>
+        </div>
+        <div class="game-info">
+          <h3 class="game-name" data-i18n="game_memory_name">Memory Match</h3>
+          <p class="game-desc" data-i18n="game_memory_desc">Find matching cards</p>
+        </div>
+      </a>
+      
+      <!-- Connect 4 Card -->
+      <a href="./games/connect4/index.html" class="game-card">
+        <div class="game-icon">
+          <i class="fa fa-bars"></i>
+        </div>
+        <div class="game-info">
+          <h3 class="game-name" data-i18n="game_connect4_name">Connect 4</h3>
+          <p class="game-desc" data-i18n="game_connect4_desc">Four in a row</p>
+        </div>
+      </a>
+      
+      <!-- Sudoku Card (Coming Soon) -->
+      <a href="#" class="game-card coming-soon">
+        <div class="game-icon">
+          <i class="fa fa-square-o"></i>
+        </div>
+        <div class="game-info">
+          <h3 class="game-name" data-i18n="game_sudoku_name">Sudoku</h3>
+          <p class="game-desc" data-i18n="coming_soon">Coming soon</p>
+        </div>
+        <span class="badge beta" data-i18n="badge_coming_soon">Soon</span>
+      </a>
+      
+      <!-- Dots & Lines Card (Coming Soon) -->
+      <a href="#" class="game-card coming-soon">
+        <div class="game-icon">
+          <i class="fa fa-dot-circle-o"></i>
+        </div>
+        <div class="game-info">
+          <h3 class="game-name" data-i18n="game_dots_name">Dots & Lines</h3>
+          <p class="game-desc" data-i18n="coming_soon">Coming soon</p>
+        </div>
+        <span class="badge beta" data-i18n="badge_coming_soon">Soon</span>
+      </a>
+      
+    </div>
+  </section>
+  
+  <div id="tablo-footer"></div>
+  
+  <!-- Install Banner -->
+  <div class="install-banner" id="install-banner" style="display:none;">
+    <div class="install-content">
+      <span class="install-text" data-i18n="install_prompt">Install tablo for offline play!</span>
+      <button class="btn-install" id="btn-install-now" data-i18n="btn_install">Install</button>
+      <button class="btn-dismiss" id="btn-dismiss-install" data-i18n="btn_dismiss">Dismiss</button>
+    </div>
+  </div>
+  
+  <!-- Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js')
+          .then(function(registration) {
+            console.log('SW registered:', registration.scope);
+          })
+          .catch(function(error) {
+            console.log('SW registration failed:', error);
+          });
+      });
+    }
+  </script>
+  
+  <!-- PWA Install Handler -->
+  <script src="./assets/js/pwa-install.js"></script>
+  
+  <!-- Load Header/Footer/Translations -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var headerScript = document.createElement('script');
+      headerScript.src = './assets/js/header.js';
+      document.body.appendChild(headerScript);
+      
+      var footerScript = document.createElement('script');
+      footerScript.src = './assets/js/footer.js';
+      document.body.appendChild(footerScript);
+      
+      // Load translations
+      fetch('./assets/js/translations.json')
+        .then(r => r.json())
+        .then(data => {
+          window.TABLO_TRANSLATIONS = data;
+          applyTranslations();
+        });
+    });
+    
+    function applyTranslations() {
+      var lang = localStorage.getItem('tablo-language') || 'en';
+      var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+      if (!t) return;
+      
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+    }
+  </script>
+  
+</body>
+</html>
