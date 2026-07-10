@@ -1,5 +1,11 @@
+// ============================================
+// tablo — Global Footer
+// ============================================
+
 (function() {
-  document.addEventListener('DOMContentLoaded', function() {
+  'use strict';
+
+  function injectFooter() {
     var footerEl = document.getElementById('tablo-footer');
     if (!footerEl) return;
 
@@ -22,5 +28,13 @@
           '</div>' +
         '</div>' +
       '</footer>';
-  });
+  }
+
+  // Run when DOM ready or immediately
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectFooter);
+  } else {
+    injectFooter();
+  }
+
 })();

@@ -7,6 +7,7 @@
 
   var CACHE_NAME = 'tablo-v0.1.0';
   
+  // ONLY cache files that actually exist
   var ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -16,7 +17,6 @@
     './assets/js/config.js',
     './assets/js/header.js',
     './assets/js/footer.js',
-    './assets/js/main.js',
     './assets/js/pwa-install.js',
     './assets/js/translations.json',
     './assets/fonts/nunito-regular.woff2',

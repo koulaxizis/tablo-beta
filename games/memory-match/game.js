@@ -211,16 +211,17 @@
     congratsModal.classList.remove('visible');
   }
 
-  function initGame() {
+  // EXPOSE INITGAME GLOBALLY
+  window.initGame = function() {
     updateBestScore();
     resetGame();
-  }
+  };
 
   // ========== EVENT LISTENERS ==========
   if (restartBtn) {
     restartBtn.addEventListener('click', function() {
       resetGame();
-      showToast(getTranslation('toast_restarted'));
+      showToast('Game restarted');
     });
   }
 
@@ -229,18 +230,6 @@
       congratsModal.classList.remove('visible');
       resetGame();
     });
-  }
-
-  // ========== HELPER ==========
-  function getTranslation(key) {
-    var lang = localStorage.getItem('tablo-language') || 'en';
-    var translations = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
-    return translations ? (translations[key] || key) : key;
-  }
-
-  // ========== START ==========
-  if (typeof initGame === 'function') {
-    // Game ready
   }
 
 })();

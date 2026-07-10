@@ -8,7 +8,7 @@
   <link rel="manifest" href="../../manifest.json">
   <link rel="stylesheet" href="../../assets/css/style.css">
   <link rel="stylesheet" href="../../assets/css/icons.css">
-  <link rel="stylesheet" href="styles.css"> 
+  <link rel="stylesheet" href="styles.css">
   <meta name="theme-color" content="#0f1923">
 </head>
 <body>
@@ -74,26 +74,32 @@
   
   <!-- Load Core Assets -->
   <script src="../../assets/js/config.js"></script>
+  
+  <!-- Load Header/Footer -->
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+  
+  <!-- Load Translations -->
   <script>
-    // Load Header/Footer/Translations
-    document.addEventListener('DOMContentLoaded', function() {
-      var headerScript = document.createElement('script');
-      headerScript.src = '../../assets/js/header.js';
-      document.body.appendChild(headerScript);
-      
-      var footerScript = document.createElement('script');
-      footerScript.src = '../../assets/js/footer.js';
-      document.body.appendChild(footerScript);
-      
-      // Load translations
-      fetch('../../assets/js/translations.json')
-        .then(r => r.json())
-        .then(data => {
-          window.TABLO_TRANSLATIONS = data;
+    // Load translations FIRST
+    fetch('../../assets/js/translations.json')
+      .then(r => r.json())
+      .then(data => {
+        window.TABLO_TRANSLATIONS = data;
+        
+        // Then load game after translations
+        var gameScript = document.createElement('script');
+        gameScript.src = 'game.js';
+        document.body.appendChild(gameScript);
+        
+        // Wait for game.js to load, then init
+        gameScript.onload = function() {
           applyTranslations();
-          initGame();
-        });
-    });
+          if (typeof initGame === 'function') {
+            initGame();
+          }
+        };
+      });
     
     function applyTranslations() {
       var lang = localStorage.getItem('tablo-language') || 'en';
@@ -106,9 +112,6 @@
       });
     }
   </script>
-  
-  <!-- Game Logic -->
-  <script src="game.js"></script>
   
 </body>
 </html>
