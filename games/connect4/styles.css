@@ -1,0 +1,334 @@
+/* ============================================
+   Tablo — Connect 4 Game Styles
+   ============================================ */
+
+:root {
+  --color-p1: #ff6b6b; /* Red */
+  --color-p2: #ffd93d; /* Yellow */
+}
+
+.back-home {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10;
+  transition: all var(--transition);
+}
+
+.back-home:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateX(-4px);
+}
+
+.back-home i {
+  font-size: 14px;
+}
+
+/* ===== GAME WRAPPER ===== */
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 112px);
+  padding: 40px 20px;
+  gap: 32px;
+}
+
+/* ===== GAME STATS ===== */
+.game-stats {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: 'Nunito', monospace;
+}
+
+/* ===== CONNECT 4 BOARD ===== */
+.connect4-board {
+  display: flex;
+  flex-direction: column;
+  background: var(--accent);
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(45, 212, 191, 0.2);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.cell {
+  width: 56px;
+  height: 56px;
+  background: var(--bg-dark);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.1s ease;
+  position: relative;
+}
+
+.cell:hover {
+  transform: scale(1.05);
+}
+
+.cell.player1 {
+  background: var(--color-p1);
+  box-shadow: inset 0 -4px 8px rgba(0,0,0,0.3);
+}
+
+.cell.player2 {
+  background: var(--color-p2);
+  box-shadow: inset 0 -4px 8px rgba(0,0,0,0.3);
+}
+
+/* ===== GAME CONTROLS ===== */
+.game-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.game-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0f1923;
+}
+
+.game-btn.primary:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-light);
+}
+
+/* ===== WINNER MODAL ===== */
+.winner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.winner-modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.winner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.winner-content {
+  position: relative;
+  background: var(--bg-panel);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.winner-modal.visible .winner-content {
+  transform: translateY(0);
+}
+
+.winner-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: bounce 0.8s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.winner-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.winner-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.winner-stats {
+  margin-bottom: 24px;
+}
+
+.winner-stat-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+
+.winner-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.winner-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.winner-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'Nunito', monospace;
+}
+
+/* ===== TOAST ===== */
+.tablo-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 10001;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.tablo-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .game-stats {
+    gap: 16px;
+    padding: 12px 16px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .cell {
+    width: 44px;
+    height: 44px;
+  }
+
+  .game-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .game-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-wrapper {
+    padding: 20px 12px;
+    gap: 20px;
+  }
+
+  .cell {
+    width: 38px;
+    height: 38px;
+  }
+
+  .back-home {
+    top: 70px;
+    left: 12px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .winner-stat-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
