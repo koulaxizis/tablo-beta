@@ -1,5 +1,5 @@
 /* ============================================
-   tablo — Fork Awesome Icons — Self-hosted
+   Tablo Fork Awesome Icons — Self-hosted
    ============================================ */
 
 @font-face {
@@ -8,7 +8,8 @@
   font-weight: 400;
   font-display: block;
   src: url('../fonts/forkawesome-webfont.woff2') format('woff2'),
-       url('../fonts/forkawesome-webfont.woff') format('woff');
+       url('../fonts/forkawesome-webfont.woff') format('woff'),
+       url('../fonts/forkawesome-webfont.ttf') format('truetype');
 }
 
 .fa {
@@ -23,18 +24,22 @@
 }
 
 /* ===== HEADER ICONS ===== */
-.fa-cog:before           { content: '\f013'; }
-.fa-sun-o:before         { content: '\f185'; }
-.fa-moon-o:before        { content: '\f186'; }
+.fa-cog:before          { content: '\f013'; }
+.fa-sun-o:before        { content: '\f185'; }
+.fa-moon-o:before       { content: '\f186'; }
 
-/* ===== SETTINGS ICONS ===== */
-.fa-play:before          { content: '\f04b'; }
-.fa-history:before       { content: '\f1da'; }
-.fa-info-circle:before   { content: '\f05a'; }
+/* ===== NAVIGATION ===== */
+.fa-arrow-left:before   { content: '\f060'; }
+
+/* ===== GAME GRID ICONS ===== */
+.fa-th:before            { content: '\f00a'; }
+.fa-bars:before          { content: '\f0c9'; }
+.fa-square-o:before      { content: '\f096'; }
+.fa-dot-circle-o:before  { content: '\f192'; }
+
+/* ===== MEMORY MATCH ===== */
 .fa-question-circle:before { content: '\f059'; }
 
-/* ===== GAME ICONS (SVG will replace these) ===== */
-.fa-puzzle-piece:before  { content: '\f12e'; }
-.fa-th:before            { content: '\f00a'; }
-.fa-refresh:before       { content: '\f021'; }
-.fa-check:before         { content: '\f00c'; }
+/* ===== UI ===== */
+.fa-times:before         { content: '\f00d'; }
+.fa-download:before      { content: '\f019'; }

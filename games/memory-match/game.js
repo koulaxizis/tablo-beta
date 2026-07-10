@@ -5,11 +5,19 @@
 (function() {
   'use strict';
 
-  var CARD_EMOJIS = ['🎮', '🎲', '🃏', '🎯', '🎨', '🎭', '🎪', '⭐'];
+  var CARD_SYMBOLS = [
+    { char: '\u2605', color: '#ff6b6b' },
+    { char: '\u25C6', color: '#4ecdc4' },
+    { char: '\u25CF', color: '#ffe66d' },
+    { char: '\u25B2', color: '#a8e6cf' },
+    { char: '\u25A0', color: '#c9b1ff' },
+    { char: '\u2665', color: '#ff8e8e' },
+    { char: '\u2660', color: '#95e1d3' },
+    { char: '\u2663', color: '#fce38a' }
+  ];
   var GRID_SIZE = 4;
   var TOTAL_CARDS = GRID_SIZE * GRID_SIZE;
-  
-  var cards = [];
+
   var flippedCards = [];
   var matchedPairs = 0;
   var moves = 0;
@@ -18,7 +26,6 @@
   var gameStarted = false;
   var isLocked = false;
 
-  // DOM Elements
   var gameBoard = document.getElementById('game-board');
   var movesDisplay = document.getElementById('moves');
   var timerDisplay = document.getElementById('timer');
@@ -30,7 +37,6 @@
   var finalTime = document.getElementById('final-time');
   var toast = document.getElementById('toast');
 
-  // ========== TOAST ==========
   function showToast(message) {
     if (!toast) return;
     toast.textContent = message;
@@ -41,7 +47,6 @@
     }, 3000);
   }
 
-  // ========== TIMER ==========
   function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     secondsElapsed = 0;
@@ -62,7 +67,7 @@
   function updateTimerDisplay() {
     var mins = Math.floor(secondsElapsed / 60);
     var secs = secondsElapsed % 60;
-    timerDisplay.textContent = 
+    timerDisplay.textContent =
       String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
   }
 
@@ -72,7 +77,6 @@
     return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
   }
 
-  // ========== GAME LOGIC ==========
   function shuffle(array) {
     var arr = array.slice();
     for (var i = arr.length - 1; i > 0; i--) {
@@ -85,32 +89,33 @@
   }
 
   function generateCards() {
-    var emojis = shuffle(CARD_EMOJIS.slice(0, TOTAL_CARDS / 2));
-    var cardValues = emojis.concat(emojis);
-    return shuffle(cardValues);
+    var symbols = shuffle(CARD_SYMBOLS.slice(0, TOTAL_CARDS / 2));
+    var cardData = symbols.concat(symbols);
+    return shuffle(cardData);
   }
 
-  function createCard(value, index) {
+  function createCard(data, index) {
     var card = document.createElement('div');
     card.className = 'memory-card';
     card.dataset.index = index;
-    card.dataset.value = value;
-    
+    card.dataset.value = index;
+
     var front = document.createElement('div');
     front.className = 'card-front';
-    front.textContent = value;
-    
+    front.textContent = data.char;
+    front.style.color = data.color;
+
     var back = document.createElement('div');
     back.className = 'card-back';
     back.innerHTML = '<i class="fa fa-question-circle"></i>';
-    
+
     card.appendChild(front);
     card.appendChild(back);
-    
+
     card.addEventListener('click', function() {
       handleCardClick(card);
     });
-    
+
     return card;
   }
 
@@ -118,15 +123,15 @@
     if (isLocked) return;
     if (card.classList.contains('flipped')) return;
     if (card.classList.contains('matched')) return;
-    
+
     if (!gameStarted) {
       gameStarted = true;
       startTimer();
     }
-    
+
     card.classList.add('flipped');
     flippedCards.push(card);
-    
+
     if (flippedCards.length === 2) {
       moves++;
       movesDisplay.textContent = moves;
@@ -138,14 +143,18 @@
     isLocked = true;
     var card1 = flippedCards[0];
     var card2 = flippedCards[1];
-    
-    if (card1.dataset.value === card2.dataset.value) {
+
+    var front1 = card1.querySelector('.card-front');
+    var front2 = card2.querySelector('.card-front');
+
+    if (front1.style.color === front2.style.color &&
+        front1.textContent === front2.textContent) {
       card1.classList.add('matched');
       card2.classList.add('matched');
       matchedPairs++;
       flippedCards = [];
       isLocked = false;
-      
+
       if (matchedPairs === TOTAL_CARDS / 2) {
         gameWon();
       }
@@ -161,17 +170,15 @@
 
   function gameWon() {
     stopTimer();
-    
-    // Show congrats modal
+
     finalMoves.textContent = moves;
     finalTime.textContent = formatTime(secondsElapsed);
     congratsModal.classList.add('visible');
-    
-    // Save best score
+
     var bestKey = 'tablo-memory-best';
     var currentBest = localStorage.getItem(bestKey);
-    if (!currentBest || 
-        (secondsElapsed < parseInt(currentBest.split('/')[0]) || 
+    if (!currentBest ||
+        (secondsElapsed < parseInt(currentBest.split('/')[0]) ||
          (secondsElapsed === parseInt(currentBest.split('/')[0]) && moves < parseInt(currentBest.split('/')[1])))) {
       localStorage.setItem(bestKey, secondsElapsed + '/' + moves);
       updateBestScore();
@@ -195,29 +202,26 @@
     secondsElapsed = 0;
     flippedCards = [];
     isLocked = false;
-    
+
     movesDisplay.textContent = '0';
     timerDisplay.textContent = '00:00';
-    
+
     gameBoard.innerHTML = '';
-    var cardValues = generateCards();
-    
-    cardValues.forEach(function(value, index) {
-      var card = createCard(value, index);
+    var cardData = generateCards();
+
+    cardData.forEach(function(data, index) {
+      var card = createCard(data, index);
       gameBoard.appendChild(card);
     });
-    
-    // Hide congrats modal if visible
+
     congratsModal.classList.remove('visible');
   }
 
-  // EXPOSE INIT GAME GLOBALLY
   window.initGame = function() {
     updateBestScore();
     resetGame();
   };
 
-  // ========== EVENT LISTENERS ==========
   if (restartBtn) {
     restartBtn.addEventListener('click', function() {
       resetGame();
