@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe - Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/icons.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  <div id="tablo-header"></div>
+
+  <a href="../../index.html" class="back-home mobile-hide">
+    <i class="fa fa-arrow-left"></i>
+    <span data-i18n="btn_back_home">Back to Games</span>
+  </a>
+
+  <div class="game-wrapper">
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="ttt_mode">Mode</span>
+        <span class="stat-value" id="current-mode">PvP</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="ttt_turn">Turn</span>
+        <span class="stat-value" id="current-turn" style="color:var(--color-x)">X</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="ttt_wins">Wins</span>
+        <span class="stat-value"><span style="color:var(--color-x)" id="wins-x">0</span>-<span style="color:var(--color-o)">O:<span id="wins-o">0</span></span></span>
+      </div>
+    </div>
+
+    <div class="tic-tac-toe-board" id="board"></div>
+
+    <div class="game-controls">
+      <select id="game-mode-select" class="mode-select">
+        <option value="pvp" data-i18n="ttt_pvp">2 Players</option>
+        <option value="ai" data-i18n="ttt_vs_ai">vs Computer</option>
+      </select>
+      <button class="game-btn primary" id="btn-reset" data-i18n="ttt_reset">New Game</button>
+    </div>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="winner-modal">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon" id="winner-icon">🏆</div>
+      <h2 class="winner-title" id="winner-title"></h2>
+      <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+
+  <script>
+    fetch('../../assets/js/translations.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.TABLO_TRANSLATIONS = data;
+        if (typeof window.applyTabloTranslations === 'function') {
+          window.applyTabloTranslations();
+        }
+        var gameScript = document.createElement('script');
+        gameScript.src = 'game.js';
+        gameScript.onload = function() {
+          if (typeof initGame === 'function') initGame();
+        };
+        document.body.appendChild(gameScript);
+      })
+      .catch(function(e) { console.error('Failed to load:', e); });
+  </script>
+</body>
+</html>

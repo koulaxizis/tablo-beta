@@ -32,7 +32,16 @@
 	'./games/connect4/styles.css',
 	'./games/dots-and-lines/index.html',
 	'./games/dots-and-lines/game.js',
-	'./games/dots-and-lines/styles.css'
+	'./games/dots-and-lines/styles.css',
+'/games/tic-tac-toe/index.html',
+'/games/tic-tac-toe/game.js',
+'/games/tic-tac-toe/styles.css',
+'/games/simon-says/index.html',
+'/games/simon-says/game.js',
+'/games/simon-says/styles.css',
+'/games/number-slider/index.html',
+'/games/number-slider/game.js',
+'/games/number-slider/styles.css',
   ];
 
   // ========== INSTALL ==========
