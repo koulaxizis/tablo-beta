@@ -12,12 +12,12 @@
   var BOX_WIDTH = 50;
 
   var gridSize = 5;
-  var board = [];
+  var board = {};
   var currentPlayer = 1;
   var scores = [0, 0];
   var totalBoxes = 0;
   var gameActive = false;
-  var lastBoxClosed = null;
+  var lastBoxClosed = false;
 
   var svg = document.getElementById('game-svg');
   var currentPlayerEl = document.getElementById('current-player');
@@ -52,8 +52,7 @@
   }
 
   function calculateSVGSize(n) {
-    var size = PADDING * 2 + n * BOX_WIDTH;
-    return size;
+    return PADDING * 2 + n * BOX_WIDTH;
   }
 
   function getDotX(col) {
@@ -67,27 +66,23 @@
   function createBoard() {
     var n = gridSize;
     var svgSize = calculateSVGSize(n);
+    
+    // Clear and resize SVG
     svg.setAttribute('viewBox', '0 0 ' + svgSize + ' ' + svgSize);
     svg.innerHTML = '';
 
-    board = {
-      horizontal: [],
-      vertical: [],
-      boxes: []
-    };
-
+    board = { horizontal: [], vertical: [], boxes: [] };
     totalBoxes = n * n;
-    var hLines = n + 1;
-    var vLines = n + 1;
 
-    for (var r = 0; r < hLines; r++) {
+    // Initialize arrays
+    for (var r = 0; r <= n; r++) {
       board.horizontal[r] = [];
       for (var c = 0; c < n; c++) {
         board.horizontal[r][c] = null;
       }
     }
 
-    for (var c = 0; c < vLines; c++) {
+    for (var c = 0; c <= n; c++) {
       board.vertical[c] = [];
       for (var r = 0; r < n; r++) {
         board.vertical[c][r] = null;
@@ -102,109 +97,98 @@
     }
 
     renderBoard();
+    attachClickHandlers();
     updateUI();
   }
 
-  function renderBoard() {
+  function attachClickHandlers() {
     var n = gridSize;
-    svg.innerHTML = '';
+    var allSize = calculateSVGSize(n);
+    var clickableArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    clickableArea.setAttribute('id', 'click-area');
+    clickableArea.setAttribute('x', 0);
+    clickableArea.setAttribute('y', 0);
+    clickableArea.setAttribute('width', allSize);
+    clickableArea.setAttribute('height', allSize);
+    clickableArea.setAttribute('fill', 'transparent');
+    clickableArea.style.pointerEvents = 'all';
+    svg.insertBefore(clickableArea, svg.firstChild);
+    
+    clickableArea.addEventListener('click', function(e) {
+      var pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      var ctm = svg.getScreenCTM().inverse();
+      var svgPt = pt.matrixTransform(ctm);
+      
+      findNearestLine(svgPt.x, svgPt.y);
+    });
+  }
 
-    for (var r = 0; r <= n; r++) {
-      for (var c = 0; c <= n; c++) {
-        var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        dot.setAttribute('cx', getDotX(c));
-        dot.setAttribute('cy', getDotY(r));
-        dot.setAttribute('r', DOT_SIZE);
-        dot.setAttribute('fill', 'var(--text-primary)');
-        svg.appendChild(dot);
-      }
-    }
+  function findNearestLine(x, y) {
+    var n = gridSize;
+    var clickedLine = null;
+    var minDistance = 10;
 
+    // Check horizontal lines
     for (var r = 0; r <= n; r++) {
       for (var c = 0; c < n; c++) {
-        var lineGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        lineGroup.classList.add('line-group', 'horizontal-line');
-        lineGroup.dataset.type = 'h';
-        lineGroup.dataset.row = r;
-        lineGroup.dataset.col = c;
+        var lineY = getDotY(r);
+        var lineXStart = getDotX(c) + DOT_SIZE;
+        var lineXEnd = getDotX(c + 1) - DOT_SIZE;
 
-        var line = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        var x = getDotX(c) - LINE_THICKNESS / 2 + DOT_SIZE;
-        var y = getDotY(r) - LINE_THICKNESS / 2;
-        line.setAttribute('x', x);
-        line.setAttribute('y', y);
-        line.setAttribute('width', BOX_WIDTH - DOT_SIZE * 2 + LINE_THICKNESS);
-        line.setAttribute('height', LINE_THICKNESS);
-        line.setAttribute('rx', LINE_THICKNESS / 2);
-        line.setAttribute('class', 'line-h');
-        line.id = 'h-' + r + '-' + c;
-        lineGroup.appendChild(line);
-
-        line.addEventListener('click', handleLineClick);
-        lineGroup.appendChild(line);
-        svg.appendChild(lineGroup);
+        if (y >= lineY - LINE_THICKNESS && y <= lineY + LINE_THICKNESS) {
+          if (x >= lineXStart - LINE_THICKNESS && x <= lineXEnd + LINE_THICKNESS) {
+            var dist = Math.abs(y - lineY);
+            if (dist < minDistance) {
+              minDistance = dist;
+              clickedLine = { type: 'h', row: r, col: c };
+            }
+          }
+        }
       }
     }
 
+    // Check vertical lines
     for (var c = 0; c <= n; c++) {
       for (var r = 0; r < n; r++) {
-        var vGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        vGroup.classList.add('line-group', 'vertical-line');
-        vGroup.dataset.type = 'v';
-        vGroup.dataset.col = c;
-        vGroup.dataset.row = r;
+        var lineX = getDotX(c);
+        var lineYStart = getDotY(r) + DOT_SIZE;
+        var lineYEnd = getDotY(r + 1) - DOT_SIZE;
 
-        var vLine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        var vx = getDotX(c) - LINE_THICKNESS / 2;
-        var vy = getDotY(r) - LINE_THICKNESS / 2 + DOT_SIZE;
-        vLine.setAttribute('x', vx);
-        vLine.setAttribute('y', vy);
-        vLine.setAttribute('width', LINE_THICKNESS);
-        vLine.setAttribute('height', BOX_HEIGHT - DOT_SIZE * 2 + LINE_THICKNESS);
-        vLine.setAttribute('ry', LINE_THICKNESS / 2);
-        vLine.setAttribute('class', 'line-v');
-        vLine.id = 'v-' + c + '-' + r;
-        vGroup.appendChild(vLine);
-
-        vLine.addEventListener('click', handleLineClick);
-        vGroup.appendChild(vLine);
-        svg.appendChild(vGroup);
+        if (x >= lineX - LINE_THICKNESS && x <= lineX + LINE_THICKNESS) {
+          if (y >= lineYStart - LINE_THICKNESS && y <= lineYEnd + LINE_THICKNESS) {
+            var dist = Math.abs(x - lineX);
+            if (dist < minDistance) {
+              minDistance = dist;
+              clickedLine = { type: 'v', row: r, col: c };
+            }
+          }
+        }
       }
     }
 
-    for (var br = 0; br < n; br++) {
-      for (var bc = 0; bc < n; bc++) {
-        var box = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        box.setAttribute('x', getDotX(bc) + BOX_WIDTH / 2);
-        box.setAttribute('y', getDotY(br) + BOX_HEIGHT / 2 + 4);
-        box.setAttribute('text-anchor', 'middle');
-        box.setAttribute('class', 'box-number');
-        box.setAttribute('id', 'box-' + br + '-' + bc);
-        box.style.opacity = '0';
-        svg.appendChild(box);
-      }
+    if (clickedLine) {
+      handleLineClick(clickedLine);
     }
   }
 
-  function handleLineClick(e) {
+  function handleLineClick(lineInfo) {
     if (!gameActive) return;
 
-    var group = e.currentTarget.closest('.line-group');
-    if (!group || group.classList.contains('claimed')) return;
-
-    var type = group.dataset.type;
-    var row = parseInt(group.dataset.row);
-    var col = parseInt(group.dataset.col);
+    var type = lineInfo.type;
+    var row = lineInfo.row;
+    var col = lineInfo.col;
 
     if (type === 'h') {
+      if (board.horizontal[row][col]) return;
       board.horizontal[row][col] = currentPlayer;
-      group.querySelector('.line-h').setAttribute('fill', currentPlayer === 1 ? 'var(--color-p1)' : 'var(--color-p2)');
-      group.classList.add('claimed');
+      markLineClaimed('h', row, col);
       checkAndAwardBox(row, col, true);
     } else {
+      if (board.vertical[col][row]) return;
       board.vertical[col][row] = currentPlayer;
-      group.querySelector('.line-v').setAttribute('fill', currentPlayer === 1 ? 'var(--color-p1)' : 'var(--color-p2)');
-      group.classList.add('claimed');
+      markLineClaimed('v', col, row);
       checkAndAwardBox(row, col, false);
     }
 
@@ -215,57 +199,95 @@
     updateUI();
   }
 
+  function markLineClaimed(type, rowOrCol1, rowOrCol2) {
+    var rect = type === 'h' 
+      ? getHLineRect(rowOrCol1, rowOrCol2)
+      : getVLineRect(rowOrCol1, rowOrCol2);
+
+    rect.style.fill = currentPlayer === 1 ? 'var(--color-p1)' : 'var(--color-p2)';
+    rect.style.pointerEvents = 'none';
+    rect.style.cursor = 'default';
+  }
+
+  function getHLineRect(row, col) {
+    var n = gridSize;
+    var g = document.getElementById('h-group-' + row + '-' + col);
+    if (!g) {
+      g = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      g.id = 'h-group-' + row + '-' + col;
+      var x = getDotX(col) + DOT_SIZE;
+      var y = getDotY(row) - LINE_THICKNESS / 2;
+      g.setAttribute('x', x);
+      g.setAttribute('y', y);
+      g.setAttribute('width', BOX_WIDTH - DOT_SIZE * 2);
+      g.setAttribute('height', LINE_THICKNESS);
+      g.setAttribute('fill', 'var(--text-muted)');
+      g.setAttribute('rx', LINE_THICKNESS / 2);
+      svg.insertBefore(g, svg.getElementById('click-area'));
+    }
+    return g;
+  }
+
+  function getVLineRect(col, row) {
+    var n = gridSize;
+    var g = document.getElementById('v-group-' + col + '-' + row);
+    if (!g) {
+      g = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      g.id = 'v-group-' + col + '-' + row;
+      var x = getDotX(col) - LINE_THICKNESS / 2;
+      var y = getDotY(row) + DOT_SIZE;
+      g.setAttribute('x', x);
+      g.setAttribute('y', y);
+      g.setAttribute('width', LINE_THICKNESS);
+      g.setAttribute('height', BOX_HEIGHT - DOT_SIZE * 2);
+      g.setAttribute('fill', 'var(--text-muted)');
+      g.setAttribute('ry', LINE_THICKNESS / 2);
+      svg.insertBefore(g, svg.getElementById('click-area'));
+    }
+    return g;
+  }
+
   function checkAndAwardBox(row, col, isHorizontal) {
     var n = gridSize;
     var awarded = false;
 
     if (isHorizontal) {
-      var boxRow = row;
-      var boxCol = col;
-      var hTop = board.horizontal[boxRow] && board.horizontal[boxRow][boxCol] !== null;
-      var hBottom = board.horizontal[boxRow + 1] && board.horizontal[boxRow + 1][boxCol] !== null;
-      var vLeft = board.vertical[boxCol] && board.vertical[boxCol][boxRow] !== null;
-      var vRight = board.vertical[boxCol + 1] && board.vertical[boxCol + 1][boxRow] !== null;
-
-      if (hTop && hBottom && vLeft && vRight && !board.boxes[boxRow][boxCol]) {
-        awardBox(boxRow, boxCol);
-        awarded = true;
+      // Box above
+      if (row > 0 && row <= n) {
+        var boxRow = row - 1;
+        var boxCol = col;
+        if (canCompleteBox(boxRow, boxCol)) {
+          awardBox(boxRow, boxCol);
+          awarded = true;
+        }
       }
-
-      boxRow = row - 1;
-      boxCol = col;
-      hTop = board.horizontal[boxRow + 1] && board.horizontal[boxRow + 1][boxCol] !== null;
-      hBottom = board.horizontal[boxRow] && board.horizontal[boxRow][boxCol] !== null;
-      vLeft = board.vertical[boxCol] && board.vertical[boxCol][boxRow] !== null;
-      vRight = board.vertical[boxCol + 1] && board.vertical[boxCol + 1][boxRow] !== null;
-
-      if (boxRow >= 0 && hTop && hBottom && vLeft && vRight && !board.boxes[boxRow][boxCol]) {
-        awardBox(boxRow, boxCol);
-        awarded = true;
+      // Box below
+      if (row < n) {
+        var boxRow = row;
+        var boxCol = col;
+        if (canCompleteBox(boxRow, boxCol)) {
+          awardBox(boxRow, boxCol);
+          awarded = true;
+        }
       }
     } else {
-      var boxRow = row;
-      var boxCol = col;
-      var hTop = board.horizontal[boxRow] && board.horizontal[boxRow][boxCol] !== null;
-      var hBottom = board.horizontal[boxRow + 1] && board.horizontal[boxRow + 1][boxCol] !== null;
-      var vLeft = board.vertical[boxCol] && board.vertical[boxCol][boxRow] !== null;
-      var vRight = board.vertical[boxCol + 1] && board.vertical[boxCol + 1][boxRow] !== null;
-
-      if (hTop && hBottom && vLeft && vRight && !board.boxes[boxRow][boxCol]) {
-        awardBox(boxRow, boxCol);
-        awarded = true;
+      // Box left
+      if (col > 0 && col <= n) {
+        var boxRow = row;
+        var boxCol = col - 1;
+        if (canCompleteBox(boxRow, boxCol)) {
+          awardBox(boxRow, boxCol);
+          awarded = true;
+        }
       }
-
-      boxRow = row;
-      boxCol = col - 1;
-      hTop = board.horizontal[boxRow] && board.horizontal[boxRow][boxCol] !== null;
-      hBottom = board.horizontal[boxRow + 1] && board.horizontal[boxRow + 1][boxCol] !== null;
-      vLeft = board.vertical[boxCol] && board.vertical[boxCol][boxRow] !== null;
-      vRight = board.vertical[boxCol + 1] && board.vertical[boxCol + 1][boxRow] !== null;
-
-      if (boxCol >= 0 && hTop && hBottom && vLeft && vRight && !board.boxes[boxRow][boxCol]) {
-        awardBox(boxRow, boxCol);
-        awarded = true;
+      // Box right
+      if (col < n) {
+        var boxRow = row;
+        var boxCol = col;
+        if (canCompleteBox(boxRow, boxCol)) {
+          awardBox(boxRow, boxCol);
+          awarded = true;
+        }
       }
     }
 
@@ -274,17 +296,36 @@
     }
   }
 
-  function awardBox(boxRow, boxCol) {
-    board.boxes[boxRow][boxCol] = currentPlayer;
-    var boxEl = document.getElementById('box-' + boxRow + '-' + boxCol);
-    if (boxEl) {
-      boxEl.textContent = currentPlayer === 1 ? '⚫' : '◼';
-      boxEl.style.fill = currentPlayer === 1 ? 'var(--color-p1)' : 'var(--color-p2)';
-      boxEl.style.opacity = '1';
-      boxEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  function canCompleteBox(br, bc) {
+    if (board.boxes[br][bc]) return false;
+    if (!board.horizontal[br][bc]) return false;
+    if (!board.horizontal[br + 1][bc]) return false;
+    if (!board.vertical[bc][br]) return false;
+    if (!board.vertical[bc + 1][br]) return false;
+    return true;
+  }
+
+  function awardBox(br, bc) {
+    board.boxes[br][bc] = currentPlayer;
+    scores[currentPlayer - 1]++;
+
+    var text = document.getElementById('box-txt-' + br + '-' + bc);
+    if (!text) {
+      text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.id = 'box-txt-' + br + '-' + bc;
+      text.setAttribute('x', getDotX(bc) + BOX_WIDTH / 2);
+      text.setAttribute('y', getDotY(br) + BOX_HEIGHT / 2 + 4);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('font-size', '16');
+      text.setAttribute('font-weight', 'bold');
+      text.setAttribute('font-family', 'Nunito');
+      text.style.opacity = '0';
+      svg.appendChild(text);
     }
 
-    scores[currentPlayer - 1]++;
+    text.textContent = currentPlayer === 1 ? '⚫' : '◼';
+    text.style.fill = currentPlayer === 1 ? 'var(--color-p1)' : 'var(--color-p2)';
+    text.style.opacity = '1';
 
     if (isGameOver()) {
       endGame();
@@ -298,13 +339,12 @@
 
   function isGameOver() {
     var n = gridSize;
-    var remaining = 0;
     for (var r = 0; r < n; r++) {
       for (var c = 0; c < n; c++) {
-        if (!board.boxes[r][c]) remaining++;
+        if (!board.boxes[r][c]) return false;
       }
     }
-    return remaining === 0;
+    return true;
   }
 
   function updateUI() {
@@ -319,12 +359,11 @@
         if (board.boxes[r][c]) filled++;
       }
     }
-
     boxesTotalEl.textContent = filled + '/' + totalBoxes;
 
-    var p2Label = currentPlayer === 2 ? ' - ' + tr('dots_your_turn') : '';
-    currentPlayerEl.parentElement.querySelector('.stat-label').textContent = 
-      tr('dots_player') + (currentPlayer === 1 ? '' : p2Label);
+    var p2TurnMsg = currentPlayer === 2 ? ' - ' + tr('dots_your_turn') : '';
+    currentPlayerEl.parentElement.querySelector('.stat-label').textContent =
+      tr('dots_player') + p2TurnMsg;
   }
 
   function endGame() {
@@ -359,6 +398,7 @@
     currentPlayer = 1;
     gameActive = true;
     lastBoxClosed = false;
+    board = {};
     createBoard();
     winnerModal.classList.remove('visible');
   }
@@ -374,7 +414,7 @@
     });
 
     window.addEventListener('resize', function() {
-      renderBoard();
+      createBoard();
     });
   }
 
