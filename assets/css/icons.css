@@ -1,13 +1,13 @@
 /* ============================================ */
-/* Tablo — Icons (Fork Awesome Font Override)   */
+/* Tablo — Icons (Fork Awesome Local Fonts)     */
 /* ============================================ */
 
 @font-face {
   font-family: 'ForkAwesome';
-  src: url('../../fonts/forkawesome-webfont.woff2?v=1.1.7') format('woff2'),
-       url('../../fonts/forkawesome-webfont.woff?v=1.1.7') format('woff');
+  src: url('../fonts/forkawesome-webfont.woff2?v=1.1.7') format('woff2');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 .fa {
@@ -171,7 +171,6 @@
 .fa-battery-full:before { content: '\f240'; }
 .fa-battery-4:before { content: '\f240'; }
 .fa-power-off:before { content: '\f011'; }
-.fa-signal:before { content: '\f012'; }
 .fa-certificate:before { content: '\f0a3'; }
 .fa-medal:before { content: '\f25b'; }
 .fa-trophy:before { content: '\f091'; }
@@ -186,8 +185,6 @@
 .fa-hand-spock-o:before { content: '\f259'; }
 .fa-hand-pointer-o:before { content: '\f25a'; }
 .fa-hand-peace-o:before { content: '\f25b'; }
-.fa-thumbs-o-up:before { content: '\f087'; }
-.fa-thumbs-o-down:before { content: '\f088'; }
 .fa-angry:before { content: '\f556'; }
 .fa-happy:before { content: '\f118'; }
 .fa-meh:before { content: '\f11a'; }
@@ -198,3 +195,12 @@
 .fa-frown-o:before { content: '\f119'; }
 .fa-meh-o:before { content: '\f11a'; }
 .fa-shield:before { content: '\f132'; }
+.fa-address-book:before { content: '\f2b9'; }
+.fa-cube:before { content: '\f1b2'; }
+.fa-th:before { content: '\f00a'; }
+.fa-toggle-off:before { content: '\f204'; }
+.fa-square:before { content: '\f0c8'; }
+.fa-font:before { content: '\f031'; }
+.fa-asterisk:before { content: '\f069'; }
+.fa-chess-rook:before { content: '\f43a'; }
+.fa-list-ol:before { content: '\f0cb'; }
