@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wordle - Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/icons.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  <div id="tablo-header"></div>
+
+  <a href="../../index.html" class="back-home mobile-hide">
+    <i class="fa fa-arrow-left"></i>
+    <span data-i18n="btn_back_home">Back to Games</span>
+  </a>
+
+  <div class="game-wrapper">
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="wordle_guesses">Guesses</span>
+        <span class="stat-value" id="guess-count">0/6</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="wordle_streak">Streak</span>
+        <span class="stat-value" id="streak">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="wordle_best_streak">Best Streak</span>
+        <span class="stat-value" id="best-streak">0</span>
+      </div>
+    </div>
+
+    <div class="wordle-board" id="board"></div>
+
+    <div class="keyboard" id="keyboard"></div>
+
+    <div class="game-controls">
+      <button class="game-btn primary" id="btn-new-game" data-i18n="wordle_new_word">New Word</button>
+    </div>
+
+    <p class="game-hint" data-i18n="wordle_hint">Type a 5-letter word and press Enter. Green = right spot, Yellow = wrong spot, Gray = not in word.</p>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="game-over-modal">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon" id="modal-icon">&#127881;</div>
+      <h2 class="winner-title" id="modal-title"></h2>
+      <p class="winner-message" id="modal-message"></p>
+      <p class="winner-answer" id="modal-answer"></p>
+      <button class="game-btn primary" id="btn-retry" data-i18n="wordle_new_word">New Word</button>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+
+  <script>
+    fetch('../../assets/js/translations.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.TABLO_TRANSLATIONS = data;
+        if (typeof window.applyTabloTranslations === 'function') {
+          window.applyTabloTranslations();
+        }
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() { if (typeof initGame === 'function') initGame(); };
+        document.body.appendChild(s);
+      })
+      .catch(function(e) { console.error('Load failed:', e); });
+  </script>
+</body>
+</html>

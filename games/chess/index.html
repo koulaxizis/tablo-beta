@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess - Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/icons.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  <div id="tablo-header"></div>
+
+  <a href="../../index.html" class="back-home mobile-hide">
+    <i class="fa fa-arrow-left"></i>
+    <span data-i18n="btn_back_home">Back to Games</span>
+  </a>
+
+  <div class="game-wrapper">
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="chess_turn">Turn</span>
+        <span class="stat-value" id="turn-display">White</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="chess_mode">Mode</span>
+        <span class="stat-value" id="mode-display">2 Players</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="chess_move_num">Move</span>
+        <span class="stat-value" id="move-num">1</span>
+      </div>
+    </div>
+
+    <div class="captured-row" id="captured-white">
+      <span class="captured-label" data-i18n="chess_white">White</span>
+      <span class="captured-pieces" id="cap-white"></span>
+    </div>
+
+    <div class="chess-board" id="board"></div>
+
+    <div class="captured-row" id="captured-black">
+      <span class="captured-label" data-i18n="chess_black">Black</span>
+      <span class="captured-pieces" id="cap-black"></span>
+    </div>
+
+    <div class="game-controls">
+      <select id="game-mode-select" class="mode-select">
+        <option value="pvp" data-i18n="ttt_pvp">2 Players</option>
+        <option value="ai" data-i18n="ttt_vs_ai">vs Computer</option>
+      </select>
+      <button class="game-btn primary" id="btn-new-game" data-i18n="chess_new_game">New Game</button>
+      <button class="game-btn" id="btn-undo" data-i18n="chess_undo">Undo</button>
+    </div>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="game-over-modal">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon" id="modal-icon">&#127942;</div>
+      <h2 class="winner-title" id="modal-title"></h2>
+      <p class="winner-message" id="modal-message"></p>
+      <button class="game-btn primary" id="btn-retry" data-i18n="chess_new_game">New Game</button>
+    </div>
+  </div>
+
+  <div class="promotion-modal" id="promotion-modal">
+    <div class="winner-overlay"></div>
+    <div class="promo-content">
+      <h3 data-i18n="chess_promote">Promote to:</h3>
+      <div class="promo-options" id="promo-options"></div>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+
+  <script>
+    fetch('../../assets/js/translations.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.TABLO_TRANSLATIONS = data;
+        if (typeof window.applyTabloTranslations === 'function') {
+          window.applyTabloTranslations();
+        }
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() { if (typeof initGame === 'function') initGame(); };
+        document.body.appendChild(s);
+      })
+      .catch(function(e) { console.error('Load failed:', e); });
+  </script>
+</body>
+</html>

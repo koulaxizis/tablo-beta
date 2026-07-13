@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake - Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/icons.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  <div id="tablo-header"></div>
+
+  <a href="../../index.html" class="back-home mobile-hide">
+    <i class="fa fa-arrow-left"></i>
+    <span data-i18n="btn_back_home">Back to Games</span>
+  </a>
+
+  <div class="game-wrapper">
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="snake_score">Score</span>
+        <span class="stat-value" id="score">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="snake_best">Best</span>
+        <span class="stat-value" id="best-score">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="snake_length">Length</span>
+        <span class="stat-value" id="length">3</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="snake-canvas" width="360" height="360"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="game-btn primary" id="btn-start" data-i18n="snake_start">Start</button>
+      <button class="game-btn" id="btn-pause" data-i18n="snake_pause">Pause</button>
+    </div>
+
+    <p class="game-hint desktop-only" data-i18n="snake_use_arrows">Use arrow keys or WASD to move</p>
+    <p class="game-hint mobile-only" data-i18n="snake_swipe_to_move">Swipe to move</p>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="game-over-modal">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon">&#128014;</div>
+      <h2 class="winner-title" data-i18n="snake_game_over">Game Over!</h2>
+      <p class="winner-message" id="final-score"></p>
+      <button class="game-btn primary" id="btn-retry" data-i18n="snake_try_again">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Mobile directional pad -->
+  <div class="mobile-dpad" id="dpad">
+    <button class="dpad-btn dpad-up" data-dir="up">&#9650;</button>
+    <button class="dpad-btn dpad-left" data-dir="left">&#9664;</button>
+    <button class="dpad-btn dpad-right" data-dir="right">&#9654;</button>
+    <button class="dpad-btn dpad-down" data-dir="down">&#9660;</button>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+
+  <script>
+    fetch('../../assets/js/translations.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.TABLO_TRANSLATIONS = data;
+        if (typeof window.applyTabloTranslations === 'function') {
+          window.applyTabloTranslations();
+        }
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() { if (typeof initGame === 'function') initGame(); };
+        document.body.appendChild(s);
+      })
+      .catch(function(e) { console.error('Load failed:', e); });
+  </script>
+</body>
+</html>

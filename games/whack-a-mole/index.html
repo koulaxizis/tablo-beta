@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whack-a-Mole - Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/icons.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  <div id="tablo-header"></div>
+
+  <a href="../../index.html" class="back-home mobile-hide">
+    <i class="fa fa-arrow-left"></i>
+    <span data-i18n="btn_back_home">Back to Games</span>
+  </a>
+
+  <div class="game-wrapper">
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="whack_score">Score</span>
+        <span class="stat-value" id="score">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="whack_best">Best</span>
+        <span class="stat-value" id="best-score">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="whack_time">Time</span>
+        <span class="stat-value" id="time-left">30</span>
+      </div>
+    </div>
+
+    <div class="mole-grid" id="mole-grid">
+      <div class="mole-hole" data-hole="0"><div class="mole" id="mole-0">&#128015;</div></div>
+      <div class="mole-hole" data-hole="1"><div class="mole" id="mole-1">&#128015;</div></div>
+      <div class="mole-hole" data-hole="2"><div class="mole" id="mole-2">&#128015;</div></div>
+      <div class="mole-hole" data-hole="3"><div class="mole" id="mole-3">&#128015;</div></div>
+      <div class="mole-hole" data-hole="4"><div class="mole" id="mole-4">&#128015;</div></div>
+      <div class="mole-hole" data-hole="5"><div class="mole" id="mole-5">&#128015;</div></div>
+      <div class="mole-hole" data-hole="6"><div class="mole" id="mole-6">&#128015;</div></div>
+      <div class="mole-hole" data-hole="7"><div class="mole" id="mole-7">&#128015;</div></div>
+      <div class="mole-hole" data-hole="8"><div class="mole" id="mole-8">&#128015;</div></div>
+    </div>
+
+    <div class="game-controls">
+      <button class="game-btn primary" id="btn-start" data-i18n="whack_start">Start</button>
+    </div>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="game-over-modal">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon">&#128170;</div>
+      <h2 class="winner-title" data-i18n="whack_game_over">Time's Up!</h2>
+      <p class="winner-message" id="final-score"></p>
+      <button class="game-btn primary" id="btn-retry" data-i18n="whack_try_again">Try Again</button>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+
+  <script>
+    fetch('../../assets/js/translations.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.TABLO_TRANSLATIONS = data;
+        if (typeof window.applyTabloTranslations === 'function') {
+          window.applyTabloTranslations();
+        }
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() { if (typeof initGame === 'function') initGame(); };
+        document.body.appendChild(s);
+      })
+      .catch(function(e) { console.error('Load failed:', e); });
+  </script>
+</body>
+</html>

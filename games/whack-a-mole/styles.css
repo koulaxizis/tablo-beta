@@ -1,0 +1,202 @@
+/* ============================================
+   Tablo — Whack-a-Mole Styles
+   ============================================ */
+
+.back-home {
+  position: absolute;
+  top: 64px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10;
+  transition: all var(--transition);
+}
+.back-home:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.back-home i { font-size: 14px; }
+
+.game-stats {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.mole-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 360px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.mole-hole {
+  aspect-ratio: 1;
+  background: radial-gradient(ellipse at center bottom, #1a2a1a 0%, #0a0f0a 70%);
+  border-radius: 50% 50% 12px 12px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid var(--bg-panel);
+  box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
+}
+
+.mole {
+  position: absolute;
+  bottom: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  transition: bottom 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.mole.up {
+  bottom: 10%;
+}
+.mole.hit {
+  animation: mole-hit 0.3s ease;
+}
+@keyframes mole-hit {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.3) rotate(15deg); }
+  100% { transform: translateX(-50%) scale(0); opacity: 0; }
+}
+
+.game-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.game-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.game-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.game-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0f1923;
+}
+.game-btn.primary:hover {
+  background: var(--accent-light);
+}
+.game-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.winner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.winner-modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.winner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+}
+.winner-content {
+  position: relative;
+  background: var(--bg-panel);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 16px 64px rgba(0,0,0,0.5);
+}
+.winner-icon { font-size: 48px; margin-bottom: 16px; }
+.winner-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+.winner-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+
+.tablo-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 10001;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+.tablo-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 768px) {
+  .mole { font-size: 2.5rem; }
+  .mole-grid { max-width: 300px; gap: 8px; }
+}
+@media (max-width: 480px) {
+  .back-home { top: 58px; left: 12px; padding: 6px 12px; font-size: 12px; }
+  .mole { font-size: 2rem; }
+}
