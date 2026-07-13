@@ -3,224 +3,285 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tablo — Mini Board Games</title>
-  <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="stylesheet" href="./assets/css/style.css">
-  <link rel="stylesheet" href="./assets/css/icons.css">
+  <meta name="description" content="Tablo - Collection of Minimal Board Games">
   <meta name="theme-color" content="#0f1923">
-  <meta name="description" content="Relax with classic board games. All work offline.">
+  <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/assets/css/icons.css">
+  
+  <title data-i18n="page_title">Tablo - Mini Games</title>
+  
   <style>
-    /* Fix #2: Footer overlap issue - add bottom padding to body */
-    body.landing-page {
-      padding-bottom: 180px;
+    /* Hero Section */
+    .hero-section {
+      padding: 48px 24px 32px;
+      text-align: center;
+    }
+    
+    .hero-title {
+      font-size: clamp(28px, 8vw, 48px);
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+    
+    .hero-subtitle {
+      font-size: clamp(14px, 4vw, 18px);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 32px;
+      line-height: 1.5;
+    }
+    
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      padding: 0 20px 140px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .game-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      transition: var(--transition);
+      cursor: pointer;
+      min-height: 180px;
+      position: relative;
+    }
+    
+    .game-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(45,212,191,0.15);
+    }
+    
+    /* ICON FIX: Large Fork Awesome Icons */
+    .game-icon {
+      font-size: 64px !important;
+      color: var(--accent, #2dd4bf) !important;
+      margin-bottom: 16px !important;
+      line-height: 1 !important;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .game-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    
+    .game-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .player-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+    }
+    
+    .player-badge.multiplayer {
+      background: rgba(45,212,191,0.15);
+      color: var(--accent);
+    }
+    
+    @media (max-width: 768px) {
+      .games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+        padding: 0 16px 140px;
+      }
+      
+      .game-icon {
+        font-size: 48px !important;
+        min-height: 48px;
+      }
+      
+      .game-name {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
-<body class="landing-page">
-
+<body>
   <div id="tablo-header"></div>
-
-  <section class="hero">
-    <svg xmlns="http://www.w3.org/2000/svg" class="hero-logo" viewBox="0 0 40 40" width="60" height="60">
-      <rect x="5" y="5" width="30" height="30" rx="8" fill="none" stroke="#2dd4bf" stroke-width="3"/>
-      <rect x="12" y="12" width="16" height="16" rx="4" fill="#2dd4bf"/>
-    </svg>
-    <h1 data-i18n="site_title">Tablo</h1>
-    <p data-i18n="site_tagline">Mini board games for quiet moments</p>
-  </section>
-
-  <section class="container">
-    <p class="game-intro" data-i18n="games_intro">Relax with classic board games. All work offline.</p>
-  </section>
-
-  <section class="container">
-    <div class="games-grid">
-
-      <a href="./games/memory-match/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#10033;</div>
+  
+  <main class="game-wrapper">
+    <section class="hero-section">
+      <h1 class="hero-title" data-i18n="hero_title">Tablo</h1>
+      <p class="hero-subtitle" data-i18n="hero_subtitle">Collection of classic mini board games for relaxed entertainment. Open source, privacy first.</p>
+    </section>
+    
+    <section class="games-grid">
+      <!-- Memory Match -->
+      <a href="games/memory-match/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-address-book game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_memory_name">Memory Match</h3>
-        <p class="game-desc" data-i18n="game_memory_desc">Find matching cards</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_memory_desc">Find matching card pairs</p>
       </a>
-
-      <a href="./games/connect4/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge pvp-ai" data-i18n="badge_players_2p_ai">2P · AI</span>
-        </div>
-        <div class="game-icon">&#128469;</div>
+      
+      <!-- Connect 4 -->
+      <a href="games/connect4/" class="game-card">
+        <span class="player-badge multiplayer">2P</span>
+        <i class="fa fa-cube game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_connect4_name">Connect 4</h3>
-        <p class="game-desc" data-i18n="game_connect4_desc">Four in a row</p>
-        <p class="game-players-info" data-i18n="badge_players_info_pvp_ai">PvP or PvAI</p>
+        <p class="game-description" data-i18n="game_connect4_desc">Connect 4 discs in a row</p>
       </a>
-
-      <a href="./games/dots-and-lines/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge pvp" data-i18n="badge_players_2p">2P</span>
-        </div>
-        <div class="game-icon">&#10038;</div>
+      
+      <!-- Dots & Lines -->
+      <a href="games/dots-and-lines/" class="game-card">
+        <span class="player-badge multiplayer">2P</span>
+        <i class="fa fa-circle game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_dots_name">Dots & Lines</h3>
-        <p class="game-desc" data-i18n="game_dots_desc">Draw and connect</p>
-        <p class="game-players-info" data-i18n="badge_players_info_pvp">PvP</p>
+        <p class="game-description" data-i18n="game_dots_desc">Complete boxes to score</p>
       </a>
-
-      <a href="./games/tic-tac-toe/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge pvp-ai" data-i18n="badge_players_2p_ai">2P · AI</span>
-        </div>
-        <div class="game-icon">&#9990;</div>
-        <h3 class="game-name" data-i18n="game_tictactoe_name">Tic-Tac-Toe</h3>
-        <p class="game-desc" data-i18n="game_tictactoe_desc">Three in a row</p>
-        <p class="game-players-info" data-i18n="badge_players_info_pvp_ai">PvP or PvAI</p>
+      
+      <!-- Tic-Tac-Toe -->
+      <a href="games/tic-tac-toe/" class="game-card">
+        <span class="player-badge multiplayer">2P</span>
+        <i class="fa fa-th game-icon" aria-hidden="true"></i>
+        <h3 class="game-name" data-i18n="game_ttt_name">Tic-Tac-Toe</h3>
+        <p class="game-description" data-i18n="game_ttt_desc">Classic X and O game</p>
       </a>
-
-      <a href="./games/simon-says/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#127916;</div>
+      
+      <!-- Simon Says -->
+      <a href="games/simon-says/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-lightbulb-o game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_simon_name">Simon Says</h3>
-        <p class="game-desc" data-i18n="game_simon_desc">Memory challenge</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_simon_desc">Repeat the flashing pattern</p>
       </a>
-
-      <a href="./games/number-slider/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#8597;</div>
+      
+      <!-- Number Slider -->
+      <a href="games/number-slider/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-sort-numeric-asc game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_slider_name">Number Slider</h3>
-        <p class="game-desc" data-i18n="game_slider_desc">Slide to solve</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_slider_desc">Slide tiles into order</p>
       </a>
-
-      <a href="./games/lights-out/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#9670;</div>
+      
+      <!-- Lights Out -->
+      <a href="games/lights-out/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-toggle-off game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_lights_name">Lights Out</h3>
-        <p class="game-desc" data-i18n="game_lights_desc">Turn off all lights</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_lights_desc">Turn off all lights</p>
       </a>
-
-      <a href="./games/whack-a-mole/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#128054;</div>
+      
+      <!-- Whack-a-Mole -->
+      <a href="games/whack-a-mole/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-bolt game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_whack_name">Whack-a-Mole</h3>
-        <p class="game-desc" data-i18n="game_whack_desc">Reflex challenge</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_whack_desc">Pop up moles fast!</p>
       </a>
-
-      <a href="./games/snake/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#128042;</div>
+      
+      <!-- Snake -->
+      <a href="games/snake/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-circle-thin game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_snake_name">Snake</h3>
-        <p class="game-desc" data-i18n="game_snake_desc">Classic arcade</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_snake_desc">Eat food, grow longer</p>
       </a>
-
-      <a href="./games/2048/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">#</div>
+      
+      <!-- 2048 -->
+      <a href="games/2048/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-square game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_2048_name">2048</h3>
-        <p class="game-desc" data-i18n="game_2048_desc">Combine numbers</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_2048_desc">Merge tiles to reach 2048</p>
       </a>
-
-      <a href="./games/wordle/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">A</div>
+      
+      <!-- Wordle -->
+      <a href="games/wordle/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-font game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_wordle_name">Wordle</h3>
-        <p class="game-desc" data-i18n="game_wordle_desc">Guess the word</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_wordle_desc">Guess the 5-letter word</p>
       </a>
-
-      <a href="./games/spot-the-difference/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#128269;</div>
+      
+      <!-- Spot the Difference -->
+      <a href="games/spot-the-difference/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-eye game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_spot_name">Spot the Difference</h3>
-        <p class="game-desc" data-i18n="game_spot_desc">Find 7 differences</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_spot_desc">Find hidden differences</p>
       </a>
-
-      <a href="./games/hexagon-puzzle/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#9672;</div>
+      
+      <!-- Hexagon Puzzle -->
+      <a href="games/hexagon-puzzle/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-asterisk game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_hex_name">Hexagon Puzzle</h3>
-        <p class="game-desc" data-i18n="game_hex_desc">Flood the board</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_hex_desc">Fit pieces on hex grid</p>
       </a>
-
-      <a href="./games/chess/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge pvp-ai" data-i18n="badge_players_2p_ai">2P · AI</span>
-        </div>
-        <div class="game-icon">&#9818;</div>
+      
+      <!-- Chess -->
+      <a href="games/chess/" class="game-card">
+        <span class="player-badge multiplayer">2P</span>
+        <i class="fa fa-chess-rook game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_chess_name">Chess</h3>
-        <p class="game-desc" data-i18n="game_chess_desc">Classic strategy</p>
-        <p class="game-players-info" data-i18n="badge_players_info_pvp_ai">PvP or PvAI</p>
+        <p class="game-description" data-i18n="game_chess_desc">Classic strategy game</p>
       </a>
-
-      <a href="./games/sudoku/index.html" class="game-card">
-        <div class="game-card-badges">
-          <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
-        </div>
-        <div class="game-icon">&#128196;</div>
+      
+      <!-- Sudoku -->
+      <a href="games/sudoku/" class="game-card">
+        <span class="player-badge">1P</span>
+        <i class="fa fa-list-ol game-icon" aria-hidden="true"></i>
         <h3 class="game-name" data-i18n="game_sudoku_name">Sudoku</h3>
-        <p class="game-desc" data-i18n="game_sudoku_desc">Number puzzle</p>
-        <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
+        <p class="game-description" data-i18n="game_sudoku_desc">Fill the 9×9 grid</p>
       </a>
-
-    </div>
-  </section>
-
+    </section>
+  </main>
+  
   <div id="tablo-footer"></div>
-
-  <script src="./assets/js/config.js"></script>
-  <script src="./assets/js/header.js"></script>
-  <script src="./assets/js/footer.js"></script>
-
+  <div class="tablo-toast" id="toast"></div>
+  
   <script>
-    fetch('./assets/js/translations.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        window.TABLO_TRANSLATIONS = data;
-        if (typeof window.applyTabloTranslations === 'function') {
-          window.applyTabloTranslations();
-        }
-      })
-      .catch(function(e) { console.error('Failed to load translations:', e); });
+    window.TABLO_TRANSLATIONS = {{TRANSLATIONS_PLACEHOLDER}};
   </script>
-
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
+  <script src="/assets/js/translations.json"></script>
+  <script src="/assets/js/pwa-install.js"></script>
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js')
-          .then(function(registration) {
-            console.log('SW registered:', registration.scope);
-          })
-          .catch(function(error) {
-            console.log('SW registration failed:', error);
-          });
-      });
-    }
+    // Initialize language after components load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.applyTabloTranslations) {
+        window.applyTabloTranslations();
+      }
+    });
   </script>
-
 </body>
 </html>

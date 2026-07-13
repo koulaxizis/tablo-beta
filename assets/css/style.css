@@ -736,3 +736,38 @@ body {
   .footer-center { order: 3 !important; }
   .footer-left i.fa { font-size: 20px !important; }
 }
+
+/* ============================================
+   GAME CARD ICONS - LARGE FORK AWESOME
+   ============================================ */
+
+.game-icon {
+  font-size: 64px !important;
+  color: var(--accent, #2dd4bf) !important;
+  margin-bottom: 16px !important;
+  line-height: 1 !important;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .game-icon {
+    font-size: 48px !important;
+    min-height: 48px;
+  }
+}
+
+/* Ensure NO emoji mixing - ONLY Fork Awesome */
+.game-card i.fa {
+  display: inline-block !important;
+  font-style: normal !important;
+  font-family: 'ForkAwesome' !important;
+}
+
+/* Remove any emoji spans if accidentally added */
+.game-card span[role="img"],
+.game-card .emoji-icon {
+  display: none !important;
+}
