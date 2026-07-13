@@ -619,3 +619,120 @@ body {
 .mobile-hide {
   display: none !important;
 }
+
+/* ============================================
+   FIX: Footer Sticky + Icons Large + Unified Style
+   ============================================ */
+
+body {
+  padding-bottom: 140px !important;
+}
+
+.sticky-footer {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  background: var(--bg-dark, #0f1923) !important;
+  border-top: 1px solid var(--border-color, rgba(255,255,255,0.1)) !important;
+  padding: 12px 20px !important;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.3) !important;
+}
+
+.footer-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  gap: 16px !important;
+}
+
+.footer-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--accent, #2dd4bf) !important;
+  order: 3 !important;
+}
+
+.footer-left i.fa {
+  font-size: 24px !important;
+  color: var(--accent, #2dd4bf) !important;
+}
+
+.footer-left .privacy-badge {
+  color: var(--accent, #2dd4bf) !important;
+}
+
+.footer-center {
+  text-align: center !important;
+  order: 2 !important;
+  flex: 1 !important;
+}
+
+.footer-center .footer-motto {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary, #ffffff) !important;
+}
+
+.footer-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  font-size: 13px !important;
+  color: var(--text-secondary, rgba(255,255,255,0.6)) !important;
+  order: 1 !important;
+}
+
+.version-info {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.version-number {
+  font-weight: 600 !important;
+  color: var(--text-primary, #ffffff) !important;
+}
+
+.channel-badge {
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  background: var(--accent, #2dd4bf) !important;
+  color: #0f1923 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+}
+
+.channel-badge.beta {
+  background: #f59e0b !important;
+}
+
+.last-updated {
+  font-size: 12px !important;
+  opacity: 0.7 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+  .footer-left, .footer-right {
+    order: unset !important;
+    flex-basis: 100% !important;
+    justify-content: center !important;
+  }
+  .footer-left { order: 2 !important; }
+  .footer-right { order: 1 !important; }
+  .footer-center { order: 3 !important; }
+  .footer-left i.fa { font-size: 20px !important; }
+}

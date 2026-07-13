@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Global Footer Component
+// Tablo — Global Footer Component (FIXED)
 // ============================================
 
 (function() {
@@ -40,16 +40,17 @@
     var version = window.TABLO_CONFIG ? window.TABLO_CONFIG.version : '0.3.0';
     var channel = window.TABLO_CONFIG ? window.TABLO_CONFIG.channel : 'beta';
 
-    var html = '<footer><div class="footer-content">' +
-      // LEFT: Privacy Badge
+    var html = '<footer class="sticky-footer"><div class="footer-content">' +
+      // LEFT: Privacy Badge (Fork Awesome icon + text)
       '<div class="footer-left">' +
+      '<i class="fa fa-shield" aria-hidden="true"></i>' +
       '<span class="privacy-badge" data-i18n="footer_privacy_badge">Open Source · No Tracking · No Ads · Privacy First</span>' +
       '</div>' +
       // CENTER: Motto
       '<div class="footer-center">' +
       '<p class="footer-motto" data-i18n="footer_motto">Play freely, enjoy life.</p>' +
       '</div>' +
-      // RIGHT: Version + Channel
+      // RIGHT: Version + Channel + Date
       '<div class="footer-right">' +
       '<div class="version-info">' +
       '<span class="version-number">v' + version + '</span>' +
@@ -62,12 +63,14 @@
     container.innerHTML = html;
 
     // Apply translations after render
-    document.querySelectorAll('.footer-content [data-i18n]').forEach(function(el) {
-      var key = el.getAttribute('data-i18n');
-      if (tr(key)) {
-        el.textContent = tr(key);
-      }
-    });
+    setTimeout(function() {
+      document.querySelectorAll('.footer-content [data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (tr(key)) {
+          el.textContent = tr(key);
+        }
+      });
+    }, 0);
   }
 
   function init() {
