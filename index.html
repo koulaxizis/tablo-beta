@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Tablo - Collection of Minimal Board Games">
   <meta name="theme-color" content="#0f1923">
-  <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
-  <link rel="manifest" href="/manifest.json">
+  
+  <!-- FIX: Correct favicon path for GitHub Pages -->
+  <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+  
+  <!-- FIX: Correct manifest path for /tablo-beta/ deployment -->
+  <link rel="manifest" href="./manifest.json">
   
   <!-- Fonts -->
-  <link rel="stylesheet" href="/assets/css/icons.css">
+  <link rel="stylesheet" href="./assets/css/icons.css">
   
   <title data-i18n="page_title">Tablo - Mini Games</title>
   
@@ -267,16 +271,17 @@
   <div id="tablo-footer"></div>
   <div class="tablo-toast" id="toast"></div>
   
+  <!-- FIX: Inline translations instead of JSON script tag -->
+  <script>window.TABLO_TRANSLATIONS = {{TRANSLATIONS_PLACEHOLDER}}</script>
+  
+  <!-- FIX: All paths relative to ensure they work in /tablo-beta/ deployment -->
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/header.js"></script>
+  <script src="./assets/js/footer.js"></script>
+  <script src="./assets/js/pwa-install.js"></script>
+  
+  <!-- Initialize language after components load -->
   <script>
-    window.TABLO_TRANSLATIONS = {{TRANSLATIONS_PLACEHOLDER}};
-  </script>
-  <script src="/assets/js/config.js"></script>
-  <script src="/assets/js/header.js"></script>
-  <script src="/assets/js/footer.js"></script>
-  <script src="/assets/js/translations.json"></script>
-  <script src="/assets/js/pwa-install.js"></script>
-  <script>
-    // Initialize language after components load
     document.addEventListener('DOMContentLoaded', function() {
       if (window.applyTabloTranslations) {
         window.applyTabloTranslations();
