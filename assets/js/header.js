@@ -9,6 +9,24 @@
   var BEFORE_INSTALL_PROMPT = null;
 
   function getPathPrefix() {
+    // FIX #1: Use TABLO_CONFIG.baseHref for GitHub Pages deployment
+    if (window.TABLO_CONFIG && window.TABLO_CONFIG.baseHref) {
+      // If we're on index.html or root path, return baseHref directly
+      var currentPath = window.location.pathname;
+      var isIndex = currentPath.endsWith('/index.html') || 
+                    currentPath === '/tablo-beta/' ||
+                    currentPath === '/tablo-beta/index.html' ||
+                    currentPath.endsWith('/index.html');
+      
+      if (isIndex) {
+        return window.TABLO_CONFIG.baseHref;
+      }
+      
+      // For game pages, return baseHref + 'index.html'
+      return window.TABLO_CONFIG.baseHref + 'index.html';
+    }
+    
+    // Fallback to old relative path logic
     if (window.location.pathname.endsWith('/index.html')) {
       return './';
     } else if (window.location.pathname.endsWith('/')) {
@@ -76,7 +94,7 @@
 
     var html = '<div class="header"><div class="header-content">' +
       '<div class="header-left">' +
-      '<a href="' + pathPrefix + 'index.html" class="logo-link">' +
+      '<a href="' + pathPrefix + '" class="logo-link">' +
       '<svg xmlns="http://www.w3.org/2000/svg" class="logo-icon" viewBox="0 0 40 40">' +
       '<rect x="5" y="5" width="30" height="30" rx="8" fill="none" stroke="#2dd4bf" stroke-width="3"/>' +
       '<rect x="12" y="12" width="16" height="16" rx="4" fill="#2dd4bf"/>' +
@@ -95,7 +113,7 @@
       '</select>';
 
     html += '<button id="theme-btn" class="header-btn" aria-label="' + tr('aria_theme_toggle') + '" title="' + tr('aria_theme_toggle') + '">' +
-      '<i class="fa fa-' + (currentTheme === 'dark' ? 'sun-o' : 'moon-s') + '"></i></button>';
+      '<i class="fa fa-' + (currentTheme === 'dark' ? 'sun-o' : 'moon-o') + '"></i></button>';
 
     html += '<button id="settings-btn" class="header-btn" aria-label="' + tr('aria_settings') + '" title="' + tr('tooltip_settings') + '">' +
       '<i class="fa fa-cog"></i></button>';
@@ -127,7 +145,7 @@
         var newTheme = isDark ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('tablo-theme', newTheme);
-        themeBtn.innerHTML = '<i class="fa fa-' + (newTheme === 'dark' ? 'sun-o' : 'moon-s') + '"></i>';
+        themeBtn.innerHTML = '<i class="fa fa-' + (newTheme === 'dark' ? 'sun-o' : 'moon-o') + '"></i>';
       });
     }
 
