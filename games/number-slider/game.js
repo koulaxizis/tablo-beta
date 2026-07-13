@@ -1,29 +1,24 @@
 // ============================================
-// Tablo — Number Slider (Sliding Puzzle)
+// Tablo — Number Slider (Fixed persistence)
 // ============================================
 
 (function() {
   'use strict';
 
-  var gridSize = 4;
+  var SIZE = 4;
   var board = [];
   var emptyPos = { row: 0, col: 0 };
   var moves = 0;
+  var gameActive = false;
   var timerInterval = null;
   var secondsElapsed = 0;
-  var gameActive = false;
-  var gameStarted = false;
 
-  var boardEl = document.getElementById('board');
-  var movesDisplay = document.getElementById('moves');
-  var timerDisplay = document.getElementById('timer');
-  var bestScoreDisplay = document.getElementById('best-score');
-  var gridSizeSelect = document.getElementById('grid-size');
+  var boardEl = document.getElementById('slider-board');
+  var movesEl = document.getElementById('moves');
+  var timeEl = document.getElementById('time');
+  var bestEl = document.getElementById('best-score');
+  var sizeSelect = document.getElementById('slider-size');
   var newGameBtn = document.getElementById('btn-new-game');
-  var winnerModal = document.getElementById('winner-modal');
-  var finalMovesEl = document.getElementById('final-moves');
-  var finalTimeEl = document.getElementById('final-time');
-  var playAgainBtn = document.getElementById('btn-play-again');
   var toast = document.getElementById('toast');
 
   function tr(key) {
@@ -32,206 +27,225 @@
     return t ? (t[key] || key) : key;
   }
 
-  function showToast(message) {
+  function showToast(msg) {
     if (!toast) return;
-    toast.textContent = message;
+    toast.textContent = msg;
     toast.classList.add('visible');
-    clearTimeout(showToast._timer);
-    showToast._timer = setTimeout(function() {
-      toast.classList.remove('visible');
-    }, 3000);
+    setTimeout(function() { toast.classList.remove('visible'); }, 2000);
   }
 
-  function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    secondsElapsed = 0;
-    updateTimerDisplay();
-    timerInterval = setInterval(function() {
-      secondsElapsed++;
-      updateTimerDisplay();
-    }, 1000);
-  }
-
-  function stopTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function updateTimerDisplay() {
-    var mins = Math.floor(secondsElapsed / 60);
-    var secs = secondsElapsed % 60;
-    timerDisplay.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  }
-
-  function formatTime(totalSeconds) {
-    var mins = Math.floor(totalSeconds / 60);
-    var secs = totalSeconds % 60;
-    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  }
-
-  function createBoard() {
+  function initBoard() {
     board = [];
-    var num = 1;
-    for (var r = 0; r < gridSize; r++) {
+    var values = [];
+    var total = SIZE * SIZE - 1;
+
+    for (var i = 0; i <= total; i++) values.push(i);
+    values.sort(function() { return Math.random() - 0.5; });
+
+    var idx = 0;
+    for (var r = 0; r < SIZE; r++) {
       board[r] = [];
-      for (var c = 0; c < gridSize; c++) {
-        if (r === gridSize - 1 && c === gridSize - 1) {
-          board[r][c] = null;
-          emptyPos = { row: r, col: c };
-        } else {
-          board[r][c] = num++;
+      for (var c = 0; c < SIZE; c++) {
+        if (idx < values.length) {
+          board[r][c] = values[idx++];
+        }
+      }
+    }
+
+    for (var r = 0; r < SIZE; r++) {
+      for (var c = 0; c < SIZE; c++) {
+        if (board[r][c] === 0) {
+          emptyPos.row = r;
+          emptyPos.col = c;
         }
       }
     }
   }
 
-  function shuffleBoard() {
-    var validMoves = 100 + gridSize * 20;
-    for (var i = 0; i < validMoves; i++) {
-      var possibleMoves = [];
-      if (emptyPos.row > 0) possibleMoves.push({ dr: -1, dc: 0 });
-      if (emptyPos.row < gridSize - 1) possibleMoves.push({ dr: 1, dc: 0 });
-      if (emptyPos.col > 0) possibleMoves.push({ dr: 0, dc: -1 });
-      if (emptyPos.col < gridSize - 1) possibleMoves.push({ dr: 0, dc: 1 });
-
-      var move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-      swapTiles(emptyPos.row + move.dr, emptyPos.col + move.dc);
-    }
-    moves = 0;
-    movesDisplay.textContent = moves;
+  function saveState() {
+    var state = {
+      board: board.map(function(row) { return row.slice(); }),
+      emptyPos: { row: emptyPos.row, col: emptyPos.col },
+      moves: moves,
+      seconds: secondsElapsed,
+      size: SIZE
+    };
+    localStorage.setItem('tablo-slider-state', JSON.stringify(state));
   }
 
-  function swapTiles(row, col) {
-    var temp = board[row][col];
-    board[row][col] = board[emptyPos.row][emptyPos.col];
-    board[emptyPos.row][emptyPos.col] = temp;
-    emptyPos = { row: row, col: col };
-  }
-
-  function canMove(row, col) {
-    var dr = Math.abs(row - emptyPos.row);
-    var dc = Math.abs(col - emptyPos.col);
-    return (dr === 1 && dc === 0) || (dr === 0 && dc === 1);
-  }
-
-  function handleClick(r, c) {
-    if (!gameActive || !canMove(r, c)) return;
-
-    swapTiles(r, c);
-    moves++;
-    movesDisplay.textContent = moves;
-    renderBoard();
-
-    if (checkWin()) {
-      gameWon();
-    }
-  }
-
-  function checkWin() {
-    var num = 1;
-    for (var r = 0; r < gridSize; r++) {
-      for (var c = 0; c < gridSize; c++) {
-        if (r === gridSize - 1 && c === gridSize - 1) {
-          if (board[r][c] !== null) return false;
-        } else {
-          if (board[r][c] !== num++) return false;
+  function loadState() {
+    var saved = localStorage.getItem('tablo-slider-state');
+    if (saved) {
+      try {
+        var state = JSON.parse(saved);
+        if (state.size === SIZE) {
+          board = state.board;
+          emptyPos = state.emptyPos;
+          moves = state.moves;
+          secondsElapsed = state.seconds;
+          return true;
         }
-      }
+      } catch (e) {}
     }
-    return true;
+    return false;
+  }
+
+  function clearSaved() {
+    localStorage.removeItem('tablo-slider-state');
   }
 
   function renderBoard() {
     boardEl.innerHTML = '';
-    var sizeClass = 'grid-' + gridSize;
-    boardEl.className = 'slider-board ' + sizeClass;
+    var cellSize = (boardEl.offsetWidth - (SIZE + 1) * 4) / SIZE;
 
-    for (var r = 0; r < gridSize; r++) {
-      for (var c = 0; c < gridSize; c++) {
-        var tile = document.createElement('div');
-        tile.className = 'tile';
-        if (board[r][c] !== null) {
-          tile.textContent = board[r][c];
-          if (canMove(r, c)) {
-            tile.classList.add('movable');
-            tile.addEventListener('click', function(e) {
-              var rc = e.currentTarget.dataset.row;
-              var cc = e.currentTarget.dataset.col;
-              handleClick(parseInt(rc), parseInt(cc));
-            });
-            tile.dataset.row = r;
-            tile.dataset.col = c;
-          }
-        } else {
-          tile.classList.add('empty');
+    for (var r = 0; r < SIZE; r++) {
+      for (var c = 0; c < SIZE; c++) {
+        var cell = document.createElement('div');
+        cell.className = 'slide-cell';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+
+        if (board[r][c] !== 0) {
+          cell.textContent = board[r][c];
+          cell.addEventListener('click', function(e) {
+            handleCellClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c));
+          });
         }
-        boardEl.appendChild(tile);
+
+        boardEl.appendChild(cell);
       }
     }
+
+    if (movesEl) movesEl.textContent = moves;
   }
 
-  function gameWon() {
-    stopTimer();
-    finalMovesEl.textContent = moves;
-    finalTimeEl.textContent = formatTime(secondsElapsed);
-    winnerModal.classList.add('visible');
+  function handleCellClick(r, c) {
+    if (!gameActive) return;
 
-    var bestKey = 'tablo-slider-best-' + gridSize;
-    var currentBest = localStorage.getItem(bestKey);
-    if (!currentBest || moves < parseInt(currentBest)) {
-      localStorage.setItem(bestKey, moves.toString());
-      updateBestScore();
+    var dr = Math.abs(emptyPos.row - r);
+    var dc = Math.abs(emptyPos.col - c);
+
+    if (dr + dc === 1) {
+      board[emptyPos.row][emptyPos.col] = board[r][c];
+      board[r][c] = 0;
+      emptyPos.row = r;
+      emptyPos.col = c;
+      moves++;
+      saveState();
+      renderBoard();
+      checkWin();
     }
   }
 
-  function updateBestScore() {
-    var bestKey = 'tablo-slider-best-' + gridSize;
-    var currentBest = localStorage.getItem(bestKey);
-    if (currentBest) {
-      bestScoreDisplay.textContent = currentBest;
+  function checkWin() {
+    var total = SIZE * SIZE - 1;
+    var correct = true;
+    var count = 1;
+
+    for (var r = 0; r < SIZE; r++) {
+      for (var c = 0; c < SIZE; c++) {
+        if (r === SIZE - 1 && c === SIZE - 1) {
+          if (board[r][c] !== 0) correct = false;
+        } else {
+          if (board[r][c] !== count) correct = false;
+          count++;
+        }
+      }
+    }
+
+    if (correct) {
+      endGame(true);
     }
   }
 
-  function resetGame() {
-    gridSize = parseInt(gridSizeSelect.value) || 4;
+  function endGame(win) {
+    gameActive = false;
     stopTimer();
-    gameStarted = false;
+
+    if (win) {
+      var bestKey = 'tablo-slider-best-' + SIZE;
+      var best = localStorage.getItem(bestKey);
+      if (!best || moves < parseInt(best)) {
+        localStorage.setItem(bestKey, moves.toString());
+      }
+      if (bestEl) bestEl.textContent = moves;
+      clearSaved();
+    }
+  }
+
+  function startTimer() {
+    stopTimer();
+    updateTimer();
+    timerInterval = setInterval(function() {
+      secondsElapsed++;
+      updateTimer();
+      saveState();
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  function updateTimer() {
+    var mins = Math.floor(secondsElapsed / 60);
+    var secs = secondsElapsed % 60;
+    if (timeEl) timeEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  }
+
+  function newSize(size) {
+    SIZE = parseInt(size) || 4;
+    clearSaved();
+    initBoard();
     moves = 0;
     secondsElapsed = 0;
     gameActive = true;
-
-    movesDisplay.textContent = '0';
-    timerDisplay.textContent = '00:00';
-
-    createBoard();
-    shuffleBoard();
+    stopTimer();
+    startTimer();
     renderBoard();
-    updateBestScore();
+  }
 
-    winnerModal.classList.remove('visible');
+  function newGame() {
+    clearSaved();
+    initBoard();
+    moves = 0;
+    secondsElapsed = 0;
+    gameActive = true;
+    stopTimer();
+    startTimer();
+    renderBoard();
+    showToast(tr('toast_restarted'));
   }
 
   function initGame() {
-    gridSizeSelect.value = '4';
-    resetGame();
+    var savedLoaded = loadState();
+    if (!savedLoaded) {
+      initBoard();
+      moves = 0;
+      secondsElapsed = 0;
+    }
+    gameActive = true;
+    startTimer();
+    renderBoard();
 
-    gridSizeSelect.addEventListener('change', function() {
-      resetGame();
-      showToast(tr('slider_board_changed'));
-    });
+    var bestKey = 'tablo-slider-best-' + SIZE;
+    var best = localStorage.getItem(bestKey);
+    if (bestEl) bestEl.textContent = best || '--';
 
-    if (newGameBtn) {
-      newGameBtn.addEventListener('click', function() {
-        resetGame();
-        showToast(tr('slider_new_game_started'));
+    if (sizeSelect) {
+      sizeSelect.addEventListener('change', function() {
+        newSize(this.value);
       });
     }
 
-    if (playAgainBtn) {
-      playAgainBtn.addEventListener('click', resetGame);
+    if (newGameBtn) {
+      newGameBtn.addEventListener('click', newGame);
     }
+
+    window.addEventListener('beforeunload', function() {
+      if (gameActive) saveState();
+    });
   }
 
   window.initGame = initGame;

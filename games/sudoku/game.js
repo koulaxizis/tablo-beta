@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Sudoku
+// Tablo — Sudoku (Fixed puzzle generation)
 // ============================================
 
 (function() {
@@ -109,14 +109,22 @@
     initialBoard = board.map(function(row) { return row.slice(); });
 
     var cellsToRemove = diff === 'easy' ? 30 : diff === 'medium' ? 45 : 55;
-    while (cellsToRemove > 0) {
+    var removed = 0;
+    var attempts = 0;
+    var maxAttempts = 200;
+
+    while (removed < cellsToRemove && attempts < maxAttempts) {
       var r = Math.floor(Math.random() * BOARD_SIZE);
       var c = Math.floor(Math.random() * BOARD_SIZE);
       if (initialBoard[r][c] !== 0) {
         initialBoard[r][c] = 0;
-        cellsToRemove--;
+        removed++;
       }
+      attempts++;
     }
+
+    // FIX #14: Reset board to match the unsolved puzzle
+    board = initialBoard.map(function(row) { return row.slice(); });
   }
 
   function renderBoard() {
@@ -167,7 +175,7 @@
   }
 
   function placeNumber(num) {
-    if (!selectedCell) return;
+    if (!selectedCell || !gameActive) return;
     var r = selectedCell[0], c = selectedCell[1];
     if (initialBoard[r][c] !== 0) return;
 
@@ -193,6 +201,7 @@
     var r = selectedCell[0], c = selectedCell[1];
     if (initialBoard[r][c] !== 0) return;
     board[r][c] = 0;
+    notes[r][c] = [];
     renderBoard();
   }
 
@@ -212,7 +221,7 @@
   }
 
   function showHint() {
-    if (!selectedCell) return;
+    if (!selectedCell || !gameActive) return;
     var r = selectedCell[0], c = selectedCell[1];
     if (board[r][c] !== 0 || initialBoard[r][c] !== 0) return;
 
@@ -294,7 +303,6 @@
     errorsEl.textContent = errors + '/' + maxErrors;
     diffEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     selectedCell = null;
-    selectedCell = null;
     gameActive = true;
     winnerModal.classList.remove('visible');
     gameOverModal.classList.remove('visible');
@@ -334,6 +342,11 @@
 
   function initGame() {
     document.addEventListener('keydown', handlePhysicalKey);
+
+    window.addEventListener('tablo:languageChanged', function(e) {
+      diffEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    });
+
     renderNumberPad();
     if (diffSelect) {
       diffSelect.addEventListener('change', function() {

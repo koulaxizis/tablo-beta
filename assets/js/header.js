@@ -1,14 +1,12 @@
 // ============================================
-// Tablo — Global Header Component
+// Tablo — Global Header Component (FIXED)
 // ============================================
 
 (function() {
   'use strict';
 
   var SETTINGS_MODAL_OPEN = false;
-  var SETTINGS_TIMEOUT_ID = null;
   var BEFORE_INSTALL_PROMPT = null;
-  var TABLO_LOCALE = null;
 
   function getPathPrefix() {
     if (window.location.pathname.endsWith('/index.html')) {
@@ -22,15 +20,6 @@
     var prefix = pathParts.join('/');
     if (prefix === '') return './';
     return prefix + '/';
-  }
-
-  function getLangFromUrl() {
-    var url = window.location.href;
-    var langs = ['el', 'en', 'es', 'it', 'fr', 'de'];
-    for (var i = 0; i < langs.length; i++) {
-      if (url.indexOf('/' + langs[i] + '/') !== -1) return langs[i];
-    }
-    return 'en';
   }
 
   function getCurrentGame() {
@@ -60,7 +49,6 @@
     var shortSys = sys.split('-')[0];
     var langs = ['en', 'el', 'es', 'it', 'fr', 'de'];
     if (langs.indexOf(shortSys) !== -1) return shortSys;
-    if (sys.toLowerCase().indexOf('el') !== -1) return 'el';
     return 'en';
   }
 
@@ -85,14 +73,6 @@
     var pathPrefix = getPathPrefix();
     var currentLang = getDefaultLang();
     var currentTheme = getDefaultTheme();
-    var gameName = getCurrentGame();
-    var gameTitleMap = {
-      memory: 'memory_match', connect4: 'connect_four', dots: 'dots_and_lines',
-      tictactoe: 'tic_tac_toe', simon: 'simon_says', slider: 'number_slider',
-      lights: 'lights_out', whack: 'whack_a_mole', snake: 'snake',
-      '2048': '2048', wordle: 'wordle', spot: 'spot_the_difference',
-      hex: 'hexagon_puzzle', chess: 'chess', sudoku: 'sudoku'
-    };
 
     var html = '<div class="header"><div class="header-content">' +
       '<div class="header-left">' +
@@ -117,10 +97,8 @@
     html += '<button id="theme-btn" class="header-btn" aria-label="' + tr('aria_theme_toggle') + '" title="' + tr('aria_theme_toggle') + '">' +
       '<i class="fa fa-' + (currentTheme === 'dark' ? 'sun-o' : 'moon-s') + '"></i></button>';
 
-    if (!gameName || gameTitleMap[gameName]) {
-      html += '<button id="settings-btn" class="header-btn" aria-label="' + tr('aria_settings') + '" title="' + tr('tooltip_settings') + '">' +
-        '<i class="fa fa-cog"></i></button>';
-    }
+    html += '<button id="settings-btn" class="header-btn" aria-label="' + tr('aria_settings') + '" title="' + tr('tooltip_settings') + '">' +
+      '<i class="fa fa-cog"></i></button>';
 
     html += '</div></div></div>';
     container.innerHTML = html;
@@ -134,9 +112,10 @@
         localStorage.setItem('tablo-language', this.value);
         if (typeof window.applyTabloTranslations === 'function') {
           window.applyTabloTranslations();
-        }
-        if (typeof updateAllPagesTranslations === 'function') {
-          updateAllPagesTranslations(this.value);
+          // Force reload of any game-specific translations
+          setTimeout(function() {
+            window.dispatchEvent(new CustomEvent('tablo:languageChange'));
+          }, 50);
         }
       });
     }
@@ -161,17 +140,17 @@
   function openSettingsModal() {
     if (SETTINGS_MODAL_OPEN) return;
     SETTINGS_MODAL_OPEN = true;
-    clearTimeout(SETTINGS_TIMEOUT_ID);
 
     var currentLang = getDefaultLang();
     var currentTheme = getDefaultTheme();
+    var currentGame = getCurrentGame();
 
     var modal = document.createElement('div');
     modal.className = 'settings-modal';
     modal.id = 'tablo-settings-modal';
 
     var installSection = '';
-    if ('serviceWorker' in navigator && 'beforeinstallprompt' in window) {
+    if ('serviceWorker' in navigator && BEFORE_INSTALL_PROMPT) {
       installSection = '<div class="settings-section"><div class="settings-section-title">' + tr('install_app') + '</div>' +
         '<button id="btn-install-app" class="game-btn primary">' + tr('btn_install') + '</button></div>';
     }
@@ -277,8 +256,6 @@
       localStorage.setItem('tablo-theme', newTheme);
       this.textContent = isDark ? tr('theme_dark') : tr('theme_light');
     });
-
-    SETTINGS_TIMEOUT_ID = setTimeout(closeSettingsModal, 0);
   }
 
   function closeSettingsModal() {
@@ -286,7 +263,7 @@
     if (modal) {
       modal.classList.remove('visible');
       setTimeout(function() {
-        document.body.removeChild(modal);
+        if (document.body.contains(modal)) document.body.removeChild(modal);
         SETTINGS_MODAL_OPEN = false;
       }, 300);
     }
@@ -372,32 +349,13 @@
     URL.revokeObjectURL(url);
   }
 
-  function getCurrentGame() {
-    var path = window.location.pathname;
-    if (path.indexOf('/memory-match/') !== -1) return 'memory';
-    if (path.indexOf('/connect4/') !== -1) return 'connect4';
-    if (path.indexOf('/dots-and-lines/') !== -1) return 'dots';
-    if (path.indexOf('/tic-tac-toe/') !== -1) return 'tictactoe';
-    if (path.indexOf('/simon-says/') !== -1) return 'simon';
-    if (path.indexOf('/number-slider/') !== -1) return 'slider';
-    if (path.indexOf('/lights-out/') !== -1) return 'lights';
-    if (path.indexOf('/whack-a-mole/') !== -1) return 'whack';
-    if (path.indexOf('/snake/') !== -1) return 'snake';
-    if (path.indexOf('/2048/') !== -1) return '2048';
-    if (path.indexOf('/wordle/') !== -1) return 'wordle';
-    if (path.indexOf('/spot-the-difference/') !== -1) return 'spot';
-    if (path.indexOf('/hexagon-puzzle/') !== -1) return 'hex';
-    if (path.indexOf('/chess/') !== -1) return 'chess';
-    if (path.indexOf('/sudoku/') !== -1) return 'sudoku';
-    return null;
-  }
-
   function init() {
     renderHeader();
 
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       BEFORE_INSTALL_PROMPT = e;
+      console.log('Install prompt ready');
     });
 
     window.addEventListener('appinstalled', function() {

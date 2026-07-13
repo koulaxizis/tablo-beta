@@ -596,3 +596,26 @@ body.landing-page { overflow-y: auto; }
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+/* ============================================
+   FIX #2: Footer overlap prevention
+   ============================================ */
+body {
+  padding-bottom: 160px;
+  box-sizing: border-box;
+}
+
+.game-wrapper {
+  padding-bottom: 60px;
+}
+
+/* ============================================
+   FIX #5: Hide Back to Games everywhere
+   ============================================ */
+.back-home {
+  display: none !important;
+}
+
+.mobile-hide {
+  display: none !important;
+}

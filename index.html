@@ -10,13 +10,22 @@
   <link rel="stylesheet" href="./assets/css/icons.css">
   <meta name="theme-color" content="#0f1923">
   <meta name="description" content="Relax with classic board games. All work offline.">
+  <style>
+    /* Fix #2: Footer overlap issue - add bottom padding to body */
+    body.landing-page {
+      padding-bottom: 180px;
+    }
+  </style>
 </head>
 <body class="landing-page">
 
   <div id="tablo-header"></div>
 
   <section class="hero">
-    <img src="./assets/images/favicon.svg" alt="Tablo" class="hero-logo" />
+    <svg xmlns="http://www.w3.org/2000/svg" class="hero-logo" viewBox="0 0 40 40" width="60" height="60">
+      <rect x="5" y="5" width="30" height="30" rx="8" fill="none" stroke="#2dd4bf" stroke-width="3"/>
+      <rect x="12" y="12" width="16" height="16" rx="4" fill="#2dd4bf"/>
+    </svg>
     <h1 data-i18n="site_title">Tablo</h1>
     <p data-i18n="site_tagline">Mini board games for quiet moments</p>
   </section>
@@ -32,7 +41,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-lightbulb-o"></i></div>
+        <div class="game-icon">&#10033;</div>
         <h3 class="game-name" data-i18n="game_memory_name">Memory Match</h3>
         <p class="game-desc" data-i18n="game_memory_desc">Find matching cards</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -42,7 +51,7 @@
         <div class="game-card-badges">
           <span class="players-badge pvp-ai" data-i18n="badge_players_2p_ai">2P · AI</span>
         </div>
-        <div class="game-icon"><i class="fa fa-bars"></i></div>
+        <div class="game-icon">&#128469;</div>
         <h3 class="game-name" data-i18n="game_connect4_name">Connect 4</h3>
         <p class="game-desc" data-i18n="game_connect4_desc">Four in a row</p>
         <p class="game-players-info" data-i18n="badge_players_info_pvp_ai">PvP or PvAI</p>
@@ -52,7 +61,7 @@
         <div class="game-card-badges">
           <span class="players-badge pvp" data-i18n="badge_players_2p">2P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-dot-circle-o"></i></div>
+        <div class="game-icon">&#10038;</div>
         <h3 class="game-name" data-i18n="game_dots_name">Dots & Lines</h3>
         <p class="game-desc" data-i18n="game_dots_desc">Draw and connect</p>
         <p class="game-players-info" data-i18n="badge_players_info_pvp">PvP</p>
@@ -62,7 +71,7 @@
         <div class="game-card-badges">
           <span class="players-badge pvp-ai" data-i18n="badge_players_2p_ai">2P · AI</span>
         </div>
-        <div class="game-icon"><i class="fa fa-th-large"></i></div>
+        <div class="game-icon">&#9990;</div>
         <h3 class="game-name" data-i18n="game_tictactoe_name">Tic-Tac-Toe</h3>
         <p class="game-desc" data-i18n="game_tictactoe_desc">Three in a row</p>
         <p class="game-players-info" data-i18n="badge_players_info_pvp_ai">PvP or PvAI</p>
@@ -72,7 +81,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-volume-up"></i></div>
+        <div class="game-icon">&#127916;</div>
         <h3 class="game-name" data-i18n="game_simon_name">Simon Says</h3>
         <p class="game-desc" data-i18n="game_simon_desc">Memory challenge</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -82,7 +91,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-th"></i></div>
+        <div class="game-icon">&#8597;</div>
         <h3 class="game-name" data-i18n="game_slider_name">Number Slider</h3>
         <p class="game-desc" data-i18n="game_slider_desc">Slide to solve</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -92,7 +101,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-lightbulb-o"></i></div>
+        <div class="game-icon">&#9670;</div>
         <h3 class="game-name" data-i18n="game_lights_name">Lights Out</h3>
         <p class="game-desc" data-i18n="game_lights_desc">Turn off all lights</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -102,7 +111,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-mouse-pointer"></i></div>
+        <div class="game-icon">&#128054;</div>
         <h3 class="game-name" data-i18n="game_whack_name">Whack-a-Mole</h3>
         <p class="game-desc" data-i18n="game_whack_desc">Reflex challenge</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -112,7 +121,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-arrows-h"></i></div>
+        <div class="game-icon">&#128042;</div>
         <h3 class="game-name" data-i18n="game_snake_name">Snake</h3>
         <p class="game-desc" data-i18n="game_snake_desc">Classic arcade</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -122,7 +131,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-hashtag"></i></div>
+        <div class="game-icon">#</div>
         <h3 class="game-name" data-i18n="game_2048_name">2048</h3>
         <p class="game-desc" data-i18n="game_2048_desc">Combine numbers</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -132,7 +141,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-font"></i></div>
+        <div class="game-icon">A</div>
         <h3 class="game-name" data-i18n="game_wordle_name">Wordle</h3>
         <p class="game-desc" data-i18n="game_wordle_desc">Guess the word</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -142,7 +151,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-search"></i></div>
+        <div class="game-icon">&#128269;</div>
         <h3 class="game-name" data-i18n="game_spot_name">Spot the Difference</h3>
         <p class="game-desc" data-i18n="game_spot_desc">Find 7 differences</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -152,7 +161,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-square-o"></i></div>
+        <div class="game-icon">&#9672;</div>
         <h3 class="game-name" data-i18n="game_hex_name">Hexagon Puzzle</h3>
         <p class="game-desc" data-i18n="game_hex_desc">Flood the board</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>
@@ -162,7 +171,7 @@
         <div class="game-card-badges">
           <span class="players-badge pvp-ai" data-i18n="badge_players_2p_ai">2P · AI</span>
         </div>
-        <div class="game-icon"><i class="fa fa-chess"></i></div>
+        <div class="game-icon">&#9818;</div>
         <h3 class="game-name" data-i18n="game_chess_name">Chess</h3>
         <p class="game-desc" data-i18n="game_chess_desc">Classic strategy</p>
         <p class="game-players-info" data-i18n="badge_players_info_pvp_ai">PvP or PvAI</p>
@@ -172,7 +181,7 @@
         <div class="game-card-badges">
           <span class="players-badge solo" data-i18n="badge_players_1p">1P</span>
         </div>
-        <div class="game-icon"><i class="fa fa-table"></i></div>
+        <div class="game-icon">&#128196;</div>
         <h3 class="game-name" data-i18n="game_sudoku_name">Sudoku</h3>
         <p class="game-desc" data-i18n="game_sudoku_desc">Number puzzle</p>
         <p class="game-players-info" data-i18n="badge_players_info_solo">Solo</p>

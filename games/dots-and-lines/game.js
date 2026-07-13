@@ -1,38 +1,27 @@
 // ============================================
-// Tablo — Dots & Lines Game
+// Tablo — Dots & Lines (Complete Fix)
 // ============================================
 
 (function() {
   'use strict';
 
-  var DOT_SIZE = 8;
-  var LINE_THICKNESS = 4;
-  var PADDING = 40;
-  var BOX_HEIGHT = 50;
-  var BOX_WIDTH = 50;
-
-  var gridSize = 5;
-  var board = {};
-  var currentPlayer = 1;
+  var GRID_SIZE = 5;
+  var BOARD_SIZE = GRID_SIZE + 1;
+  var dots = [];
+  var lines = [];
+  var boxes = [];
+  var currentPlayer = 0;
   var scores = [0, 0];
-  var totalBoxes = 0;
   var gameActive = false;
-  var lastBoxClosed = false;
+  var aiThinking = false;
 
-  var svg = document.getElementById('game-svg');
-  var currentPlayerEl = document.getElementById('current-player');
-  var scoreP1El = document.getElementById('score-p1');
-  var scoreP2El = document.getElementById('score-p2');
-  var boxesTotalEl = document.getElementById('boxes-total');
-  var gridSizeSelect = document.getElementById('grid-size');
-  var resetBtn = document.getElementById('btn-reset');
+  var dotsEl = document.getElementById('dots-grid');
+  var turnEl = document.getElementById('turn-display');
+  var p1ScoreEl = document.getElementById('p1-score');
+  var p2ScoreEl = document.getElementById('p2-score');
+  var sizeSelect = document.getElementById('game-size');
+  var resetBtn = document.getElementById('reset-btn');
   var winnerModal = document.getElementById('winner-modal');
-  var winnerTitle = document.getElementById('winner-title');
-  var winnerMessage = document.getElementById('winner-message');
-  var winnerIcon = document.getElementById('winner-icon');
-  var finalScoreP1El = document.getElementById('final-score-p1');
-  var finalScoreP2El = document.getElementById('final-score-p2');
-  var playAgainBtn = document.getElementById('btn-play-again');
   var toast = document.getElementById('toast');
 
   function tr(key) {
@@ -41,396 +30,279 @@
     return t ? (t[key] || key) : key;
   }
 
-  function showToast(message) {
+  function showToast(msg) {
     if (!toast) return;
-    toast.textContent = message;
+    toast.textContent = msg;
     toast.classList.add('visible');
-    clearTimeout(showToast._timer);
-    showToast._timer = setTimeout(function() {
-      toast.classList.remove('visible');
-    }, 3000);
+    setTimeout(function() { toast.classList.remove('visible'); }, 2000);
   }
 
-  function calculateSVGSize(n) {
-    return PADDING * 2 + n * BOX_WIDTH;
-  }
+  function initBoard() {
+    dots = [];
+    lines = [];
+    boxes = [];
+    scores = [0, 0];
 
-  function getDotX(col) {
-    return PADDING + col * BOX_WIDTH;
-  }
-
-  function getDotY(row) {
-    return PADDING + row * BOX_HEIGHT;
-  }
-
-  function createBoard() {
-    var n = gridSize;
-    var svgSize = calculateSVGSize(n);
-    
-    // Clear and resize SVG
-    svg.setAttribute('viewBox', '0 0 ' + svgSize + ' ' + svgSize);
-    svg.innerHTML = '';
-
-    board = { horizontal: [], vertical: [], boxes: [] };
-    totalBoxes = n * n;
-
-    // Initialize arrays
-    for (var r = 0; r <= n; r++) {
-      board.horizontal[r] = [];
-      for (var c = 0; c < n; c++) {
-        board.horizontal[r][c] = null;
+    for (var r = 0; r < BOARD_SIZE; r++) {
+      dots[r] = [];
+      for (var c = 0; c < BOARD_SIZE; c++) {
+        dots[r][c] = { x: 0, y: 0 };
       }
     }
 
-    for (var c = 0; c <= n; c++) {
-      board.vertical[c] = [];
-      for (var r = 0; r < n; r++) {
-        board.vertical[c][r] = null;
+    for (var br = 0; br < GRID_SIZE; br++) {
+      boxes[br] = [];
+      for (var bc = 0; bc < GRID_SIZE; bc++) {
+        boxes[br][bc] = { top: null, right: null, bottom: null, left: null, owner: null };
       }
     }
 
-    for (var r = 0; r < n; r++) {
-      board.boxes[r] = [];
-      for (var c = 0; c < n; c++) {
-        board.boxes[r][c] = null;
+    currentPlayer = 0;
+    gameActive = true;
+  }
+
+  function calculatePositions() {
+    if (!dotsEl) return;
+    var width = dotsEl.offsetWidth;
+    var height = dotsEl.offsetHeight;
+    var dotSpacing = (Math.min(width, height) - 40) / GRID_SIZE;
+    var startX = (width - dotSpacing * GRID_SIZE) / 2;
+    var startY = (height - dotSpacing * GRID_SIZE) / 2;
+
+    for (var r = 0; r < BOARD_SIZE; r++) {
+      for (var c = 0; c < BOARD_SIZE; c++) {
+        dots[r][c].x = startX + c * dotSpacing;
+        dots[r][c].y = startY + r * dotSpacing;
+      }
+    }
+  }
+
+  function renderBoard() {
+    if (!dotsEl) return;
+    dotsEl.innerHTML = '';
+    calculatePositions();
+
+    var dotRadius = Math.max(10, Math.min(12, dotsEl.offsetWidth / (BOARD_SIZE * 3)));
+
+    for (var r = 0; r < BOARD_SIZE; r++) {
+      for (var c = 0; c < BOARD_SIZE; c++) {
+        var dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.dataset.r = r;
+        dot.dataset.c = c;
+        dot.style.width = dotRadius * 2 + 'px';
+        dot.style.height = dotRadius * 2 + 'px';
+        dot.style.left = (dots[r][c].x - dotRadius) + 'px';
+        dot.style.top = (dots[r][c].y - dotRadius) + 'px';
+
+        dot.addEventListener('click', function(e) {
+          handleDotClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c));
+        });
+
+        dotsEl.appendChild(dot);
       }
     }
 
-    renderBoard();
-    attachClickHandlers();
+    for (var r = 0; r < BOARD_SIZE; r++) {
+      for (var c = 0; c < GRID_SIZE; c++) {
+        var lineId = 'h-' + r + '-' + c;
+        var hLine = document.createElement('div');
+        hLine.className = 'line horizontal';
+        hLine.id = lineId;
+        hLine.dataset.r = r;
+        hLine.dataset.c = c;
+        hLine.style.left = dots[r][c].x + 'px';
+        hLine.style.top = (dots[r][c].y + 1) + 'px';
+        hLine.style.width = (dots[r][c+1].x - dots[r][c].x) + 'px';
+        hLine.style.height = '2px';
+
+        hLine.addEventListener('click', function(e) {
+          handleLineClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c), 'horizontal');
+          e.stopPropagation();
+        });
+
+        dotsEl.appendChild(hLine);
+      }
+    }
+
+    for (var r = 0; r < GRID_SIZE; r++) {
+      for (var c = 0; c < BOARD_SIZE; c++) {
+        var lineId = 'v-' + r + '-' + c;
+        var vLine = document.createElement('div');
+        vLine.className = 'line vertical';
+        vLine.id = lineId;
+        vLine.dataset.r = r;
+        vLine.dataset.c = c;
+        vLine.style.left = (dots[r+1][c].x + 1) + 'px';
+        vLine.style.top = dots[r][c].y + 'px';
+        vLine.style.height = (dots[r+1][c].y - dots[r][c].y) + 'px';
+        vLine.style.width = '2px';
+
+        vLine.addEventListener('click', function(e) {
+          handleLineClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c), 'vertical');
+          e.stopPropagation();
+        });
+
+        dotsEl.appendChild(vLine);
+      }
+    }
+
     updateUI();
   }
 
-  function attachClickHandlers() {
-    var n = gridSize;
-    var allSize = calculateSVGSize(n);
-    var clickableArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    clickableArea.setAttribute('id', 'click-area');
-    clickableArea.setAttribute('x', 0);
-    clickableArea.setAttribute('y', 0);
-    clickableArea.setAttribute('width', allSize);
-    clickableArea.setAttribute('height', allSize);
-    clickableArea.setAttribute('fill', 'transparent');
-    clickableArea.style.pointerEvents = 'all';
-    svg.insertBefore(clickableArea, svg.firstChild);
-    
-    clickableArea.addEventListener('click', function(e) {
-      var pt = svg.createSVGPoint();
-      pt.x = e.clientX;
-      pt.y = e.clientY;
-      var ctm = svg.getScreenCTM().inverse();
-      var svgPt = pt.matrixTransform(ctm);
-      
-      findNearestLine(svgPt.x, svgPt.y);
-    });
-  }
+  function handleDotClick(r, c) {}
 
-  function findNearestLine(x, y) {
-    var n = gridSize;
-    var clickedLine = null;
-    var minDistance = 10;
+  function handleLineClick(r, c, orientation) {
+    if (!gameActive || aiThinking) return;
 
-    // Check horizontal lines
-    for (var r = 0; r <= n; r++) {
-      for (var c = 0; c < n; c++) {
-        var lineY = getDotY(r);
-        var lineXStart = getDotX(c) + DOT_SIZE;
-        var lineXEnd = getDotX(c + 1) - DOT_SIZE;
+    var lineId = orientation === 'horizontal' ? 'h-' + r + '-' + c : 'v-' + r + '-' + c;
+    var lineElement = document.getElementById(lineId);
+    if (!lineElement || lineElement.classList.contains('drawn')) return;
 
-        if (y >= lineY - LINE_THICKNESS && y <= lineY + LINE_THICKNESS) {
-          if (x >= lineXStart - LINE_THICKNESS && x <= lineXEnd + LINE_THICKNESS) {
-            var dist = Math.abs(y - lineY);
-            if (dist < minDistance) {
-              minDistance = dist;
-              clickedLine = { type: 'h', row: r, col: c };
-            }
-          }
-        }
+    lines.push({ r: r, c: c, orientation: orientation, player: currentPlayer });
+    lineElement.classList.add('drawn');
+    lineElement.classList.add(currentPlayer === 0 ? 'player1' : 'player2');
+
+    var completedBox = checkCompletedBox(r, c, orientation);
+    if (completedBox !== null) {
+      scores[currentPlayer]++;
+      boxes[completedBox[0]][completedBox[1]].owner = currentPlayer;
+      var boxElement = document.getElementById('box-' + completedBox[0] + '-' + completedBox[1]);
+      if (boxElement) {
+        boxElement.classList.add(currentPlayer === 0 ? 'box-p1' : 'box-p2');
+        boxElement.textContent = currentPlayer === 0 ? 'P1' : 'P2';
       }
-    }
-
-    // Check vertical lines
-    for (var c = 0; c <= n; c++) {
-      for (var r = 0; r < n; r++) {
-        var lineX = getDotX(c);
-        var lineYStart = getDotY(r) + DOT_SIZE;
-        var lineYEnd = getDotY(r + 1) - DOT_SIZE;
-
-        if (x >= lineX - LINE_THICKNESS && x <= lineX + LINE_THICKNESS) {
-          if (y >= lineYStart - LINE_THICKNESS && y <= lineYEnd + LINE_THICKNESS) {
-            var dist = Math.abs(x - lineX);
-            if (dist < minDistance) {
-              minDistance = dist;
-              clickedLine = { type: 'v', row: r, col: c };
-            }
-          }
-        }
-      }
-    }
-
-    if (clickedLine) {
-      handleLineClick(clickedLine);
-    }
-  }
-
-  function handleLineClick(lineInfo) {
-    if (!gameActive) return;
-
-    var type = lineInfo.type;
-    var row = lineInfo.row;
-    var col = lineInfo.col;
-
-    if (type === 'h') {
-      if (board.horizontal[row][col]) return;
-      board.horizontal[row][col] = currentPlayer;
-      markLineClaimed('h', row, col);
-      checkAndAwardBox(row, col, true);
+      updateUI();
+      checkWin();
     } else {
-      if (board.vertical[col][row]) return;
-      board.vertical[col][row] = currentPlayer;
-      markLineClaimed('v', col, row);
-      checkAndAwardBox(row, col, false);
-    }
-
-    if (!lastBoxClosed && !isGameOver()) {
-      switchPlayer();
-    }
-    lastBoxClosed = false;
-    updateUI();
-  }
-
-  function markLineClaimed(type, rowOrCol1, rowOrCol2) {
-    var rect = type === 'h' 
-      ? getHLineRect(rowOrCol1, rowOrCol2)
-      : getVLineRect(rowOrCol1, rowOrCol2);
-
-    rect.style.fill = currentPlayer === 1 ? 'var(--color-p1)' : 'var(--color-p2)';
-    rect.style.pointerEvents = 'none';
-    rect.style.cursor = 'default';
-  }
-
-  function getHLineRect(row, col) {
-    var n = gridSize;
-    var g = document.getElementById('h-group-' + row + '-' + col);
-    if (!g) {
-      g = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      g.id = 'h-group-' + row + '-' + col;
-      var x = getDotX(col) + DOT_SIZE;
-      var y = getDotY(row) - LINE_THICKNESS / 2;
-      g.setAttribute('x', x);
-      g.setAttribute('y', y);
-      g.setAttribute('width', BOX_WIDTH - DOT_SIZE * 2);
-      g.setAttribute('height', LINE_THICKNESS);
-      g.setAttribute('fill', 'var(--text-muted)');
-      g.setAttribute('rx', LINE_THICKNESS / 2);
-      svg.insertBefore(g, svg.getElementById('click-area'));
-    }
-    return g;
-  }
-
-  function getVLineRect(col, row) {
-    var n = gridSize;
-    var g = document.getElementById('v-group-' + col + '-' + row);
-    if (!g) {
-      g = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      g.id = 'v-group-' + col + '-' + row;
-      var x = getDotX(col) - LINE_THICKNESS / 2;
-      var y = getDotY(row) + DOT_SIZE;
-      g.setAttribute('x', x);
-      g.setAttribute('y', y);
-      g.setAttribute('width', LINE_THICKNESS);
-      g.setAttribute('height', BOX_HEIGHT - DOT_SIZE * 2);
-      g.setAttribute('fill', 'var(--text-muted)');
-      g.setAttribute('ry', LINE_THICKNESS / 2);
-      svg.insertBefore(g, svg.getElementById('click-area'));
-    }
-    return g;
-  }
-
-  function checkAndAwardBox(row, col, isHorizontal) {
-    var n = gridSize;
-    var awarded = false;
-
-    if (isHorizontal) {
-      // Box above
-      if (row > 0 && row <= n) {
-        var boxRow = row - 1;
-        var boxCol = col;
-        if (canCompleteBox(boxRow, boxCol)) {
-          awardBox(boxRow, boxCol);
-          awarded = true;
-        }
-      }
-      // Box below
-      if (row < n) {
-        var boxRow = row;
-        var boxCol = col;
-        if (canCompleteBox(boxRow, boxCol)) {
-          awardBox(boxRow, boxCol);
-          awarded = true;
-        }
-      }
-    } else {
-      // Box left
-      if (col > 0 && col <= n) {
-        var boxRow = row;
-        var boxCol = col - 1;
-        if (canCompleteBox(boxRow, boxCol)) {
-          awardBox(boxRow, boxCol);
-          awarded = true;
-        }
-      }
-      // Box right
-      if (col < n) {
-        var boxRow = row;
-        var boxCol = col;
-        if (canCompleteBox(boxRow, boxCol)) {
-          awardBox(boxRow, boxCol);
-          awarded = true;
-        }
+      currentPlayer = currentPlayer === 0 ? 1 : 0;
+      updateUI();
+      checkWin();
+      if (gameActive && currentPlayer === 1 && sizeSelect && sizeSelect.value === 'ai') {
+        aiMove();
       }
     }
-
-    if (awarded) {
-      lastBoxClosed = true;
-    }
   }
 
-  function canCompleteBox(br, bc) {
-    if (board.boxes[br][bc]) return false;
-    if (!board.horizontal[br][bc]) return false;
-    if (!board.horizontal[br + 1][bc]) return false;
-    if (!board.vertical[bc][br]) return false;
-    if (!board.vertical[bc + 1][br]) return false;
-    return true;
-  }
+  function checkCompletedBox(r, c, orientation) {
+    var boxR = orientation === 'horizontal' ? r : r;
+    var boxC = orientation === 'horizontal' ? c : c;
 
-  function awardBox(br, bc) {
-    board.boxes[br][bc] = currentPlayer;
-    scores[currentPlayer - 1]++;
+    if (boxR < 0 || boxR >= GRID_SIZE || boxC < 0 || boxC >= GRID_SIZE) return null;
 
-    var text = document.getElementById('box-txt-' + br + '-' + bc);
-    if (!text) {
-      text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.id = 'box-txt-' + br + '-' + bc;
-      text.setAttribute('x', getDotX(bc) + BOX_WIDTH / 2);
-      text.setAttribute('y', getDotY(br) + BOX_HEIGHT / 2 + 4);
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('font-size', '16');
-      text.setAttribute('font-weight', 'bold');
-      text.setAttribute('font-family', 'Nunito');
-      text.style.opacity = '0';
-      svg.appendChild(text);
+    var box = boxes[boxR][boxC];
+    if (box.owner !== null) return null;
+
+    var topIdx = 'h-' + boxR + '-' + boxC;
+    var rightIdx = 'v-' + boxR + '-' + (boxC + 1);
+    var bottomIdx = 'h-' + (boxR + 1) + '-' + boxC;
+    var leftIdx = 'v-' + boxR + '-' + boxC;
+
+    if (document.getElementById(topIdx).classList.contains('drawn') &&
+        document.getElementById(rightIdx).classList.contains('drawn') &&
+        document.getElementById(bottomIdx).classList.contains('drawn') &&
+        document.getElementById(leftIdx).classList.contains('drawn')) {
+      return [boxR, boxC];
     }
-
-    text.textContent = currentPlayer === 1 ? '⚫' : '◼';
-    text.style.fill = currentPlayer === 1 ? 'var(--color-p1)' : 'var(--color-p2)';
-    text.style.opacity = '1';
-
-    if (isGameOver()) {
-      endGame();
-    }
-  }
-
-  function switchPlayer() {
-    currentPlayer = currentPlayer === 1 ? 2 : 1;
-    updateUI();
-  }
-
-  function isGameOver() {
-    var n = gridSize;
-    for (var r = 0; r < n; r++) {
-      for (var c = 0; c < n; c++) {
-        if (!board.boxes[r][c]) return false;
-      }
-    }
-    return true;
+    return null;
   }
 
   function updateUI() {
-    currentPlayerEl.textContent = currentPlayer;
-    scoreP1El.textContent = scores[0];
-    scoreP2El.textContent = scores[1];
-
-    var filled = 0;
-    var n = gridSize;
-    for (var r = 0; r < n; r++) {
-      for (var c = 0; c < n; c++) {
-        if (board.boxes[r][c]) filled++;
-      }
-    }
-    boxesTotalEl.textContent = filled + '/' + totalBoxes;
-
-    var p2TurnMsg = currentPlayer === 2 ? ' - ' + tr('dots_your_turn') : '';
-    currentPlayerEl.parentElement.querySelector('.stat-label').textContent =
-      tr('dots_player') + p2TurnMsg;
+    if (!turnEl) return;
+    turnEl.textContent = tr('dots_player') + ' ' + (currentPlayer + 1);
+    if (p1ScoreEl) p1ScoreEl.textContent = scores[0];
+    if (p2ScoreEl) p2ScoreEl.textContent = scores[1];
   }
 
-  function endGame() {
-    gameActive = false;
+  function checkWin() {
+    var totalBoxes = GRID_SIZE * GRID_SIZE;
+    var drawnLines = lines.length;
+    var maxLines = 2 * GRID_SIZE * (GRID_SIZE + 1);
 
-    if (scores[0] > scores[1]) {
-      winnerIcon.textContent = '🔵';
-      winnerTitle.textContent = tr('dots_player1') + ' ' + tr('dots_wins');
-      winnerMessage.textContent = tr('dots_player1') + ' ' + tr('dots_won_game');
-      winnerTitle.style.color = 'var(--color-p1)';
-    } else if (scores[1] > scores[0]) {
-      winnerIcon.textContent = '🟡';
-      var p2Name = tr('dots_player2');
-      winnerTitle.textContent = p2Name + ' ' + tr('dots_wins');
-      winnerMessage.textContent = p2Name + ' ' + tr('dots_won_game');
-      winnerTitle.style.color = 'var(--color-p2)';
-    } else {
-      winnerIcon.textContent = '🤝';
-      winnerTitle.textContent = tr('dots_draw');
-      winnerMessage.textContent = tr('ties_all');
-      winnerTitle.style.color = 'var(--text-secondary)';
+    if (drawnLines === maxLines || scores[0] + scores[1] === totalBoxes) {
+      gameActive = false;
+      var modalTitle = document.getElementById('modal-title');
+      var messageEl = document.getElementById('modal-message');
+
+      if (scores[0] > scores[1]) {
+        modalTitle.textContent = tr('dots_player1') + ' ' + tr('dots_won_game');
+        messageEl.textContent = tr('dots_wins');
+      } else if (scores[1] > scores[0]) {
+        modalTitle.textContent = tr('dots_player2') + ' ' + tr('dots_won_game');
+        messageEl.textContent = tr('dots_wins');
+      } else {
+        modalTitle.textContent = tr('ties_all');
+      }
+      winnerModal.classList.add('visible');
     }
+  }
 
-    finalScoreP1El.textContent = scores[0];
-    finalScoreP2El.textContent = scores[1];
-    winnerModal.classList.add('visible');
+  function aiMove() {
+    aiThinking = true;
+    updateUI();
+
+    setTimeout(function() {
+      var availableLines = [];
+      for (var r = 0; r < BOARD_SIZE; r++) {
+        for (var c = 0; c < GRID_SIZE; c++) {
+          var hId = 'h-' + r + '-' + c;
+          var hLine = document.getElementById(hId);
+          if (hLine && !hLine.classList.contains('drawn')) {
+            availableLines.push({ type: 'horizontal', r: r, c: c });
+          }
+        }
+      }
+      for (var r = 0; r < GRID_SIZE; r++) {
+        for (var c = 0; c < BOARD_SIZE; c++) {
+          var vId = 'v-' + r + '-' + c;
+          var vLine = document.getElementById(vId);
+          if (vLine && !vLine.classList.contains('drawn')) {
+            availableLines.push({ type: 'vertical', r: r, c: c });
+          }
+        }
+      }
+
+      if (availableLines.length > 0) {
+        var chosen = availableLines[Math.floor(Math.random() * availableLines.length)];
+        handleLineClick(chosen.r, chosen.c, chosen.type);
+      }
+      aiThinking = false;
+    }, 500);
+  }
+
+  function resizeBoard() {
+    var size = parseInt(sizeSelect.value) || 5;
+    GRID_SIZE = size;
+    BOARD_SIZE = GRID_SIZE + 1;
+    initBoard();
+    renderBoard();
+    showToast(tr('dots_grid_resized'));
   }
 
   function resetGame() {
-    gridSize = parseInt(gridSizeSelect.value) || 5;
-    scores = [0, 0];
-    currentPlayer = 1;
-    gameActive = true;
-    lastBoxClosed = false;
-    board = {};
-    createBoard();
+    gridSize = parseInt(sizeSelect.value) || 5;
+    initBoard();
+    renderBoard();
     winnerModal.classList.remove('visible');
+    showToast(tr('toast_restarted'));
   }
 
   function initGame() {
-    gridSizeSelect.value = '5';
-    gridSize = 5;
-    resetGame();
+    initBoard();
+    renderBoard();
 
-    gridSizeSelect.addEventListener('change', function() {
-      resetGame();
-      showToast(tr('dots_grid_resized'));
-    });
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetGame);
+    }
+
+    if (sizeSelect) {
+      sizeSelect.addEventListener('change', resizeBoard);
+    }
 
     window.addEventListener('resize', function() {
-      createBoard();
-    });
-  }
-
-  if (resetBtn) {
-    resetBtn.addEventListener('click', function() {
-      resetGame();
-      showToast(tr('toast_restarted'));
-    });
-  }
-
-  if (playAgainBtn) {
-    playAgainBtn.addEventListener('click', function() {
-      resetGame();
+      calculatePositions();
     });
   }
 
   window.initGame = initGame;
-
 })();

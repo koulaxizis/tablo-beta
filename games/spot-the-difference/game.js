@@ -1,26 +1,35 @@
 // ============================================
-// Tablo — Spot the Difference
+// Tablo — Spot the Difference (Fixed cursor + markers)
 // ============================================
 
 (function() {
   'use strict';
 
-  var NUM_DIFFS = 7;
-  var found = 0;
-  var secondsElapsed = 0;
-  var timerInterval = null;
-  var gameActive = false;
-  var sceneData = [];
+  var differences = [
+    { x: 120, y: 80, found: false },
+    { x: 250, y: 150, found: false },
+    { x: 80, y: 220, found: false },
+    { x: 310, y: 60, found: false },
+    { x: 180, y: 280, found: false },
+    { x: 340, y: 200, found: false },
+    { x: 50, y: 140, found: false }
+  ];
 
-  var svgLeft = document.getElementById('scene-left');
-  var svgRight = document.getElementById('scene-right');
-  var foundEl = document.getElementById('found');
-  var timerEl = document.getElementById('timer');
-  var bestEl = document.getElementById('best-time');
-  var newGameBtn = document.getElementById('btn-new-game');
+  var HIT_RADIUS = 25;
+  var foundCount = 0;
+  var startTime = null;
+  var timerInterval = null;
+  var elapsedSeconds = 0;
+  var gameActive = false;
+
+  var canvasB = document.getElementById('canvas-b');
+  var ctxB = canvasB ? canvasB.getContext('2d') : null;
+  var foundEl = document.getElementById('spot-found');
+  var timeEl = document.getElementById('spot-time');
+  var bestEl = document.getElementById('spot-best');
+  var winnerModal = document.getElementById('spot-winner');
+  var winnerStats = document.getElementById('spot-winner-stats');
   var nextBtn = document.getElementById('btn-next');
-  var winnerModal = document.getElementById('winner-modal');
-  var winnerStats = document.getElementById('winner-stats');
   var toast = document.getElementById('toast');
 
   function tr(key) {
@@ -33,209 +42,212 @@
     if (!toast) return;
     toast.textContent = msg;
     toast.classList.add('visible');
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    setTimeout(function() { toast.classList.remove('visible'); }, 2000);
   }
 
-  function rand(min, max) { return Math.random() * (max - min) + min; }
-  function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
-  function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function drawScene(ctx, isImageB) {
+    if (!ctx) return;
+    var w = ctx.canvas.width;
+    var h = ctx.canvas.height;
 
-  var COLORS = ['#2dd4bf','#5eead4','#f59e0b','#f87171','#a78bfa','#60a5fa','#4ade80','#ffd93d','#fb923c','#e879f9'];
-  var SHAPES = ['circle','rect','triangle','star'];
+    ctx.clearRect(0, 0, w, h);
 
-  function generateScene() {
-    var shapes = [];
-    var count = 15;
-    for (var i = 0; i < count; i++) {
-      shapes.push({
-        type: pick(SHAPES),
-        cx: rand(40, 360),
-        cy: rand(40, 260),
-        size: rand(15, 35),
-        color: pick(COLORS),
-        rotation: rand(0, 360)
-      });
+    // Background gradient
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#1a2a3a');
+    grad.addColorStop(1, '#0f1923');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Sun/Moon
+    ctx.beginPath();
+    ctx.arc(w * 0.75, h * 0.2, 35, 0, Math.PI * 2);
+    ctx.fillStyle = isImageB ? '#f59e0b' : '#fbbf24';
+    ctx.fill();
+
+    // Mountains
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.7);
+    ctx.lineTo(w * 0.2, h * 0.4);
+    ctx.lineTo(w * 0.35, h * 0.65);
+    ctx.lineTo(w * 0.5, h * 0.35);
+    ctx.lineTo(w * 0.7, h * 0.6);
+    ctx.lineTo(w * 0.85, h * 0.45);
+    ctx.lineTo(w, h * 0.7);
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    ctx.fillStyle = '#2d4a3e';
+    ctx.fill();
+
+    // Trees
+    for (var i = 0; i < 4; i++) {
+      var tx = 30 + i * 90;
+      var ty = h * 0.72;
+      ctx.fillStyle = '#3a2a1a';
+      ctx.fillRect(tx - 4, ty, 8, 25);
+      ctx.beginPath();
+      ctx.arc(tx, ty - 5, 18, 0, Math.PI * 2);
+      ctx.fillStyle = isImageB && i === 1 ? '#5a8a5a' : '#4a7a4a';
+      ctx.fill();
     }
-    return shapes;
-  }
 
-  function pickDifferences(shapes, count) {
-    var indices = [];
-    for (var i = 0; i < shapes.length; i++) indices.push(i);
-    // Shuffle
-    for (var j = indices.length - 1; j > 0; j--) {
-      var k = Math.floor(Math.random() * (j + 1));
-      var tmp = indices[j]; indices[j] = indices[k]; indices[k] = tmp;
+    // House
+    ctx.fillStyle = '#8a6a4a';
+    ctx.fillRect(w * 0.3, h * 0.55, 70, 50);
+    ctx.beginPath();
+    ctx.moveTo(w * 0.3 - 5, h * 0.55);
+    ctx.lineTo(w * 0.3 + 35, h * 0.4);
+    ctx.lineTo(w * 0.3 + 75, h * 0.55);
+    ctx.closePath();
+    ctx.fillStyle = '#6a4a3a';
+    ctx.fill();
+    ctx.fillStyle = isImageB ? '#5dd4bf' : '#2dd4bf';
+    ctx.fillRect(w * 0.3 + 25, h * 0.65, 20, 20);
+
+    // Clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.arc(80, 50, 20, 0, Math.PI * 2);
+    ctx.arc(110, 45, 25, 0, Math.PI * 2);
+    ctx.arc(140, 50, 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Stars
+    for (var s = 0; s < 8; s++) {
+      var sx = (s * 53 + 20) % w;
+      var sy = (s * 31 + 15) % (h * 0.3);
+      ctx.fillStyle = isImageB && s === 3 ? '#ff6b6b' : '#ffffff';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+      ctx.fill();
     }
-    var diffIndices = indices.slice(0, count);
-    return diffIndices.map(function(idx) {
-      return { idx: idx, type: pick(['move','color','size','remove']) };
-    });
-  }
 
-  function applyDifferences(shapes, diffs) {
-    var modified = shapes.map(function(s) { return Object.assign({}, s); });
-    diffs.forEach(function(d) {
-      var s = modified[d.idx];
-      if (d.type === 'move') {
-        s.cx += rand(-30, 30);
-        s.cy += rand(-30, 30);
-        s.cx = Math.max(20, Math.min(380, s.cx));
-        s.cy = Math.max(20, Math.min(280, s.cy));
-      } else if (d.type === 'color') {
-        s.color = pick(COLORS.filter(function(c) { return c !== s.color; }));
-      } else if (d.type === 'size') {
-        s.size *= rand(0.6, 1.6);
-        s.size = Math.max(10, Math.min(50, s.size));
-      } else if (d.type === 'remove') {
-        s.removed = true;
-      }
-    });
-    return modified;
-  }
-
-  function shapeToSvg(s) {
-    if (s.removed) return '';
-    var r = s.size;
-    if (s.type === 'circle') {
-      return '<circle cx="' + s.cx + '" cy="' + s.cy + '" r="' + r + '" fill="' + s.color + '" />';
-    } else if (s.type === 'rect') {
-      return '<rect x="' + (s.cx - r) + '" y="' + (s.cy - r) + '" width="' + (r * 2) + '" height="' + (r * 2) + '" rx="4" fill="' + s.color + '" transform="rotate(' + s.rotation + ' ' + s.cx + ' ' + s.cy + ')" />';
-    } else if (s.type === 'triangle') {
-      var halfH = r * 0.866;
-      return '<polygon points="' + s.cx + ',' + (s.cy - halfH) + ' ' + (s.cx - r) + ',' + (s.cy + halfH) + ' ' + (s.cx + r) + ',' + (s.cy + halfH) + '" fill="' + s.color + '" transform="rotate(' + s.rotation + ' ' + s.cx + ' ' + s.cy + ')" />';
-    } else if (s.type === 'star') {
-      var pts = '';
-      for (var i = 0; i < 10; i++) {
-        var angle = (Math.PI / 5) * i - Math.PI / 2;
-        var radius = i % 2 === 0 ? r : r * 0.4;
-        pts += (s.cx + Math.cos(angle) * radius) + ',' + (s.cy + Math.sin(angle) * radius) + ' ';
-      }
-      return '<polygon points="' + pts.trim() + '" fill="' + s.color + '" transform="rotate(' + s.rotation + ' ' + s.cx + ' ' + s.cy + ')" />';
-    }
-    return '';
-  }
-
-  function renderScene(svg, shapes, diffs, isRight) {
-    var bg = '<rect width="400" height="300" fill="#0f1923" rx="12" />';
-    var content = shapes.map(function(s) { return shapeToSvg(s); }).join('');
-    var markers = '';
-    if (isRight && diffs) {
-      diffs.forEach(function(d, i) {
-        if (!d.found) {
-          markers += '<circle cx="' + shapes[d.idx].cx + '" cy="' + shapes[d.idx].cy + '" r="25" fill="transparent" stroke="transparent" class="diff-zone" data-diff="' + i + '" style="cursor:pointer;" />';
-        } else {
-          markers += '<circle cx="' + shapes[d.idx].cx + '" cy="' + shapes[d.idx].cy + '" r="18" fill="none" stroke="#4ade80" stroke-width="3" stroke-dasharray="4" class="diff-found" />';
+    // Draw found markers on image B
+    if (isImageB) {
+      for (var d = 0; d < differences.length; d++) {
+        if (differences[d].found) {
+          ctx.beginPath();
+          ctx.arc(differences[d].x, differences[d].y, HIT_RADIUS, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ff3333';
+          ctx.lineWidth = 3;
+          ctx.stroke();
         }
-      });
-    }
-    svg.innerHTML = bg + content + markers;
-
-    if (isRight) {
-      var zones = svg.querySelectorAll('.diff-zone');
-      zones.forEach(function(zone) {
-        zone.addEventListener('click', function(e) {
-          var diffIdx = parseInt(zone.dataset.diff);
-          handleDiffClick(diffIdx);
-        });
-      });
+      }
     }
   }
 
-  function handleDiffClick(diffIdx) {
+  function handleClick(e) {
     if (!gameActive) return;
-    if (sceneData.diffs[diffIdx].found) return;
+    var rect = canvasB.getBoundingClientRect();
+    var scaleX = canvasB.width / rect.width;
+    var scaleY = canvasB.height / rect.height;
+    var x = (e.clientX - rect.left) * scaleX;
+    var y = (e.clientY - rect.top) * scaleY;
 
-    sceneData.diffs[diffIdx].found = true;
-    found++;
-    foundEl.textContent = found + '/' + NUM_DIFFS;
-    renderScene(svgRight, sceneData.rightShapes, sceneData.diffs, true);
+    for (var i = 0; i < differences.length; i++) {
+      if (differences[i].found) continue;
+      var dx = x - differences[i].x;
+      var dy = y - differences[i].y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= HIT_RADIUS) {
+        differences[i].found = true;
+        foundCount++;
+        if (foundEl) foundEl.textContent = foundCount + '/' + differences.length;
+        drawScene(ctxB, true);
 
-    if (found >= NUM_DIFFS) {
-      gameWon();
+        if (foundCount === differences.length) {
+          endGame();
+        }
+        return;
+      }
     }
+  }
+
+  function handleMouseMove(e) {
+    if (!gameActive) return;
+    var rect = canvasB.getBoundingClientRect();
+    var scaleX = canvasB.width / rect.width;
+    var scaleY = canvasB.height / rect.height;
+    var x = (e.clientX - rect.left) * scaleX;
+    var y = (e.clientY - rect.top) * scaleY;
+
+    var hovering = false;
+    for (var i = 0; i < differences.length; i++) {
+      if (differences[i].found) continue;
+      var dx = x - differences[i].x;
+      var dy = y - differences[i].y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= HIT_RADIUS) {
+        hovering = true;
+        break;
+      }
+    }
+    canvasB.style.cursor = hovering ? 'crosshair' : 'crosshair';
   }
 
   function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    secondsElapsed = 0;
-    updateTimer();
+    startTime = Date.now();
     timerInterval = setInterval(function() {
-      secondsElapsed++;
-      updateTimer();
+      elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      var mins = Math.floor(elapsedSeconds / 60);
+      var secs = elapsedSeconds % 60;
+      if (timeEl) timeEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
     }, 1000);
   }
 
-  function stopTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function updateTimer() {
-    var mins = Math.floor(secondsElapsed / 60);
-    var secs = secondsElapsed % 60;
-    timerEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  }
-
-  function formatTime(s) {
-    var mins = Math.floor(s / 60);
-    var secs = s % 60;
-    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  }
-
-  function gameWon() {
-    stopTimer();
+  function endGame() {
     gameActive = false;
+    clearInterval(timerInterval);
 
     var best = localStorage.getItem('tablo-spot-best');
-    if (!best || secondsElapsed < parseInt(best)) {
-      localStorage.setItem('tablo-spot-best', secondsElapsed.toString());
-      updateBest();
+    if (!best || elapsedSeconds < parseInt(best)) {
+      localStorage.setItem('tablo-spot-best', elapsedSeconds.toString());
+      if (bestEl) bestEl.textContent = timeEl.textContent;
     }
 
-    winnerStats.textContent = tr('spot_time') + ': ' + formatTime(secondsElapsed);
-    winnerModal.classList.add('visible');
-  }
-
-  function updateBest() {
-    var best = localStorage.getItem('tablo-spot-best');
-    if (best) bestEl.textContent = formatTime(parseInt(best));
+    if (winnerStats) winnerStats.textContent = tr('spot_time') + ': ' + timeEl.textContent;
+    if (winnerModal) winnerModal.classList.add('visible');
   }
 
   function newGame() {
-    found = 0;
-    foundEl.textContent = '0/' + NUM_DIFFS;
-    winnerModal.classList.remove('visible');
+    for (var i = 0; i < differences.length; i++) {
+      differences[i].found = false;
+    }
+    foundCount = 0;
+    elapsedSeconds = 0;
+    if (foundEl) foundEl.textContent = '0/' + differences.length;
+    if (timeEl) timeEl.textContent = '00:00';
+    if (winnerModal) winnerModal.classList.remove('visible');
+
+    var canvasA = document.getElementById('canvas-a');
+    if (canvasA) {
+      drawScene(canvasA.getContext('2d'), false);
+    }
+    if (ctxB) {
+      drawScene(ctxB, true);
+    }
+
     gameActive = true;
-
-    var shapes = generateScene();
-    var diffs = pickDifferences(shapes, NUM_DIFFS);
-    diffs.forEach(function(d) { d.found = false; });
-
-    var rightShapes = applyDifferences(shapes, diffs);
-
-    sceneData = { leftShapes: shapes, rightShapes: rightShapes, diffs: diffs };
-
-    renderScene(svgLeft, shapes, null, false);
-    renderScene(svgRight, rightShapes, diffs, true);
-
     startTimer();
   }
 
   function initGame() {
-    updateBest();
-    if (newGameBtn) {
-      newGameBtn.addEventListener('click', function() {
-        newGame();
-        showToast(tr('toast_restarted'));
-      });
+    if (canvasB) {
+      canvasB.addEventListener('click', handleClick);
+      canvasB.addEventListener('mousemove', handleMouseMove);
     }
     if (nextBtn) {
       nextBtn.addEventListener('click', newGame);
     }
+
+    var best = localStorage.getItem('tablo-spot-best');
+    if (bestEl && best) {
+      var mins = Math.floor(parseInt(best) / 60);
+      var secs = parseInt(best) % 60;
+      bestEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    }
+
     newGame();
   }
 
