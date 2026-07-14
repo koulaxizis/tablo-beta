@@ -115,12 +115,13 @@ body {
 }
 
 /* ===== FOOTER ===== */
-.tablo-footer {
+.sticky-footer {
   background: var(--bg-primary);
   border-top: 1px solid var(--border-color);
   padding: 16px 24px;
   position: relative;
   z-index: 1;
+  margin-top: auto;
 }
 
 .footer-content {
@@ -141,23 +142,19 @@ body {
   gap: 12px;
 }
 
-/* FIX #2: Corrected order values for proper left-center-right layout */
 .footer-left {
-  order: 1 !important;
+  order: 1;
 }
 
 .footer-center {
-  order: 2 !important;
+  order: 2;
 }
 
 .footer-right {
-  order: 3 !important;
-}
-
-.badge-container {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+  order: 3;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 .privacy-badge {
@@ -171,20 +168,56 @@ body {
   color: var(--text-secondary);
 }
 
+.footer-motto {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 0;
+}
+
 .version-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
+.version-number {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.channel-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.channel-badge.beta {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.last-updated {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
 .powered-by {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
 .powered-by a {
   color: var(--accent-primary);
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .powered-by a:hover {

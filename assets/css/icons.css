@@ -204,3 +204,10 @@
 .fa-asterisk:before { content: '\f069'; }
 .fa-chess-rook:before { content: '\f43a'; }
 .fa-list-ol:before { content: '\f0cb'; }
+/* Missing icons — ADD TO END OF icons.css */
+.fa-circle:before { content: '\f111'; }
+.fa-circle-thin:before { content: '\f1db'; }
+.fa-sort-numeric-asc:before { content: '\f162'; }
+.fa-chess-rook:before { content: '\f447'; }
+.fa-sun-o:before { content: '\f185'; }
+.fa-moon-o:before { content: '\f186'; }
