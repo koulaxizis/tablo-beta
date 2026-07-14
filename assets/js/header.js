@@ -11,17 +11,9 @@
   // Translation cache
   window.TABLO_TRANSLATIONS = window.TABLO_TRANSLATIONS || {};
 
-  function getPathPrefix() {
-    if (window.TABLO_CONFIG && window.TABLO_CONFIG.baseHref) {
-      return window.TABLO_CONFIG.baseHref;
-    }
-    var path = window.location.pathname;
-    if (path.endsWith('/index.html') || path.endsWith('/')) return './';
-    var parts = path.split('/');
-    parts.pop();
-    parts.pop();
-    var prefix = parts.join('/');
-    return prefix === '' ? './' : prefix + '/';
+  function getAssetBase() {
+    // Always use relative ./assets/ from current location
+    return './assets/';
   }
 
   function getCurrentGame() {
@@ -70,13 +62,14 @@
     return key;
   }
 
-    function loadTranslations(lang, callback) {
+  function loadTranslations(lang, callback) {
     if (window.TABLO_TRANSLATIONS[lang]) {
       if (callback) callback();
       return;
     }
-    var pathPrefix = getPathPrefix();
-    var url = pathPrefix + 'assets/js/translations/' + lang + '.json';
+    var base = getAssetBase();
+    var url = base + 'js/translations/' + lang + '.json';
+    console.log('Loading translations from:', url);
     fetch(url)
       .then(function(response) {
         if (!response.ok) throw new Error('HTTP error ' + response.status);
@@ -84,6 +77,7 @@
       })
       .then(function(data) {
         window.TABLO_TRANSLATIONS[lang] = data;
+        console.log('Loaded translations for:', lang);
         if (callback) callback();
       })
       .catch(function(error) {
@@ -103,13 +97,12 @@
     var container = document.getElementById('tablo-header');
     if (!container) return;
 
-    var pathPrefix = getPathPrefix();
     var currentLang = getDefaultLang();
     var currentTheme = getDefaultTheme();
 
     var html = '<div class="header"><div class="header-content">' +
       '<div class="header-left">' +
-      '<a href="' + pathPrefix + '" class="logo-link">' +
+      '<a href="./" class="logo-link">' +
       '<svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
       '<rect x="5" y="5" width="30" height="30" rx="8" fill="none" stroke="#2dd4bf" stroke-width="3"/>' +
       '<rect x="12" y="12" width="16" height="16" rx="4" fill="#2dd4bf"/>' +
