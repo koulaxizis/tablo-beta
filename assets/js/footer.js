@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Global Footer Component (FIXED)
+// Tablo — Global Footer Component
 // ============================================
 
 (function() {
@@ -35,31 +35,24 @@
     var container = document.getElementById('tablo-footer');
     if (!container) return;
 
-    var currentLang = getDefaultLang();
     var date = getLastUpdatedDate();
     var version = window.TABLO_CONFIG ? window.TABLO_CONFIG.version : '0.3.0';
     var channel = window.TABLO_CONFIG ? window.TABLO_CONFIG.channel : 'beta';
 
     var html = '<footer class="sticky-footer"><div class="footer-content">' +
-      // LEFT: Privacy Badge (Fork Awesome icon + text)
       '<div class="footer-left">' +
-      '<i class="fa fa-shield" aria-hidden="true"></i>' +
       '<span class="privacy-badge" data-i18n="footer_privacy_badge">Open Source · No Tracking · No Ads · Privacy First</span>' +
       '</div>' +
-      // CENTER: Motto
       '<div class="footer-center">' +
       '<p class="footer-motto" data-i18n="footer_motto">Play freely, enjoy life.</p>' +
       '</div>' +
-      // RIGHT: Version + Channel + Powered By + Date
       '<div class="footer-right">' +
       '<div class="version-info">' +
       '<span class="version-number">v' + version + '</span>' +
       '<span class="channel-badge ' + channel + '">' + channel.toUpperCase() + '</span>' +
       '</div>' +
       '<div class="powered-by">' +
-      '<a href="https://koulaxizis.gr" target="_blank" rel="noopener noreferrer">' +
-      'Christos Koulaxizis' +
-      '</a>' +
+      '<a href="https://koulaxizis.gr" target="_blank" rel="noopener noreferrer">Christos Koulaxizis</a>' +
       '</div>' +
       '<span class="last-updated">' + date + '</span>' +
       '</div>' +
@@ -67,22 +60,17 @@
 
     container.innerHTML = html;
 
-    // Apply translations after render
     setTimeout(function() {
       document.querySelectorAll('.footer-content [data-i18n]').forEach(function(el) {
         var key = el.getAttribute('data-i18n');
-        if (tr(key)) {
-          el.textContent = tr(key);
-        }
+        if (tr(key)) el.textContent = tr(key);
       });
     }, 0);
   }
 
   function init() {
     renderFooter();
-
-    // Watch for language changes
-    window.addEventListener('tablo:languageChanged', function(e) {
+    window.addEventListener('tablo:languageChanged', function() {
       renderFooter();
     });
   }

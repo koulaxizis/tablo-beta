@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Global Header Component (FIXED)
+// Tablo — Global Header Component
 // ============================================
 
 (function() {
@@ -9,35 +9,16 @@
   var BEFORE_INSTALL_PROMPT = null;
 
   function getPathPrefix() {
-    // FIX #1: Use TABLO_CONFIG.baseHref for GitHub Pages deployment
     if (window.TABLO_CONFIG && window.TABLO_CONFIG.baseHref) {
-      // If we're on index.html or root path, return baseHref directly
-      var currentPath = window.location.pathname;
-      var isIndex = currentPath.endsWith('/index.html') || 
-                    currentPath === '/tablo-beta/' ||
-                    currentPath === '/tablo-beta/index.html' ||
-                    currentPath.endsWith('/index.html');
-      
-      if (isIndex) {
-        return window.TABLO_CONFIG.baseHref;
-      }
-      
-      // For game pages, return baseHref + 'index.html'
-      return window.TABLO_CONFIG.baseHref + 'index.html';
+      return window.TABLO_CONFIG.baseHref;
     }
-    
-    // Fallback to old relative path logic
-    if (window.location.pathname.endsWith('/index.html')) {
-      return './';
-    } else if (window.location.pathname.endsWith('/')) {
-      return './';
-    }
-    var pathParts = window.location.pathname.split('/');
-    pathParts.pop();
-    pathParts.pop();
-    var prefix = pathParts.join('/');
-    if (prefix === '') return './';
-    return prefix + '/';
+    var path = window.location.pathname;
+    if (path.endsWith('/index.html') || path.endsWith('/')) return './';
+    var parts = path.split('/');
+    parts.pop();
+    parts.pop();
+    var prefix = parts.join('/');
+    return prefix === '' ? './' : prefix + '/';
   }
 
   function getCurrentGame() {
@@ -84,6 +65,13 @@
     return t[key] || key;
   }
 
+  function themeIconSvg(theme) {
+    if (theme === 'dark') {
+      return '<svg class="header-icon-svg" viewBox="0 0 24 24"><use href="#icon-sun"/></svg>';
+    }
+    return '<svg class="header-icon-svg" viewBox="0 0 24 24"><use href="#icon-moon"/></svg>';
+  }
+
   function renderHeader() {
     var container = document.getElementById('tablo-header');
     if (!container) return;
@@ -95,7 +83,7 @@
     var html = '<div class="header"><div class="header-content">' +
       '<div class="header-left">' +
       '<a href="' + pathPrefix + '" class="logo-link">' +
-      '<svg xmlns="http://www.w3.org/2000/svg" class="logo-icon" viewBox="0 0 40 40">' +
+      '<svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
       '<rect x="5" y="5" width="30" height="30" rx="8" fill="none" stroke="#2dd4bf" stroke-width="3"/>' +
       '<rect x="12" y="12" width="16" height="16" rx="4" fill="#2dd4bf"/>' +
       '</svg>' +
@@ -110,17 +98,14 @@
       '<option value="it" ' + (currentLang === 'it' ? 'selected' : '') + '>IT</option>' +
       '<option value="fr" ' + (currentLang === 'fr' ? 'selected' : '') + '>FR</option>' +
       '<option value="de" ' + (currentLang === 'de' ? 'selected' : '') + '>DE</option>' +
-      '</select>';
+      '</select>' +
+      '<button id="theme-btn" class="header-btn" aria-label="' + tr('aria_theme_toggle') + '" title="' + tr('aria_theme_toggle') + '">' +
+      themeIconSvg(currentTheme) + '</button>' +
+      '<button id="settings-btn" class="header-btn" aria-label="' + tr('aria_settings') + '" title="' + tr('tooltip_settings') + '">' +
+      '<svg class="header-icon-svg" viewBox="0 0 24 24"><use href="#icon-settings"/></svg></button>' +
+      '</div></div></div>';
 
-    html += '<button id="theme-btn" class="header-btn" aria-label="' + tr('aria_theme_toggle') + '" title="' + tr('aria_theme_toggle') + '">' +
-      '<i class="fa fa-' + (currentTheme === 'dark' ? 'sun-o' : 'moon-o') + '"></i></button>';
-
-    html += '<button id="settings-btn" class="header-btn" aria-label="' + tr('aria_settings') + '" title="' + tr('tooltip_settings') + '">' +
-      '<i class="fa fa-cog"></i></button>';
-
-    html += '</div></div></div>';
     container.innerHTML = html;
-
     document.documentElement.setAttribute('data-theme', currentTheme);
 
     var langSelect = document.getElementById('lang-select');
@@ -130,9 +115,8 @@
         localStorage.setItem('tablo-language', this.value);
         if (typeof window.applyTabloTranslations === 'function') {
           window.applyTabloTranslations();
-          // Force reload of any game-specific translations
           setTimeout(function() {
-            window.dispatchEvent(new CustomEvent('tablo:languageChange'));
+            window.dispatchEvent(new CustomEvent('tablo:languageChanged'));
           }, 50);
         }
       });
@@ -145,7 +129,7 @@
         var newTheme = isDark ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('tablo-theme', newTheme);
-        themeBtn.innerHTML = '<i class="fa fa-' + (newTheme === 'dark' ? 'sun-o' : 'moon-o') + '"></i>';
+        themeBtn.innerHTML = themeIconSvg(newTheme);
       });
     }
 
@@ -163,16 +147,6 @@
     var currentTheme = getDefaultTheme();
     var currentGame = getCurrentGame();
 
-    var modal = document.createElement('div');
-    modal.className = 'settings-modal';
-    modal.id = 'tablo-settings-modal';
-
-    var installSection = '';
-    if ('serviceWorker' in navigator && BEFORE_INSTALL_PROMPT) {
-      installSection = '<div class="settings-section"><div class="settings-section-title">' + tr('install_app') + '</div>' +
-        '<button id="btn-install-app" class="game-btn primary">' + tr('btn_install') + '</button></div>';
-    }
-
     var rulesKey = currentGame === 'memory' ? 'rules_memory' :
       currentGame === 'connect4' ? 'rules_connect4' :
       currentGame === 'dots' ? 'rules_dots' :
@@ -189,12 +163,22 @@
       currentGame === 'chess' ? 'rules_chess' :
       currentGame === 'sudoku' ? 'rules_sudoku' : 'rules_home';
 
+    var installSection = '';
+    if ('serviceWorker' in navigator && BEFORE_INSTALL_PROMPT) {
+      installSection = '<div class="settings-section"><div class="settings-section-title">' + tr('install_app') + '</div>' +
+        '<button id="btn-install-app" class="game-btn primary">' + tr('btn_install') + '</button></div>';
+    }
+
     var inviteSection = '';
     if (currentGame === 'connect4' || currentGame === 'dots' || currentGame === 'tictactoe' || currentGame === 'chess') {
       inviteSection = '<div class="settings-section"><div class="settings-section-title">' + tr('invite_friend') + '</div>' +
         '<p class="settings-rules-text">' + tr('invite_desc') + '</p>' +
         '<button id="btn-invite" class="game-btn primary">' + tr('btn_copy_link') + '</button></div>';
     }
+
+    var modal = document.createElement('div');
+    modal.className = 'settings-modal';
+    modal.id = 'tablo-settings-modal';
 
     modal.innerHTML = '<div class="settings-modal-overlay"></div>' +
       '<div class="settings-modal-content">' +
@@ -226,36 +210,42 @@
     modal.querySelector('.settings-modal-overlay').addEventListener('click', closeSettingsModal);
     modal.querySelector('#close-settings').addEventListener('click', closeSettingsModal);
 
-    modal.querySelector('#btn-install-app')?.addEventListener('click', function() {
-      if (BEFORE_INSTALL_PROMPT) {
-        BEFORE_INSTALL_PROMPT.prompt();
-        BEFORE_INSTALL_PROMPT.userChoice.then(function(result) {
-          if (result.outcome === 'accepted') {
-            showToast(tr('install_prompt'));
-          }
-          BEFORE_INSTALL_PROMPT = null;
-        });
-      }
-    });
+    var installBtn = modal.querySelector('#btn-install-app');
+    if (installBtn) {
+      installBtn.addEventListener('click', function() {
+        if (BEFORE_INSTALL_PROMPT) {
+          BEFORE_INSTALL_PROMPT.prompt();
+          BEFORE_INSTALL_PROMPT.userChoice.then(function(result) {
+            if (result.outcome === 'accepted') {
+              showToast(tr('install_prompt'));
+            }
+            BEFORE_INSTALL_PROMPT = null;
+          });
+        }
+      });
+    }
 
-    modal.querySelector('#btn-invite')?.addEventListener('click', function() {
-      var url = window.location.href;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(function() {
+    var inviteBtn = modal.querySelector('#btn-invite');
+    if (inviteBtn) {
+      inviteBtn.addEventListener('click', function() {
+        var url = window.location.href;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            showToast(tr('invite_link_copied'));
+          }).catch(function() {
+            showToast(tr('invite_copy_failed'));
+          });
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
           showToast(tr('invite_link_copied'));
-        }).catch(function() {
-          showToast(tr('invite_copy_failed'));
-        });
-      } else {
-        var ta = document.createElement('textarea');
-        ta.value = url;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast(tr('invite_link_copied'));
-      }
-    });
+        }
+      });
+    }
 
     modal.querySelectorAll('.share-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -263,17 +253,21 @@
       });
     });
 
-    modal.querySelector('#btn-export-stats')?.addEventListener('click', function() {
-      exportStats();
-    });
+    var exportBtn = modal.querySelector('#btn-export-stats');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', exportStats);
+    }
 
-    modal.querySelector('#toggle-theme')?.addEventListener('click', function() {
-      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      var newTheme = isDark ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('tablo-theme', newTheme);
-      this.textContent = isDark ? tr('theme_dark') : tr('theme_light');
-    });
+    var toggleThemeBtn = modal.querySelector('#toggle-theme');
+    if (toggleThemeBtn) {
+      toggleThemeBtn.addEventListener('click', function() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var newTheme = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('tablo-theme', newTheme);
+        this.textContent = isDark ? tr('theme_dark') : tr('theme_light');
+      });
+    }
   }
 
   function closeSettingsModal() {
@@ -290,12 +284,10 @@
   function showToast(msg) {
     var existing = document.querySelector('.settings-toast');
     if (existing) document.body.removeChild(existing);
-
     var toast = document.createElement('div');
     toast.className = 'settings-toast';
     toast.textContent = msg;
     document.body.appendChild(toast);
-
     setTimeout(function() { toast.classList.add('visible'); }, 10);
     setTimeout(function() {
       toast.classList.remove('visible');
@@ -309,77 +301,60 @@
     var game = getCurrentGame();
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
-
-    if (game === 'memory') return t && t.share_text_memory || 'My best score on Memory Match:';
-    if (game === 'connect4') return t && t.share_text_connect4 || 'My Connect 4 score:';
-    if (game === 'dots') return t && t.share_text_dots || 'Playing Dots & Lines on Tablo!';
-    if (game === 'tictactoe') return t && t.share_text_tictactoe || 'Playing Tic-Tac-Toe on Tablo!';
-    if (game === 'simon') return t && t.share_text_simon || 'My best score on Simon Says:';
-    if (game === 'slider') return t && t.share_text_slider || 'My best score on Number Slider:';
-    if (game === 'lights') return t && t.share_text_lights || 'My best score on Lights Out:';
-    if (game === 'whack') return t && t.share_text_whack || 'My Whack-a-Mole score:';
-    if (game === 'snake') return t && t.share_text_snake || 'My Snake score:';
-    if (game === '2048') return t && t.share_text_2048 || 'My 2048 score:';
-    if (game === 'wordle') return t && t.share_text_wordle || 'My Wordle streak:';
-    if (game === 'spot') return t && t.share_text_spot || 'My Spot the Difference time:';
-    if (game === 'hex') return t && t.share_text_hex || 'My Hexagon Puzzle moves:';
-    if (game === 'chess') return t && t.share_text_chess || 'Playing Chess on Tablo!';
-    if (game === 'sudoku') return t && t.share_text_sudoku || 'My Sudoku time:';
-    return t && t.share_text_home || 'Playing mini board games on Tablo!';
+    var keys = {
+      memory: 'share_text_memory', connect4: 'share_text_connect4',
+      dots: 'share_text_dots', tictactoe: 'share_text_tictactoe',
+      simon: 'share_text_simon', slider: 'share_text_slider',
+      lights: 'share_text_lights', whack: 'share_text_whack',
+      snake: 'share_text_snake', '2048': 'share_text_2048',
+      wordle: 'share_text_wordle', spot: 'share_text_spot',
+      hex: 'share_text_hex', chess: 'share_text_chess',
+      sudoku: 'share_text_sudoku'
+    };
+    var key = keys[game] || 'share_text_home';
+    return (t && t[key]) || 'Playing mini board games on Tablo!';
   }
 
   function shareScore(platform) {
     var text = getShareText();
     var url = window.location.href;
-
     if (platform === 'native' && navigator.share) {
       navigator.share({ title: 'Tablo Game', text: text, url: url }).catch(function() {});
     } else if (platform === 'bluesky') {
-      var blueskyUrl = 'https://bsky.app/intent/compose?text=' + encodeURIComponent(text + ' ' + url);
-      window.open(blueskyUrl, '_blank');
+      window.open('https://bsky.app/intent/compose?text=' + encodeURIComponent(text + ' ' + url), '_blank');
     } else if (platform === 'mastodon') {
-      var mastodonUrl = 'https://mastodon.social/share?text=' + encodeURIComponent(text + ' ' + url);
-      window.open(mastodonUrl, '_blank');
+      window.open('https://mastodon.social/share?text=' + encodeURIComponent(text + ' ' + url), '_blank');
     } else if (platform === 'email') {
-      var mailtoUrl = 'mailto:?subject=Tablo Game&body=' + encodeURIComponent(text + '\n\n' + url);
-      window.location.href = mailtoUrl;
+      window.location.href = 'mailto:?subject=Tablo Game&body=' + encodeURIComponent(text + '\n\n' + url);
     }
   }
 
   function exportStats() {
     var stats = {};
     var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku'];
-
     games.forEach(function(game) {
-      var bestKey = 'tablo-' + game + '-best';
-      var statValue = localStorage.getItem(bestKey) || null;
-      if (statValue) stats[game] = statValue;
+      var val = localStorage.getItem('tablo-' + game + '-best') || localStorage.getItem('tablo-' + game + '-wins');
+      if (val) stats[game] = val;
     });
-
     stats.exportDate = new Date().toISOString().split('T')[0];
-
     var blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
+    var dlUrl = URL.createObjectURL(blob);
     var link = document.createElement('a');
-    link.href = url;
+    link.href = dlUrl;
     link.download = 'tablo-stats-' + stats.exportDate + '.json';
     link.click();
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(dlUrl);
   }
 
   function init() {
     renderHeader();
-
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       BEFORE_INSTALL_PROMPT = e;
-      console.log('Install prompt ready');
     });
-
     window.addEventListener('appinstalled', function() {
       showToast(tr('install_prompt'));
     });
-
     if (typeof window.applyTabloTranslations === 'function') {
       window.applyTabloTranslations();
     }
