@@ -50,11 +50,16 @@
       '<div class="footer-center">' +
       '<p class="footer-motto" data-i18n="footer_motto">Play freely, enjoy life.</p>' +
       '</div>' +
-      // RIGHT: Version + Channel + Date
+      // RIGHT: Version + Channel + Powered By + Date
       '<div class="footer-right">' +
       '<div class="version-info">' +
       '<span class="version-number">v' + version + '</span>' +
-      '<span class="channel-badge ' + channel + '">· ' + channel.toUpperCase() + '</span>' +
+      '<span class="channel-badge ' + channel + '">' + channel.toUpperCase() + '</span>' +
+      '</div>' +
+      '<div class="powered-by">' +
+      '<a href="https://koulaxizis.gr" target="_blank" rel="noopener noreferrer">' +
+      'Christos Koulaxizis' +
+      '</a>' +
       '</div>' +
       '<span class="last-updated">' + date + '</span>' +
       '</div>' +
