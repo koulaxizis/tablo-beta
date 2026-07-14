@@ -240,7 +240,8 @@
     "sudoku_error": "Error!",
     "sudoku_notes_on": "Notes ON",
     "sudoku_notes_off": "Notes OFF",
-    "sudoku_difficulty_changed": "Difficulty changed"
+    "sudoku_difficulty_changed": "Difficulty changed",
+	"footer_made_by_prefix": "Made with 🤍 by"
   },
   "el": {
     "site_title": "Tablo",
@@ -483,7 +484,8 @@
     "sudoku_error": "Λάθος!",
     "sudoku_notes_on": "Σημειώσεις ΕΝΕΡΓΕΙΑΣ",
     "sudoku_notes_off": "Σημειώσεις ΑΝΕΝΕΡΓΕΙΑΣ",
-    "sudoku_difficulty_changed": "Η δυσκολία άλλαξε"
+    "sudoku_difficulty_changed": "Η δυσκολία άλλαξε",
+	"footer_made_by_prefix": "Φτιαγμένο με 🤍 από"
   },
   "es": {
     "site_title": "Tablo",
@@ -726,7 +728,8 @@
     "sudoku_error": "¡Error!",
     "sudoku_notes_on": "Notas ACTIVADAS",
     "sudoku_notes_off": "Notas DESACTIVADAS",
-    "sudoku_difficulty_changed": "Dificultad cambiada"
+    "sudoku_difficulty_changed": "Dificultad cambiada",
+	"footer_made_by_prefix": "Hecho con 🤍 por"
   },
   "it": {
     "site_title": "Tablo",
@@ -969,7 +972,8 @@
     "sudoku_error": "Errore!",
     "sudoku_notes_on": "Note ATTIVE",
     "sudoku_notes_off": "Note INATTIVE",
-    "sudoku_difficulty_changed": "Difficoltà cambiata"
+    "sudoku_difficulty_changed": "Difficoltà cambiata",
+	"footer_made_by_prefix": "Fatto con 🤍 da"
   },
     "fr": {
     "site_title": "Tablo",
@@ -1212,7 +1216,8 @@
     "sudoku_error": "Erreur!",
     "sudoku_notes_on": "Notes ACTIVÉES",
     "sudoku_notes_off": "Notes Désactivées",
-    "sudoku_difficulty_changed": "Difficulté changée"
+    "sudoku_difficulty_changed": "Difficulté changée",
+	"footer_made_by_prefix": "Fait avec 🤍 par"
   },
   "de": {
     "site_title": "Tablo",
@@ -1455,6 +1460,7 @@
     "sudoku_error": "Fehler!",
     "sudoku_notes_on": "Notizen AKTIVIERT",
     "sudoku_notes_off": "Notizen DEAKTIVIERT",
-    "sudoku_difficulty_changed": "Schwierigkeit geändert"
+    "sudoku_difficulty_changed": "Schwierigkeit geändert",
+	"footer_made_by_prefix": "Gemacht mit 🤍 von"
   }
 }
