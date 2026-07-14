@@ -320,3 +320,17 @@ body {
   .privacy-badge { font-size: 10px; padding: 3px 8px; }
   .made-by { font-size: 11px; }
 }
+
+/* Settings imports */
+.settings-info-note {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.settings-actions-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}

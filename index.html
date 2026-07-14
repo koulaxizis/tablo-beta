@@ -84,14 +84,5 @@
   <script src="./assets/js/header.js"></script>
   <script src="./assets/js/footer.js"></script>
   <script src="./assets/js/pwa-install.js"></script>
-  <script>
-    fetch('./assets/js/translations.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        window.TABLO_TRANSLATIONS = data;
-        if (window.applyTabloTranslations) window.applyTabloTranslations();
-      })
-      .catch(function(err) { console.error('Failed to load translations:', err); });
-  </script>
 </body>
 </html>

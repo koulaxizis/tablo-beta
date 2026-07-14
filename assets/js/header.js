@@ -8,6 +8,9 @@
   var SETTINGS_MODAL_OPEN = false;
   var BEFORE_INSTALL_PROMPT = null;
 
+  // Translation cache
+  window.TABLO_TRANSLATIONS = window.TABLO_TRANSLATIONS || {};
+
   function getPathPrefix() {
     if (window.TABLO_CONFIG && window.TABLO_CONFIG.baseHref) {
       return window.TABLO_CONFIG.baseHref;
@@ -58,11 +61,35 @@
   }
 
   function tr(key) {
-    if (!window.TABLO_TRANSLATIONS) return key;
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS[lang];
-    if (!t) return key;
-    return t[key] || key;
+    if (t && t[key]) return t[key];
+    // Fallback to English
+    var en = window.TABLO_TRANSLATIONS['en'];
+    if (en && en[key]) return en[key];
+    return key;
+  }
+
+    function loadTranslations(lang, callback) {
+    if (window.TABLO_TRANSLATIONS[lang]) {
+      if (callback) callback();
+      return;
+    }
+    var pathPrefix = getPathPrefix();
+    var url = pathPrefix + 'assets/js/translations/' + lang + '.json';
+    fetch(url)
+      .then(function(response) {
+        if (!response.ok) throw new Error('HTTP error ' + response.status);
+        return response.json();
+      })
+      .then(function(data) {
+        window.TABLO_TRANSLATIONS[lang] = data;
+        if (callback) callback();
+      })
+      .catch(function(error) {
+        console.error('Failed to load translations for', lang, ':', error);
+        if (callback) callback();
+      });
   }
 
   function themeIconSvg(theme) {
@@ -113,12 +140,14 @@
       langSelect.value = currentLang;
       langSelect.addEventListener('change', function() {
         localStorage.setItem('tablo-language', this.value);
-        if (typeof window.applyTabloTranslations === 'function') {
-          window.applyTabloTranslations();
+        loadTranslations(this.value, function() {
+          if (typeof window.applyTabloTranslations === 'function') {
+            window.applyTabloTranslations();
+          }
           setTimeout(function() {
             window.dispatchEvent(new CustomEvent('tablo:languageChanged'));
           }, 50);
-        }
+        });
       });
     }
 
@@ -130,12 +159,22 @@
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('tablo-theme', newTheme);
         themeBtn.innerHTML = themeIconSvg(newTheme);
+        updateSettingsModalThemeUI(newTheme);
       });
     }
 
     var settingsBtn = document.getElementById('settings-btn');
     if (settingsBtn) {
       settingsBtn.addEventListener('click', openSettingsModal);
+    }
+  }
+
+  function updateSettingsModalThemeUI(newTheme) {
+    var modal = document.getElementById('tablo-settings-modal');
+    if (!modal) return;
+    var toggleBtn = modal.querySelector('#toggle-theme');
+    if (toggleBtn) {
+      toggleBtn.textContent = tr(newTheme === 'dark' ? 'theme_light' : 'theme_dark');
     }
   }
 
@@ -195,12 +234,15 @@
       '<button class="share-btn" data-platform="mastodon">Mastodon</button>' +
       '<button class="share-btn" data-platform="email">' + tr('share_email') + '</button></div></div>' +
       '<div class="settings-section"><div class="settings-section-title">' + tr('export_stats') + '</div>' +
-      '<p class="settings-rules-text">' + tr('export_stats_desc') + '</p>' +
-      '<button id="btn-export-stats" class="game-btn primary">' + tr('btn_download') + '</button></div>' +
+      '<p class="settings-rules-text" style="margin-bottom: 12px;">' + tr('export_stats_desc') + '</p>' +
+      '<p class="settings-info-note" style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">' + tr('stats_storage_note') + '</p>' +
+      '<div class="settings-actions-row">' +
+      '<button id="btn-import-stats" class="game-btn">' + tr('btn_import') + '</button>' +
+      '<input type="file" id="import-file-input" accept=".json" style="display: none;">' +
+      '<button id="btn-export-stats" class="game-btn primary">' + tr('btn_download') + '</button></div></div>' +
       inviteSection +
       '<div class="settings-section"><div class="settings-section-title">' + tr('aria_theme_toggle') + '</div>' +
       '<div class="settings-row">' +
-      '<span class="settings-label">' + (currentTheme === 'dark' ? tr('theme_dark') : tr('theme_light')) + '</span>' +
       '<button id="toggle-theme" class="game-btn">' + (currentTheme === 'dark' ? tr('theme_light') : tr('theme_dark')) + '</button></div></div>' +
       '</div></div>';
 
@@ -258,6 +300,19 @@
       exportBtn.addEventListener('click', exportStats);
     }
 
+    var importBtn = modal.querySelector('#btn-import-stats');
+    var fileInput = modal.querySelector('#import-file-input');
+    if (importBtn && fileInput) {
+      importBtn.addEventListener('click', function() {
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+          importStats(e.target.files[0]);
+        }
+      });
+    }
+
     var toggleThemeBtn = modal.querySelector('#toggle-theme');
     if (toggleThemeBtn) {
       toggleThemeBtn.addEventListener('click', function() {
@@ -265,8 +320,16 @@
         var newTheme = isDark ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('tablo-theme', newTheme);
-        this.textContent = isDark ? tr('theme_dark') : tr('theme_light');
+        this.textContent = tr(isDark ? 'theme_dark' : 'theme_light');
+        updateHeaderThemeButton(newTheme);
       });
+    }
+  }
+
+  function updateHeaderThemeButton(newTheme) {
+    var themeBtn = document.getElementById('theme-btn');
+    if (themeBtn) {
+      themeBtn.innerHTML = themeIconSvg(newTheme);
     }
   }
 
@@ -282,10 +345,19 @@
   }
 
   function showToast(msg) {
-    var existing = document.querySelector('.settings-toast');
-    if (existing) document.body.removeChild(existing);
+    var existing = document.querySelector('.tablo-toast');
+    if (existing) {
+      existing.textContent = msg;
+      existing.classList.remove('visible');
+      setTimeout(function() { existing.classList.add('visible'); }, 10);
+      clearTimeout(existing._timeout);
+      existing._timeout = setTimeout(function() {
+        existing.classList.remove('visible');
+      }, 2500);
+      return;
+    }
     var toast = document.createElement('div');
-    toast.className = 'settings-toast';
+    toast.className = 'tablo-toast';
     toast.textContent = msg;
     document.body.appendChild(toast);
     setTimeout(function() { toast.classList.add('visible'); }, 10);
@@ -333,8 +405,10 @@
     var stats = {};
     var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku'];
     games.forEach(function(game) {
-      var val = localStorage.getItem('tablo-' + game + '-best') || localStorage.getItem('tablo-' + game + '-wins');
-      if (val) stats[game] = val;
+      var best = localStorage.getItem('tablo-' + game + '-best');
+      var wins = localStorage.getItem('tablo-' + game + '-wins');
+      if (best) stats[game + '-best'] = best;
+      if (wins) stats[game + '-wins'] = wins;
     });
     stats.exportDate = new Date().toISOString().split('T')[0];
     var blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
@@ -344,10 +418,44 @@
     link.download = 'tablo-stats-' + stats.exportDate + '.json';
     link.click();
     URL.revokeObjectURL(dlUrl);
+    showToast('Statistics exported successfully!');
+  }
+
+  function importStats(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var data = JSON.parse(e.target.result);
+        var count = 0;
+        Object.keys(data).forEach(function(key) {
+          if (key !== 'exportDate') {
+            localStorage.setItem('tablo-' + key, data[key]);
+            count++;
+          }
+        });
+        showToast('Statistics imported successfully! (' + count + ' values)');
+        setTimeout(function() {
+          window.location.reload();
+        }, 1500);
+      } catch (err) {
+        console.error('Failed to parse stats file:', err);
+        showToast('Invalid file format!');
+      }
+    };
+    reader.onerror = function() {
+      showToast('Error reading file!');
+    };
+    reader.readAsText(file);
   }
 
   function init() {
-    renderHeader();
+    var currentLang = getDefaultLang();
+    loadTranslations(currentLang, function() {
+      renderHeader();
+      if (typeof window.applyTabloTranslations === 'function') {
+        window.applyTabloTranslations();
+      }
+    });
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       BEFORE_INSTALL_PROMPT = e;
@@ -355,9 +463,6 @@
     window.addEventListener('appinstalled', function() {
       showToast(tr('install_prompt'));
     });
-    if (typeof window.applyTabloTranslations === 'function') {
-      window.applyTabloTranslations();
-    }
   }
 
   if (document.readyState === 'loading') {
