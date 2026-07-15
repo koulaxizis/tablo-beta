@@ -8,12 +8,31 @@
   var SETTINGS_MODAL_OPEN = false;
   var BEFORE_INSTALL_PROMPT = null;
 
-  // Translation cache
   window.TABLO_TRANSLATIONS = window.TABLO_TRANSLATIONS || {};
 
-  function getAssetBase() {
-    // Always use relative ./assets/ from current location
-    return './assets/';
+  var GAME_DIRS = [
+    'memory-match', 'connect4', 'dots-and-lines', 'tic-tac-toe',
+    'simon-says', 'number-slider', 'lights-out', 'whack-a-mole',
+    'snake', '2048', 'wordle', 'spot-the-difference',
+    'hexagon-puzzle', 'chess', 'sudoku'
+  ];
+
+  function getPathPrefix() {
+    if (window.TABLO_CONFIG && window.TABLO_CONFIG.baseHref) {
+      return window.TABLO_CONFIG.baseHref;
+    }
+    var path = window.location.pathname;
+    if (path.indexOf('/index.html') !== -1) {
+      path = path.substring(0, path.indexOf('/index.html'));
+    }
+    path = path.replace(/\/+$/, '');
+    var segments = path.split('/').filter(function(s) { return s.length > 0; });
+    var last = segments.length > 0 ? segments[segments.length - 1] : '';
+
+    if (GAME_DIRS.indexOf(last) !== -1) {
+      return '../../';
+    }
+    return './';
   }
 
   function getCurrentGame() {
@@ -56,7 +75,6 @@
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS[lang];
     if (t && t[key]) return t[key];
-    // Fallback to English
     var en = window.TABLO_TRANSLATIONS['en'];
     if (en && en[key]) return en[key];
     return key;
@@ -67,9 +85,8 @@
       if (callback) callback();
       return;
     }
-    var base = getAssetBase();
-    var url = base + 'js/translations/' + lang + '.json';
-    console.log('Loading translations from:', url);
+    var prefix = getPathPrefix();
+    var url = prefix + 'assets/js/translations/' + lang + '.json';
     fetch(url)
       .then(function(response) {
         if (!response.ok) throw new Error('HTTP error ' + response.status);
@@ -77,7 +94,6 @@
       })
       .then(function(data) {
         window.TABLO_TRANSLATIONS[lang] = data;
-        console.log('Loaded translations for:', lang);
         if (callback) callback();
       })
       .catch(function(error) {
@@ -97,12 +113,13 @@
     var container = document.getElementById('tablo-header');
     if (!container) return;
 
+    var prefix = getPathPrefix();
     var currentLang = getDefaultLang();
     var currentTheme = getDefaultTheme();
 
     var html = '<div class="header"><div class="header-content">' +
       '<div class="header-left">' +
-      '<a href="./" class="logo-link">' +
+      '<a href="' + prefix + '" class="logo-link">' +
       '<svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
       '<rect x="5" y="5" width="30" height="30" rx="8" fill="none" stroke="#2dd4bf" stroke-width="3"/>' +
       '<rect x="12" y="12" width="16" height="16" rx="4" fill="#2dd4bf"/>' +
@@ -175,7 +192,6 @@
     if (SETTINGS_MODAL_OPEN) return;
     SETTINGS_MODAL_OPEN = true;
 
-    var currentLang = getDefaultLang();
     var currentTheme = getDefaultTheme();
     var currentGame = getCurrentGame();
 
@@ -228,7 +244,7 @@
       '<button class="share-btn" data-platform="email">' + tr('share_email') + '</button></div></div>' +
       '<div class="settings-section"><div class="settings-section-title">' + tr('export_stats') + '</div>' +
       '<p class="settings-rules-text" style="margin-bottom: 12px;">' + tr('export_stats_desc') + '</p>' +
-      '<p class="settings-info-note" style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">' + tr('stats_storage_note') + '</p>' +
+      '<p class="settings-info-note" style="font-size: 12px; margin-bottom: 16px; line-height: 1.4;">' + tr('stats_storage_note') + '</p>' +
       '<div class="settings-actions-row">' +
       '<button id="btn-import-stats" class="game-btn">' + tr('btn_import') + '</button>' +
       '<input type="file" id="import-file-input" accept=".json" style="display: none;">' +
@@ -411,7 +427,7 @@
     link.download = 'tablo-stats-' + stats.exportDate + '.json';
     link.click();
     URL.revokeObjectURL(dlUrl);
-    showToast('Statistics exported successfully!');
+    showToast(tr('toast_restarted'));
   }
 
   function importStats(file) {
@@ -426,17 +442,17 @@
             count++;
           }
         });
-        showToast('Statistics imported successfully! (' + count + ' values)');
+        showToast(tr('toast_restarted'));
         setTimeout(function() {
           window.location.reload();
         }, 1500);
       } catch (err) {
         console.error('Failed to parse stats file:', err);
-        showToast('Invalid file format!');
+        showToast('Error!');
       }
     };
     reader.onerror = function() {
-      showToast('Error reading file!');
+      showToast('Error!');
     };
     reader.readAsText(file);
   }

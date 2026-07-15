@@ -46,6 +46,8 @@
   --color-o: #fbbf24;
   --color-p1: #2dd4bf;
   --color-p2: #f59e0b;
+  --header-height: 56px;
+  --footer-height: 56px;
 }
 
 [data-theme="light"] {
@@ -73,7 +75,8 @@ body {
   line-height: 1.6;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ===== HEADER ===== */
@@ -87,7 +90,7 @@ body {
 .header-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 12px 24px;
+  padding: 10px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -137,6 +140,7 @@ body {
 /* ===== MAIN CONTENT (scrollable) ===== */
 .game-wrapper {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -146,7 +150,7 @@ body {
   flex-shrink: 0;
   background: var(--bg-primary);
   border-top: 1px solid var(--border-color);
-  padding: 12px 24px;
+  padding: 10px 24px;
   z-index: 1;
 }
 
@@ -236,7 +240,8 @@ body {
 .last-updated { font-size: 11px; color: var(--text-secondary); opacity: 0.7; }
 
 /* ===== TOAST ===== */
-#toast {
+#toast,
+.tablo-toast {
   position: fixed;
   bottom: 80px;
   left: 50%;
@@ -251,9 +256,14 @@ body {
   opacity: 0;
   transition: transform 0.3s, opacity 0.3s;
   border: 1px solid var(--border-color);
+  pointer-events: none;
 }
 
-#toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+#toast.visible,
+.tablo-toast.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
 
 /* ===== SETTINGS MODAL ===== */
 .settings-modal {
@@ -287,6 +297,20 @@ body {
 .settings-row { display: flex; justify-content: space-between; align-items: center; }
 .settings-label { font-size: 14px; }
 
+/* Settings imports */
+.settings-info-note {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.settings-actions-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
 /* ===== GAME STYLES (Shared) ===== */
 .game-container { max-width: 1200px; margin: 40px auto; padding: 0 24px; display: flex; flex-direction: column; align-items: center; }
 .game-toolbar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center; }
@@ -319,18 +343,4 @@ body {
   .footer-motto { font-size: 12px; }
   .privacy-badge { font-size: 10px; padding: 3px 8px; }
   .made-by { font-size: 11px; }
-}
-
-/* Settings imports */
-.settings-info-note {
-  color: var(--text-secondary);
-  font-size: 12px;
-  margin-bottom: 16px;
-  line-height: 1.4;
-}
-.settings-actions-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 12px;
 }

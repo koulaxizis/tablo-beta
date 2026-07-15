@@ -7,18 +7,12 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
   <link rel="manifest" href="../../manifest.json">
   <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="../../assets/css/icons.css">
   <link rel="stylesheet" href="styles.css">
   <meta name="theme-color" content="#0f1923">
 </head>
 <body>
 
   <div id="tablo-header"></div>
-
-  <a href="../../index.html" class="back-home">
-    <i class="fa fa-arrow-left"></i>
-    <span data-i18n="btn_back_home">Back to Games</span>
-  </a>
 
   <div class="game-wrapper">
 
@@ -75,23 +69,18 @@
   <script src="../../assets/js/footer.js"></script>
 
   <script>
-    fetch('../../assets/js/translations.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        window.TABLO_TRANSLATIONS = data;
-        if (typeof window.applyTabloTranslations === 'function') {
-          window.applyTabloTranslations();
-        }
-        var gameScript = document.createElement('script');
-        gameScript.src = 'game.js';
-        gameScript.onload = function() {
-          if (typeof initGame === 'function') {
-            initGame();
-          }
-        };
-        document.body.appendChild(gameScript);
-      })
-      .catch(function(e) { console.error('Failed to load:', e); });
+    // Translations handled by header.js dynamically
+    var gameScript = document.createElement('script');
+    gameScript.src = 'game.js';
+    gameScript.onload = function() {
+      if (typeof window.applyTabloTranslations === 'function') {
+        window.applyTabloTranslations();
+      }
+      if (typeof initGame === 'function') {
+        initGame();
+      }
+    };
+    document.body.appendChild(gameScript);
   </script>
 
 </body>

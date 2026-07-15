@@ -107,7 +107,8 @@
 
     var back = document.createElement('div');
     back.className = 'card-back';
-    back.innerHTML = '<i class="fa fa-question-circle"></i>';
+    // Changed from Font Awesome icon to SVG
+    back.innerHTML = '<svg viewBox="0 0 24 24" width="48" height="48"><circle cx="12" cy="12" r="10" fill="none" stroke="#ffffff" stroke-width="2"/><path d="M12 6v6l4 2" stroke="#ffffff" stroke-width="2" fill="none"/></svg>';
 
     card.appendChild(front);
     card.appendChild(back);

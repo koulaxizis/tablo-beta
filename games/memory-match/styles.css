@@ -2,44 +2,13 @@
    Tablo — Memory Match Game Styles
    ============================================ */
 
-/* ===== BACK HOME LINK ===== */
-.back-home {
-  position: absolute;
-  top: 80px;
-  left: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 10;
-  transition: all var(--transition);
-}
-
-.back-home:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: translateX(-4px);
-}
-
-.back-home i {
-  font-size: 14px;
-}
-
 /* ===== GAME WRAPPER ===== */
 .game-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 112px);
-  padding: 40px 20px;
+  padding: 32px 20px;
   gap: 32px;
 }
 
@@ -130,24 +99,24 @@
 }
 
 .card-front {
-  background: var(--bg-panel);
+  background: var(--bg-secondary);
   transform: rotateY(180deg);
   font-size: clamp(28px, 8vw, 48px);
 }
 
 .card-back {
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  background: var(--accent);
   border-color: var(--accent);
 }
 
-.card-back i {
-  font-size: clamp(28px, 8vw, 48px);
-  color: #fff;
+.card-back svg {
+  width: 32px;
+  height: 32px;
 }
 
 .memory-card:hover .card-back {
-  border-color: var(--accent-light);
-  box-shadow: 0 0 0 2px var(--accent-dim);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.3);
 }
 
 /* ===== GAME CONTROLS ===== */
@@ -164,7 +133,7 @@
   color: var(--text-primary);
   padding: 12px 24px;
   border-radius: var(--radius-md);
-  font-family: var(--font-primary);
+  font-family: 'Nunito', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -187,12 +156,8 @@
 }
 
 .game-btn.primary:hover {
-  background: var(--accent-light);
-  border-color: var(--accent-light);
-}
-
-.game-btn i {
-  font-size: 14px;
+  background: var(--accent);
+  filter: brightness(1.1);
 }
 
 /* ===== CONGRATS MODAL ===== */
@@ -222,7 +187,7 @@
 
 .congrats-content {
   position: relative;
-  background: var(--bg-panel);
+  background: var(--bg-secondary);
   border: 2px solid var(--accent);
   border-radius: var(--radius-lg);
   padding: 32px 24px;
@@ -286,31 +251,6 @@
   font-family: 'Nunito', monospace;
 }
 
-/* ===== TOAST ===== */
-.tablo-toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 12px 24px;
-  border-radius: var(--radius-md);
-  font-family: var(--font-primary);
-  font-size: 13px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  z-index: 10001;
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
-}
-
-.tablo-toast.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .game-stats {
@@ -358,12 +298,5 @@
   .congrats-stat-row {
     flex-direction: column;
     gap: 16px;
-  }
-  
-  .back-home {
-    top: 70px;
-    left: 12px;
-    padding: 6px 12px;
-    font-size: 12px;
   }
 }
