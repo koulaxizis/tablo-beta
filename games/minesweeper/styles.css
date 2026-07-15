@@ -1,0 +1,229 @@
+/* ============================================
+   Tablo — Minesweeper Game Styles
+   ============================================ */
+
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  gap: 24px;
+}
+
+.game-stats {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: 'Nunito', monospace;
+}
+
+.minesweeper-board {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  user-select: none;
+}
+
+.ms-cell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.1s;
+}
+
+.ms-cell.hidden {
+  background: var(--bg-tertiary);
+}
+
+.ms-cell.hidden:hover {
+  background: var(--bg-hover);
+}
+
+.ms-cell.revealed {
+  background: var(--bg-secondary);
+  cursor: default;
+}
+
+.ms-cell.flagged {
+  background: var(--bg-tertiary);
+}
+
+.ms-cell.mine {
+  background: var(--accent-error);
+}
+
+.ms-cell[data-value="1"] { color: #60a5fa; }
+.ms-cell[data-value="2"] { color: #4ade80; }
+.ms-cell[data-value="3"] { color: #f87171; }
+.ms-cell[data-value="4"] { color: #a78bfa; }
+.ms-cell[data-value="5"] { color: #f59e0b; }
+.ms-cell[data-value="6"] { color: #2dd4bf; }
+.ms-cell[data-value="7"] { color: #fbbf24; }
+.ms-cell[data-value="8"] { color: #b0b0b0; }
+
+.game-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.game-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.game-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1a1a2e;
+}
+
+.game-btn.primary:hover {
+  filter: brightness(1.1);
+}
+
+.congrats-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.congrats-modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.congrats-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.congrats-content {
+  position: relative;
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.congrats-modal.visible .congrats-content {
+  transform: translateY(0);
+}
+
+.congrats-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.congrats-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+
+.congrats-stats { margin-bottom: 24px; }
+.congrats-stat-row { display: flex; gap: 24px; justify-content: center; }
+.congrats-stat { display: flex; flex-direction: column; gap: 4px; }
+.congrats-stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.congrats-stat-value { font-size: 28px; font-weight: 700; color: var(--text-primary); font-family: 'Nunito', monospace; }
+
+.tablo-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 10001;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.tablo-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 600px) {
+  .ms-cell { width: 28px; height: 28px; font-size: 14px; }
+  .game-stats { gap: 16px; padding: 12px 16px; }
+}
+
+@media (max-width: 400px) {
+  .ms-cell { width: 24px; height: 24px; font-size: 12px; }
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mahjong - Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+
+  <div id="tablo-header"></div>
+
+  <div class="game-wrapper">
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="mahjong_tiles_left">Tiles Left</span>
+        <span class="stat-value" id="tiles-left">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="mahjong_pairs">Pairs</span>
+        <span class="stat-value" id="pairs-count">0</span>
+      </div>
+    </div>
+
+    <div class="mahjong-board" id="board"></div>
+
+    <div class="game-controls">
+      <button class="game-btn primary" id="btn-restart" data-i18n="btn_restart">Restart</button>
+    </div>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="congrats-modal" id="win-modal">
+    <div class="congrats-overlay"></div>
+    <div class="congrats-content">
+      <div class="congrats-icon">&#127881;</div>
+      <h2 class="congrats-title" data-i18n="mahjong_win">All tiles cleared!</h2>
+      <div class="congrats-stats">
+        <div class="congrats-stat-row">
+          <div class="congrats-stat">
+            <div class="congrats-stat-label" data-i18n="mahjong_pairs">Pairs</div>
+            <div class="congrats-stat-value" id="final-pairs">0</div>
+          </div>
+        </div>
+      </div>
+      <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+  <script>
+    var gameScript = document.createElement('script');
+    gameScript.src = 'game.js';
+    gameScript.onload = function() {
+      if (typeof window.applyTabloTranslations === 'function') {
+        window.applyTabloTranslations();
+      }
+      if (typeof initGame === 'function') {
+        initGame();
+      }
+    };
+    document.body.appendChild(gameScript);
+  </script>
+
+</body>
+</html>

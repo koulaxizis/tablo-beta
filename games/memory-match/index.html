@@ -3,84 +3,273 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memory Match - Tablo</title>
-  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
-  <link rel="manifest" href="../../manifest.json">
-  <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="styles.css">
+  <title>Tablo — Mini Board Games Collection</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./assets/css/style.css">
   <meta name="theme-color" content="#0f1923">
 </head>
 <body>
 
   <div id="tablo-header"></div>
 
-  <div class="game-wrapper">
+  <main class="game-wrapper">
+    <section class="hero">
+      <h1 data-i18n="page_title">Tablo</h1>
+      <p class="hero-subtitle" data-i18n="hero_subtitle">Collection of classic mini board games for relaxed entertainment.</p>
+    </section>
 
-    <div class="game-stats">
-      <div class="stat-item">
-        <span class="stat-label" data-i18n="memory_moves">Moves</span>
-        <span class="stat-value" id="moves">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label" data-i18n="memory_time">Time</span>
-        <span class="stat-value" id="timer">00:00</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label" data-i18n="memory_best">Best</span>
-        <span class="stat-value" id="best-score">--/--</span>
-      </div>
-    </div>
+    <section class="games-grid">
+      <!-- Memory Match -->
+      <a href="./games/memory-match/" class="game-card" data-game="memory">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-memory"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_memory_name">Memory Match</h3>
+          <p data-i18n="game_memory_desc">Find matching pairs of cards.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
 
-    <div class="memory-game" id="game-board"></div>
+      <!-- Connect 4 -->
+      <a href="./games/connect4/" class="game-card" data-game="connect4">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-connect4"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_connect4_name">Connect 4</h3>
+          <p data-i18n="game_connect4_desc">Connect four discs in a row.</p>
+        </div>
+        <span class="player-badge">2P</span>
+      </a>
 
-    <div class="game-controls">
-      <button class="game-btn primary" id="btn-restart" data-i18n="btn_restart">Restart</button>
-    </div>
+      <!-- Dots & Lines -->
+      <a href="./games/dots-and-lines/" class="game-card" data-game="dots">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-dots"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_dots_name">Dots & Lines</h3>
+          <p data-i18n="game_dots_desc">Complete boxes to earn points.</p>
+        </div>
+        <span class="player-badge">2P</span>
+      </a>
 
-  </div>
+      <!-- Tic-Tac-Toe -->
+      <a href="./games/tic-tac-toe/" class="game-card" data-game="tictactoe">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-tictactoe"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_tictactoe_name">Tic-Tac-Toe</h3>
+          <p data-i18n="game_tictactoe_desc">Classic X and O game.</p>
+        </div>
+        <span class="player-badge">2P</span>
+      </a>
+
+      <!-- Simon Says -->
+      <a href="./games/simon-says/" class="game-card" data-game="simon">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-simon"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_simon_name">Simon Says</h3>
+          <p data-i18n="game_simon_desc">Repeat the color sequence.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Number Slider -->
+      <a href="./games/number-slider/" class="game-card" data-game="slider">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-slider"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_slider_name">Number Slider</h3>
+          <p data-i18n="game_slider_desc">Order tiles from 1 to 15.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Lights Out -->
+      <a href="./games/lights-out/" class="game-card" data-game="lights">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-lights"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_lights_name">Lights Out</h3>
+          <p data-i18n="game_lights_desc">Turn off all the lights.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Whack-a-Mole -->
+      <a href="./games/whack-a-mole/" class="game-card" data-game="whack">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-whack"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_whack_name">Whack-a-Mole</h3>
+          <p data-i18n="game_whack_desc">Hit moles as they appear.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Snake -->
+      <a href="./games/snake/" class="game-card" data-game="snake">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-snake"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_snake_name">Snake</h3>
+          <p data-i18n="game_snake_desc">Eat food and grow longer.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- 2048 -->
+      <a href="./games/2048/" class="game-card" data-game="2048">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-2048"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_2048_name">2048</h3>
+          <p data-i18n="game_2048_desc">Merge tiles to reach 2048.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Wordle -->
+      <a href="./games/wordle/" class="game-card" data-game="wordle">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-wordle"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_wordle_name">Wordle</h3>
+          <p data-i18n="game_wordle_desc">Guess the five-letter word.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Spot the Difference -->
+      <a href="./games/spot-the-difference/" class="game-card" data-game="spot">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-spot"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_spot_name">Spot the Difference</h3>
+          <p data-i18n="game_spot_desc">Find differences between images.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Hexagon Puzzle -->
+      <a href="./games/hexagon-puzzle/" class="game-card" data-game="hex">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-hex"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_hex_name">Hexagon Puzzle</h3>
+          <p data-i18n="game_hex_desc">Fit hexagons into the grid.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- Chess -->
+      <a href="./games/chess/" class="game-card" data-game="chess">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-chess"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_chess_name">Chess</h3>
+          <p data-i18n="game_chess_desc">Classic strategy board game.</p>
+        </div>
+        <span class="player-badge">2P</span>
+      </a>
+
+      <!-- Sudoku -->
+      <a href="./games/sudoku/" class="game-card" data-game="sudoku">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-sudoku"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_sudoku_name">Sudoku</h3>
+          <p data-i18n="game_sudoku_desc">Fill grid with numbers 1-9.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- NEW: Tetris -->
+      <a href="./games/tetris/" class="game-card" data-game="tetris">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-tetris"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_tetris_name">Tetris</h3>
+          <p data-i18n="game_tetris_desc">Stack falling blocks and clear lines.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- NEW: Minesweeper -->
+      <a href="./games/minesweeper/" class="game-card" data-game="minesweeper">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-minesweeper"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_minesweeper_name">Minesweeper</h3>
+          <p data-i18n="game_minesweeper_desc">Find all mines without detonating them.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- NEW: Mahjong -->
+      <a href="./games/mahjong/" class="game-card" data-game="mahjong">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-mahjong"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_mahjong_name">Mahjong</h3>
+          <p data-i18n="game_mahjong_desc">Match pairs of tiles to clear the board.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- NEW: Slide Puzzle -->
+      <a href="./games/puzzle/" class="game-card" data-game="puzzle">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-puzzle"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_puzzle_name">Slide Puzzle</h3>
+          <p data-i18n="game_puzzle_desc">Arrange tiles in the correct order.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+      <!-- NEW: Bubble Shooter -->
+      <a href="./games/bubble-shooter/" class="game-card" data-game="bubble">
+        <div class="game-card-icon"><svg viewBox="0 0 24 24"><use href="#icon-bubble"/></svg></div>
+        <div class="game-card-info">
+          <h3 data-i18n="game_bubble_name">Bubble Shooter</h3>
+          <p data-i18n="game_bubble_desc">Shoot bubbles and pop matching colors.</p>
+        </div>
+        <span class="player-badge">1P</span>
+      </a>
+
+    </section>
+  </main>
 
   <div id="tablo-footer"></div>
 
-  <div class="congrats-modal" id="congrats-modal">
-    <div class="congrats-overlay"></div>
-    <div class="congrats-content">
-      <div class="congrats-icon">&#127881;</div>
-      <h2 class="congrats-title" data-i18n="memory_congrats">Completed!</h2>
-      <div class="congrats-stats">
-        <div class="congrats-stat-row">
-          <div class="congrats-stat">
-            <div class="congrats-stat-label" data-i18n="memory_moves">Moves</div>
-            <div class="congrats-stat-value" id="final-moves">0</div>
-          </div>
-          <div class="congrats-stat">
-            <div class="congrats-stat-label" data-i18n="memory_time">Time</div>
-            <div class="congrats-stat-value" id="final-time">00:00</div>
-          </div>
-        </div>
-      </div>
-      <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
-    </div>
-  </div>
+  <!-- SVG Sprite -->
+  <svg style="display: none;" aria-hidden="true">
+    <symbol id="icon-memory" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="icon-connect4" viewBox="0 0 24 24"><circle cx="7" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="icon-dots" viewBox="0 0 24 24"><path d="M3 3h18v18H3z" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1"/><line x1="3" y1="15" x2="21" y2="15" stroke="currentColor" stroke-width="1"/><line x1="9" y1="3" x2="9" y2="21" stroke="currentColor" stroke-width="1"/><line x1="15" y1="3" x2="15" y2="21" stroke="currentColor" stroke-width="1"/></symbol>
+    <symbol id="icon-tictactoe" viewBox="0 0 24 24"><text x="3" y="12" font-size="16" fill="currentColor" font-weight="bold">X</text><text x="15" y="12" font-size="16" fill="currentColor" font-weight="bold">O</text><line x1="8" y1="3" x2="8" y2="21" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="3" x2="16" y2="21" stroke="currentColor" stroke-width="1.5"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.5"/><line x1="3" y1="17" x2="21" y2="17" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="icon-simon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="8" r="3" fill="currentColor" opacity="0.6"/><circle cx="16" cy="15" r="3" fill="currentColor" opacity="0.4"/><circle cx="8" cy="15" r="3" fill="currentColor" opacity="0.4"/></symbol>
+    <symbol id="icon-slider" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="22" y="20" font-size="10" fill="currentColor">15</text></symbol>
+    <symbol id="icon-lights" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="12" r="3" fill="currentColor"/></symbol>
+    <symbol id="icon-whack" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 14l4 6 4-6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="7" r="1" fill="currentColor"/><circle cx="14" cy="7" r="1" fill="currentColor"/></symbol>
+    <symbol id="icon-snake" viewBox="0 0 24 24"><path d="M4 8c0-3 2-5 5-5h3c2 0 3 1 3 3v2c0 2-1 3-3 3h-2c-2 0-3 1-3 3v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="icon-2048" viewBox="0 0 24 24"><rect x="2" y="2" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="2" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="13" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="13" y="20" font-size="12" fill="currentColor" font-weight="bold">2048</text></symbol>
+    <symbol id="icon-wordle" viewBox="0 0 24 24"><rect x="2" y="4" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="7" y="4" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="12" y="4" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="17" y="4" width="4" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="icon-spot" viewBox="0 0 24 24"><rect x="2" y="3" width="9" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="3" width="9" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="5" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="17" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="5" cy="15" r="2" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="19" cy="15" r="2" fill="none" stroke="currentColor" stroke-width="1"/></symbol>
+    <symbol id="icon-hex" viewBox="0 0 24 24"><path d="M12 3l8 5v10l-8 5-8-5V8z" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="12,6 16,9 16,15 12,18 8,15 8,9" fill="none" stroke="currentColor" stroke-width="1"/></symbol>
+    <symbol id="icon-chess" viewBox="0 0 24 24"><path d="M12 4l2 3h-4z M10 7v4h4V7M8 15h8v4H8z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="19" width="10" height="2" fill="currentColor"/></symbol>
+    <symbol id="icon-sudoku" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="3" x2="9" y2="21" stroke="currentColor" stroke-width="1"/><line x1="15" y1="3" x2="15" y2="21" stroke="currentColor" stroke-width="1"/><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1"/><line x1="3" y1="15" x2="21" y2="15" stroke="currentColor" stroke-width="1"/></symbol>
+    <!-- NEW SYMBOLS -->
+    <symbol id="icon-tetris" viewBox="0 0 24 24"><rect x="2" y="2" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="10" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="10" y="10" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="18" width="6" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="icon-minesweeper" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2"/><line x1="3" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2"/><line x1="5.5" y1="5.5" x2="7.5" y2="7.5" stroke="currentColor" stroke-width="2"/><line x1="16.5" y1="16.5" x2="18.5" y2="18.5" stroke="currentColor" stroke-width="2"/><line x1="5.5" y1="18.5" x2="7.5" y2="16.5" stroke="currentColor" stroke-width="2"/><line x1="16.5" y1="7.5" x2="18.5" y2="5.5" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="icon-mahjong" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="3" width="8" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="14" width="8" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="14" width="8" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="8" r="1.5" fill="currentColor"/><circle cx="17" cy="8" r="1.5" fill="currentColor"/><circle cx="7" cy="17.5" r="1.5" fill="currentColor"/><circle cx="17" cy="17.5" r="1.5" fill="currentColor"/></symbol>
+    <symbol id="icon-puzzle" viewBox="0 0 24 24"><path d="M3 3h7v3a2 2 0 1 0 4 0V3h7v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="icon-bubble" viewBox="0 0 24 24"><circle cx="7" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="15" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="1" x2="12" y2="4" stroke="currentColor" stroke-width="2"/><line x1="12" y1="20" x2="12" y2="23" stroke="currentColor" stroke-width="2"/><line x1="1" y1="12" x2="4" y2="12" stroke="currentColor" stroke-width="2"/><line x1="20" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3" stroke="currentColor" stroke-width="2"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8" stroke="currentColor" stroke-width="2"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7" stroke="currentColor" stroke-width="2"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  </svg>
 
-  <div class="tablo-toast" id="toast"></div>
-
-  <script src="../../assets/js/config.js"></script>
-  <script src="../../assets/js/header.js"></script>
-  <script src="../../assets/js/footer.js"></script>
-
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/header.js"></script>
+  <script src="./assets/js/footer.js"></script>
   <script>
-    // Translations handled by header.js dynamically
-    var gameScript = document.createElement('script');
-    gameScript.src = 'game.js';
-    gameScript.onload = function() {
-      if (typeof window.applyTabloTranslations === 'function') {
-        window.applyTabloTranslations();
-      }
-      if (typeof initGame === 'function') {
-        initGame();
-      }
+    window.applyTabloTranslations = function() {
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        var translation = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[(localStorage.getItem('tablo-language') || 'en')] && window.TABLO_TRANSLATIONS[(localStorage.getItem('tablo-language') || 'en')][key];
+        if (translation) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = translation;
+          } else {
+            el.textContent = translation;
+          }
+        }
+      });
     };
-    document.body.appendChild(gameScript);
   </script>
 
 </body>
