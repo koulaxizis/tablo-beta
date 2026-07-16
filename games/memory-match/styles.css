@@ -8,8 +8,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 72px 20px 32px;
+  padding: 0 20px 32px;
   gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Add spacing between header and game content */
+.game-wrapper::before {
+  content: '';
+  display: block;
+  height: 80px; /* Space for header + breathing room */
 }
 
 /* ===== GAME STATS ===== */
@@ -127,6 +136,8 @@
   gap: 12px;
   justify-content: center;
   align-items: center;
+  z-index: 10;
+  position: relative;
 }
 
 .game-btn {
@@ -263,34 +274,38 @@
 
 /* Desktop / Laptop / Large Tablet (≥1200px) - Fit without scroll */
 @media (min-width: 1200px) {
-  html, body {
-    height: 100vh;
-    overflow: hidden;
+  body {
+    overflow-y: auto;
   }
   
   .game-wrapper {
-    min-height: calc(100vh - var(--header-height, 56px) - var(--footer-height, 56px));
-    padding: 72px 20px 32px;
-    justify-content: center;
+    padding: 0 20px 32px;
+    gap: 32px;
   }
   
-  .game-stats,
-  .memory-game,
-  .game-controls {
-    flex-shrink: 0;
+  .game-wrapper::before {
+    height: 100px; /* More space for header */
   }
   
   .memory-game {
     max-width: 480px;
+  }
+  
+  /* Ensure footer is visible and not compressed */
+  #tablo-footer {
+    margin-top: auto;
   }
 }
 
 /* Tablet (768px - 1199px) - Allow vertical spacing */
 @media (min-width: 768px) and (max-width: 1199px) {
   .game-wrapper {
-    min-height: calc(100vh - var(--header-height, 56px) - var(--footer-height, 56px));
-    padding: 72px 20px 32px;
-    justify-content: center;
+    padding: 0 20px 32px;
+    gap: 32px;
+  }
+  
+  .game-wrapper::before {
+    height: 90px;
   }
   
   .memory-game {
@@ -301,8 +316,12 @@
 /* Mobile / Small Tablet (<768px) - Allow scroll */
 @media (max-width: 767px) {
   .game-wrapper {
-    padding: 68px 12px 20px;
+    padding: 0 12px 20px;
     gap: 20px;
+  }
+  
+  .game-wrapper::before {
+    height: 80px;
   }
   
   .game-stats {
@@ -332,8 +351,12 @@
 /* Small Mobile (<480px) */
 @media (max-width: 479px) {
   .game-wrapper {
-    padding: 64px 12px 16px;
+    padding: 0 12px 16px;
     gap: 16px;
+  }
+  
+  .game-wrapper::before {
+    height: 76px;
   }
   
   .stat-item {
