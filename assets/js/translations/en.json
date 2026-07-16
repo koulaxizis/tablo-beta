@@ -1,7 +1,6 @@
 {
   "page_title": "Tablo",
   "hero_subtitle": "Collection of classic mini board games for relaxed entertainment.",
-  "btn_back_home": "Back to Games",
   "btn_restart": "Restart",
   "btn_play_again": "Play Again",
   "btn_install": "Install App",
@@ -142,5 +141,8 @@
   "share_text_minesweeper": "Playing Minesweeper on Tablo!",
   "share_text_mahjong": "Playing Mahjong on Tablo!",
   "share_text_puzzle": "Playing Slide Puzzle on Tablo!",
-  "share_text_bubble": "Playing Bubble Shooter on Tablo!"
+  "share_text_bubble": "Playing Bubble Shooter on Tablo!",
+  "footer_motto": "Play freely, enjoy life.",
+  "footer_privacy_badge": "Open Source · No Tracking · No Ads · Privacy First",
+  "footer_made_by_prefix": "Made with 🤍 by"
 }
