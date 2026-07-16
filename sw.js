@@ -184,3 +184,22 @@ self.addEventListener('fetch', function(event) {
       })
   );
 });
+
+// ============================================
+// Message Handler — Cache Busting
+// ============================================
+
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'CACHE_BUST') {
+    console.log('[SW] Cache bust requested for version:', event.data.version);
+    caches.keys().then(function(names) {
+      return Promise.all(names.map(function(name) {
+        console.log('[SW] Deleting cache:', name);
+        return caches.delete(name);
+      }));
+    }).then(function() {
+      console.log('[SW] All caches cleared via message.');
+      self.skipWaiting();
+    });
+  }
+});
