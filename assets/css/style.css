@@ -334,6 +334,106 @@ body {
 .modal-message { font-size: 16px; color: var(--text-secondary); margin-bottom: 24px; }
 .modal-actions { display: flex; gap: 12px; justify-content: center; }
 
+/* ===== HERO ===== */
+.hero {
+  text-align: center;
+  padding: 48px 24px 32px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.hero-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ===== GAMES GRID ===== */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.game-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-card:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.game-card-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  color: var(--accent);
+}
+
+.game-card-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.game-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-card-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.game-card-info p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.player-badge {
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
 @media (max-width: 768px) {
   .games-grid { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
   .game-container { padding: 0 16px; margin: 20px auto; }
