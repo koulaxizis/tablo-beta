@@ -2,7 +2,7 @@
   "name": "tablo — Mini Board Games",
   "short_name": "tablo",
   "description": "Relax with classic board games. All work offline.",
-  "start_url": "./index.html",
+  "start_url": "./index.html?version=0.4.0",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f1923",

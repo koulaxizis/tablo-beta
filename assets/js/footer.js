@@ -59,6 +59,7 @@
 
     container.innerHTML = html;
 
+    // Apply translations
     setTimeout(function() {
       document.querySelectorAll('.footer-content [data-i18n]').forEach(function(el) {
         var key = el.getAttribute('data-i18n');
@@ -68,23 +69,30 @@
   }
 
   function init() {
-    // Check if translations already loaded
-    if (window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[getDefaultLang()]) {
-      renderFooter();
-    } else {
-      // Wait for translations to load
-      document.addEventListener('DOMContentLoaded', function waitForTranslations() {
-        if (window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[getDefaultLang()]) {
-          renderFooter();
-        } else {
-          setTimeout(waitForTranslations, 50);
-        }
+    // Wait for DOM ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        waitForTranslationsAndRender();
       });
+    } else {
+      waitForTranslationsAndRender();
     }
 
     window.addEventListener('tablo:languageChanged', function() {
       renderFooter();
     });
+  }
+
+  function waitForTranslationsAndRender() {
+    var maxAttempts = 100;
+    var attempts = 0;
+    var interval = setInterval(function() {
+      attempts++;
+      if (window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[getDefaultLang()] || attempts >= maxAttempts) {
+        clearInterval(interval);
+        renderFooter();
+      }
+    }, 100);
   }
 
   if (document.readyState === 'loading') {
