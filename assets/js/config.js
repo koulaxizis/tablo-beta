@@ -9,9 +9,10 @@ window.TABLO_CONFIG = {
 };
 
 // ============================================
-// Cache Busting on Version Change
+// Cache Busting (Disabled for Development)
 // ============================================
 
+/*
 (function() {
   var storedVersion = localStorage.getItem('tablo-cache-version');
   var currentVersion = window.TABLO_CONFIG.version;
@@ -49,6 +50,7 @@ window.TABLO_CONFIG = {
     sessionStorage.removeItem('tablo-cache-bust-done');
   }
 })();
+*/
 
 // ============================================
 // Global Translation Applier
