@@ -8,7 +8,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px;
+  padding: 80px 20px 32px;
   gap: 32px;
 }
 
@@ -285,7 +285,7 @@
 
 @media (max-width: 480px) {
   .game-wrapper {
-    padding: 20px 12px;
+    padding: 72px 12px 20px;
     gap: 20px;
   }
   
@@ -306,7 +306,6 @@
     gap: 16px;
   }
   
-  /* Best score formatting fix */
   #best-score {
     font-size: 14px;
     white-space: nowrap;

@@ -37,9 +37,6 @@
   var finalTime = document.getElementById('final-time');
   var toast = document.getElementById('toast');
 
-  // ============================================
-  // NULL CHECKS - Prevent errors on missing elements
-  // ============================================
   if (!gameBoard || !movesDisplay || !timerDisplay || 
       !bestScoreDisplay || !restartBtn || !congratsModal || 
       !playAgainBtn || !finalMoves || !finalTime || !toast) {
@@ -47,9 +44,19 @@
     return;
   }
 
-  function showToast(message) {
+  // ============================================
+  // TRANSLATION HELPER
+  // ============================================
+  function tr(key) {
+    var lang = localStorage.getItem('tablo-language') || 'en';
+    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+    if (t && t[key]) return t[key];
+    return key;
+  }
+
+  function showToast(key) {
     if (!toast) return;
-    toast.textContent = message;
+    toast.textContent = tr(key);
     toast.classList.add('visible');
     clearTimeout(showToast._timer);
     showToast._timer = setTimeout(function() {
@@ -117,8 +124,8 @@
 
     var back = document.createElement('div');
     back.className = 'card-back';
-    // Changed from Font Awesome icon to SVG
-    back.innerHTML = '<svg viewBox="0 0 24 24" width="48" height="48"><circle cx="12" cy="12" r="10" fill="none" stroke="#ffffff" stroke-width="2"/><path d="M12 6v6l4 2" stroke="#ffffff" stroke-width="2" fill="none"/></svg>';
+    // Question mark icon
+    back.innerHTML = '<svg viewBox="0 0 24 24" width="48" height="48"><text x="12" y="18" text-anchor="middle" font-size="20" font-weight="bold" fill="#ffffff" font-family="Nunito, sans-serif">?</text></svg>';
 
     card.appendChild(front);
     card.appendChild(back);
@@ -180,7 +187,6 @@
   }
 
   function gameWon() {
-    // STOP TIMER BEFORE SHOWING MODAL
     stopTimer();
 
     finalMoves.textContent = moves;
@@ -237,7 +243,7 @@
   if (restartBtn) {
     restartBtn.addEventListener('click', function() {
       resetGame();
-      showToast('Game restarted');
+      showToast('toast_restarted');
     });
   }
 
