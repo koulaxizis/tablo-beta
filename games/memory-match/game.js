@@ -44,9 +44,6 @@
     return;
   }
 
-  // ============================================
-  // TRANSLATION HELPER
-  // ============================================
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
@@ -124,7 +121,6 @@
 
     var back = document.createElement('div');
     back.className = 'card-back';
-    // Question mark icon
     back.innerHTML = '<svg viewBox="0 0 24 24" width="48" height="48"><text x="12" y="18" text-anchor="middle" font-size="20" font-weight="bold" fill="#ffffff" font-family="Nunito, sans-serif">?</text></svg>';
 
     card.appendChild(front);
@@ -186,11 +182,24 @@
     }
   }
 
+  function closeModal() {
+    congratsModal.classList.remove('visible');
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+  }
+
   function gameWon() {
     stopTimer();
 
     finalMoves.textContent = moves;
     finalTime.textContent = formatTime(secondsElapsed);
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'relative';
+    document.body.style.top = '0px';
+    
     congratsModal.classList.add('visible');
 
     var bestKey = 'tablo-memory-best';
@@ -213,6 +222,18 @@
   }
 
   function resetGame() {
+    // Close modal first with transition delay
+    if (congratsModal.classList.contains('visible')) {
+      closeModal();
+      setTimeout(function() {
+        _doResetGame();
+      }, 300);
+    } else {
+      _doResetGame();
+    }
+  }
+
+  function _doResetGame() {
     stopTimer();
     gameStarted = false;
     moves = 0;
@@ -231,8 +252,6 @@
       var card = createCard(data, index);
       gameBoard.appendChild(card);
     });
-
-    congratsModal.classList.remove('visible');
   }
 
   window.initGame = function() {
@@ -249,8 +268,10 @@
 
   if (playAgainBtn) {
     playAgainBtn.addEventListener('click', function() {
-      congratsModal.classList.remove('visible');
-      resetGame();
+      closeModal();
+      setTimeout(function() {
+        _doResetGame();
+      }, 300);
     });
   }
 
