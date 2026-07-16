@@ -37,6 +37,16 @@
   var finalTime = document.getElementById('final-time');
   var toast = document.getElementById('toast');
 
+  // ============================================
+  // NULL CHECKS - Prevent errors on missing elements
+  // ============================================
+  if (!gameBoard || !movesDisplay || !timerDisplay || 
+      !bestScoreDisplay || !restartBtn || !congratsModal || 
+      !playAgainBtn || !finalMoves || !finalTime || !toast) {
+    console.error('[Memory Match] Required DOM elements not found!');
+    return;
+  }
+
   function showToast(message) {
     if (!toast) return;
     toast.textContent = message;
@@ -170,6 +180,7 @@
   }
 
   function gameWon() {
+    // STOP TIMER BEFORE SHOWING MODAL
     stopTimer();
 
     finalMoves.textContent = moves;

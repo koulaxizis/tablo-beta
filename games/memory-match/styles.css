@@ -164,7 +164,7 @@
 .congrats-modal {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: 20000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,6 +251,12 @@
   font-family: 'Nunito', monospace;
 }
 
+/* ===== TOAST FIX ===== */
+.tablo-toast {
+  pointer-events: none;
+  z-index: 9999;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .game-stats {
@@ -298,5 +304,11 @@
   .congrats-stat-row {
     flex-direction: column;
     gap: 16px;
+  }
+  
+  /* Best score formatting fix */
+  #best-score {
+    font-size: 14px;
+    white-space: nowrap;
   }
 }
