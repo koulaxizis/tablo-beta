@@ -40,17 +40,14 @@
     var channel = window.TABLO_CONFIG ? window.TABLO_CONFIG.channel : 'beta';
 
     var html = '<footer class="sticky-footer"><div class="footer-content">' +
-      // LEFT: Motto (top) + Privacy Badge (below)
       '<div class="footer-left">' +
       '<p class="footer-motto" data-i18n="footer_motto">Play freely, enjoy life.</p>' +
       '<span class="privacy-badge" data-i18n="footer_privacy_badge">Open Source · No Tracking · No Ads · Privacy First</span>' +
       '</div>' +
-      // CENTER: Made by
       '<div class="footer-center">' +
       '<span class="made-by"><span data-i18n="footer_made_by_prefix">Made with 🤍 by</span> ' +
       '<a href="https://koulaxizis.gr" target="_blank" rel="noopener noreferrer">Christos Koulaxizis</a></span>' +
       '</div>' +
-      // RIGHT: Version + Channel (top) + Date (below)
       '<div class="footer-right">' +
       '<div class="version-info">' +
       '<span class="version-number">v' + version + '</span>' +
@@ -71,7 +68,20 @@
   }
 
   function init() {
-    renderFooter();
+    // Check if translations already loaded
+    if (window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[getDefaultLang()]) {
+      renderFooter();
+    } else {
+      // Wait for translations to load
+      document.addEventListener('DOMContentLoaded', function waitForTranslations() {
+        if (window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[getDefaultLang()]) {
+          renderFooter();
+        } else {
+          setTimeout(waitForTranslations, 50);
+        }
+      });
+    }
+
     window.addEventListener('tablo:languageChanged', function() {
       renderFooter();
     });
