@@ -182,24 +182,11 @@
     }
   }
 
-  function closeModal() {
-    congratsModal.classList.remove('visible');
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-  }
-
   function gameWon() {
     stopTimer();
 
     finalMoves.textContent = moves;
     finalTime.textContent = formatTime(secondsElapsed);
-    
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'relative';
-    document.body.style.top = '0px';
-    
     congratsModal.classList.add('visible');
 
     var bestKey = 'tablo-memory-best';
@@ -222,18 +209,6 @@
   }
 
   function resetGame() {
-    // Close modal first with transition delay
-    if (congratsModal.classList.contains('visible')) {
-      closeModal();
-      setTimeout(function() {
-        _doResetGame();
-      }, 300);
-    } else {
-      _doResetGame();
-    }
-  }
-
-  function _doResetGame() {
     stopTimer();
     gameStarted = false;
     moves = 0;
@@ -252,6 +227,8 @@
       var card = createCard(data, index);
       gameBoard.appendChild(card);
     });
+
+    congratsModal.classList.remove('visible');
   }
 
   window.initGame = function() {
@@ -268,10 +245,7 @@
 
   if (playAgainBtn) {
     playAgainBtn.addEventListener('click', function() {
-      closeModal();
-      setTimeout(function() {
-        _doResetGame();
-      }, 300);
+      resetGame();
     });
   }
 
