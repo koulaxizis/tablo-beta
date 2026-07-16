@@ -14,11 +14,10 @@
   margin: 0 auto;
 }
 
-/* Add spacing between header and game content */
 .game-wrapper::before {
   content: '';
   display: block;
-  height: 80px; /* Space for header + breathing room */
+  height: 68px;
 }
 
 /* ===== GAME STATS ===== */
@@ -182,12 +181,14 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .congrats-modal.visible {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -284,20 +285,19 @@
   }
   
   .game-wrapper::before {
-    height: 100px; /* More space for header */
+    height: 68px;
   }
   
   .memory-game {
     max-width: 480px;
   }
   
-  /* Ensure footer is visible and not compressed */
   #tablo-footer {
     margin-top: auto;
   }
 }
 
-/* Tablet (768px - 1199px) - Allow vertical spacing */
+/* Tablet (768px - 1199px) */
 @media (min-width: 768px) and (max-width: 1199px) {
   .game-wrapper {
     padding: 0 20px 32px;
@@ -305,7 +305,7 @@
   }
   
   .game-wrapper::before {
-    height: 90px;
+    height: 64px;
   }
   
   .memory-game {
@@ -321,7 +321,7 @@
   }
   
   .game-wrapper::before {
-    height: 80px;
+    height: 62px;
   }
   
   .game-stats {
@@ -356,7 +356,7 @@
   }
   
   .game-wrapper::before {
-    height: 76px;
+    height: 60px;
   }
   
   .stat-item {
