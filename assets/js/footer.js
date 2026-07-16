@@ -33,11 +33,17 @@
 
   function renderFooter() {
     var container = document.getElementById('tablo-footer');
-    if (!container) return;
+    if (!container) {
+      console.error('[Footer] Container not found!');
+      return;
+    }
 
     var date = getLastUpdatedDate();
     var version = window.TABLO_CONFIG ? window.TABLO_CONFIG.version : '0.3.0';
     var channel = window.TABLO_CONFIG ? window.TABLO_CONFIG.channel : 'beta';
+
+    console.log('[Footer] Rendering with version:', version, 'channel:', channel);
+    console.log('[Footer] Translations available:', !!window.TABLO_TRANSLATIONS);
 
     var html = '<footer class="sticky-footer"><div class="footer-content">' +
       '<div class="footer-left">' +
@@ -59,42 +65,58 @@
 
     container.innerHTML = html;
 
-    // Apply translations
+    // Apply translations NOW
     setTimeout(function() {
-      document.querySelectorAll('.footer-content [data-i18n]').forEach(function(el) {
+      console.log('[Footer] Applying translations...');
+      var elements = document.querySelectorAll('.footer-content [data-i18n]');
+      console.log('[Footer] Found', elements.length, 'elements to translate');
+      elements.forEach(function(el) {
         var key = el.getAttribute('data-i18n');
-        if (tr(key)) el.textContent = tr(key);
+        var translation = tr(key);
+        console.log('[Footer]', key, '->', translation);
+        el.textContent = translation;
       });
-    }, 0);
-  }
-
-  function init() {
-    // Wait for DOM ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() {
-        waitForTranslationsAndRender();
-      });
-    } else {
-      waitForTranslationsAndRender();
-    }
-
-    window.addEventListener('tablo:languageChanged', function() {
-      renderFooter();
-    });
+    }, 50);
   }
 
   function waitForTranslationsAndRender() {
-    var maxAttempts = 100;
+    var maxAttempts = 50;
     var attempts = 0;
     var interval = setInterval(function() {
       attempts++;
-      if (window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[getDefaultLang()] || attempts >= maxAttempts) {
+      var lang = getDefaultLang();
+      var hasTranslations = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+      
+      console.log('[Footer] Waiting for translations... attempt', attempts, '/', maxAttempts, 'hasTranslations:', hasTranslations);
+      
+      if (hasTranslations || attempts >= maxAttempts) {
         clearInterval(interval);
+        console.log('[Footer] Proceeding to render. Translations:', !!hasTranslations);
         renderFooter();
       }
     }, 100);
   }
 
+  function init() {
+    console.log('[Footer] Initializing...');
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('[Footer] DOMContentLoaded fired');
+        waitForTranslationsAndRender();
+      });
+    } else {
+      console.log('[Footer] DOM already ready');
+      waitForTranslationsAndRender();
+    }
+
+    window.addEventListener('tablo:languageChanged', function() {
+      console.log('[Footer] Language changed event received');
+      renderFooter();
+    });
+  }
+
+  console.log('[Footer] Script loaded');
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
