@@ -14,7 +14,8 @@
     'memory-match', 'connect4', 'dots-and-lines', 'tic-tac-toe',
     'simon-says', 'number-slider', 'lights-out', 'whack-a-mole',
     'snake', '2048', 'wordle', 'spot-the-difference',
-    'hexagon-puzzle', 'chess', 'sudoku'
+    'hexagon-puzzle', 'chess', 'sudoku',
+    'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble-shooter'
   ];
 
   function getPathPrefix() {
@@ -52,6 +53,11 @@
     if (path.indexOf('/hexagon-puzzle/') !== -1) return 'hex';
     if (path.indexOf('/chess/') !== -1) return 'chess';
     if (path.indexOf('/sudoku/') !== -1) return 'sudoku';
+    if (path.indexOf('/tetris/') !== -1) return 'tetris';
+    if (path.indexOf('/minesweeper/') !== -1) return 'minesweeper';
+    if (path.indexOf('/mahjong/') !== -1) return 'mahjong';
+    if (path.indexOf('/puzzle/') !== -1) return 'puzzle';
+    if (path.indexOf('/bubble-shooter/') !== -1) return 'bubble';
     return null;
   }
 
@@ -209,7 +215,12 @@
       currentGame === 'spot' ? 'rules_spot' :
       currentGame === 'hex' ? 'rules_hex' :
       currentGame === 'chess' ? 'rules_chess' :
-      currentGame === 'sudoku' ? 'rules_sudoku' : 'rules_home';
+      currentGame === 'sudoku' ? 'rules_sudoku' :
+      currentGame === 'tetris' ? 'rules_tetris' :
+      currentGame === 'minesweeper' ? 'rules_minesweeper' :
+      currentGame === 'mahjong' ? 'rules_mahjong' :
+      currentGame === 'puzzle' ? 'rules_puzzle' :
+      currentGame === 'bubble' ? 'rules_bubble' : 'rules_home';
 
     var installSection = '';
     if ('serviceWorker' in navigator && BEFORE_INSTALL_PROMPT) {
@@ -390,7 +401,9 @@
       snake: 'share_text_snake', '2048': 'share_text_2048',
       wordle: 'share_text_wordle', spot: 'share_text_spot',
       hex: 'share_text_hex', chess: 'share_text_chess',
-      sudoku: 'share_text_sudoku'
+      sudoku: 'share_text_sudoku', tetris: 'share_text_tetris',
+      minesweeper: 'share_text_minesweeper', mahjong: 'share_text_mahjong',
+      puzzle: 'share_text_puzzle', bubble: 'share_text_bubble'
     };
     var key = keys[game] || 'share_text_home';
     return (t && t[key]) || 'Playing mini board games on Tablo!';
@@ -412,7 +425,7 @@
 
   function exportStats() {
     var stats = {};
-    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku'];
+    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku', 'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble'];
     games.forEach(function(game) {
       var best = localStorage.getItem('tablo-' + game + '-best');
       var wins = localStorage.getItem('tablo-' + game + '-wins');
