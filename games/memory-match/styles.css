@@ -2,11 +2,14 @@
    Tablo — Memory Match Game Styles
    ============================================ */
 
-/* ===== GAME WRAPPER — OVERRIDE CENTRAL CSS ===== */
+/* ===== HEADER SPACER (Compensate for fixed header) ===== */
+body {
+  padding-top: var(--header-height);
+  padding-bottom: var(--footer-height);
+}
+
+/* ===== GAME WRAPPER — FULL CONTROL ===== */
 .game-wrapper {
-  flex: 1;
-  min-height: auto;
-  overflow: visible !important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -179,8 +182,7 @@
   filter: brightness(1.1);
 }
 
-/* ===== CONGRATS MODAL — COMPLETE RESTRUCTURE ===== */
-/* Put this BEFORE the body starts its flex children */
+/* ===== CONGRATS MODAL — FIXED POSITION ===== */
 .congrats-modal {
   position: fixed;
   top: 0;
@@ -205,8 +207,6 @@
   transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
-/* No pseudo-elements, no child overlays */
-/* The background is directly on .congrats-modal */
 .congrats-content {
   position: relative;
   z-index: 1;
@@ -282,14 +282,16 @@
   z-index: 9999;
 }
 
-/* ===== FOOTER FIX — FORCE STICKY ===== */
+/* ===== FOOTER FIX — ABSOLUTE POSITIONED ===== */
 .sticky-footer {
-  position: sticky;
+  position: fixed !important;
   bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
   z-index: 100 !important;
   background: var(--bg-primary) !important;
   border-top: 1px solid var(--border-color);
-  width: 100%;
+  margin: 0 !important;
 }
 
 .sticky-footer .footer-content {
