@@ -31,29 +31,45 @@
   var timerDisplay = document.getElementById('timer');
   var bestScoreDisplay = document.getElementById('best-score');
   var restartBtn = document.getElementById('btn-restart');
-  var congratsModal = document.getElementById('congrats-modal');
-  var playAgainBtn = document.getElementById('btn-play-again');
-  var finalMoves = document.getElementById('final-moves');
-  var finalTime = document.getElementById('final-time');
   var toast = document.getElementById('toast');
 
   if (!gameBoard || !movesDisplay || !timerDisplay || 
-      !bestScoreDisplay || !restartBtn || !congratsModal || 
-      !playAgainBtn || !finalMoves || !finalTime || !toast) {
+      !bestScoreDisplay || !restartBtn || !toast) {
     console.error('[Memory Match] Required DOM elements not found!');
     return;
   }
 
   // =====================================================
-  // CRITICAL: Move modal to HTML level (NOT BODY)
-  // This ensures it CANNOT affect body's flex layout
-  // We use appendChild (move, not clone) to preserve event listeners
+  // CREATE MODAL ON <html> — NOT <body>
+  // display: none completely removes it from layout
+  // display: flex brings it back as position: fixed
+  // This CANNOT affect body's flex layout
   // =====================================================
-  var portal = document.createElement('div');
-  portal.id = 'modal-portal';
-  portal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:20000;pointer-events:none;';
-  document.documentElement.appendChild(portal);
-  portal.appendChild(congratsModal);
+  var congratsModal = document.createElement('div');
+  congratsModal.className = 'congrats-modal';
+  congratsModal.innerHTML = 
+    '<div class="congrats-content">' +
+    '<div class="congrats-icon">&#127881;</div>' +
+    '<h2 class="congrats-title"></h2>' +
+    '<div class="congrats-stats"><div class="congrats-stat-row">' +
+    '<div class="congrats-stat"><div class="congrats-stat-label" data-lbl="moves"></div><div class="congrats-stat-value" id="final-moves">0</div></div>' +
+    '<div class="congrats-stat"><div class="congrats-stat-label" data-lbl="time"></div><div class="congrats-stat-value" id="final-time">00:00</div></div>' +
+    '</div></div>' +
+    '<button class="game-btn primary" id="btn-play-again"></button>' +
+    '</div>';
+  document.documentElement.appendChild(congratsModal);
+
+  var playAgainBtn = document.getElementById('btn-play-again');
+  var finalMoves = document.getElementById('final-moves');
+  var finalTime = document.getElementById('final-time');
+
+  // Translate modal labels
+  function translateModal() {
+    congratsModal.querySelector('.congrats-title').textContent = tr('memory_congrats');
+    congratsModal.querySelector('[data-lbl="moves"]').textContent = tr('memory_moves');
+    congratsModal.querySelector('[data-lbl="time"]').textContent = tr('memory_time');
+    playAgainBtn.textContent = tr('btn_play_again');
+  }
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -198,7 +214,7 @@
 
     finalMoves.textContent = moves;
     finalTime.textContent = formatTime(secondsElapsed);
-    congratsModal.classList.add('visible');
+    congratsModal.classList.add('open');
 
     var bestKey = 'tablo-memory-best';
     var currentBest = localStorage.getItem(bestKey);
@@ -239,13 +255,19 @@
       gameBoard.appendChild(card);
     });
 
-    congratsModal.classList.remove('visible');
+    congratsModal.classList.remove('open');
   }
 
   window.initGame = function() {
+    translateModal();
     updateBestScore();
     resetGame();
   };
+
+  // Listen for language changes to re-translate modal
+  window.addEventListener('tablo:languageChanged', function() {
+    translateModal();
+  });
 
   if (restartBtn) {
     restartBtn.addEventListener('click', function() {
