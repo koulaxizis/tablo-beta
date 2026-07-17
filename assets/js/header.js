@@ -283,13 +283,6 @@
         '<button id="btn-install-app" class="game-btn primary">' + tr('btn_install') + '</button></div>';
     }
 
-    var inviteSection = '';
-    if (currentGame === 'connect4' || currentGame === 'dots' || currentGame === 'tictactoe' || currentGame === 'chess') {
-      inviteSection = '<div class="settings-section"><div class="settings-section-title">' + tr('invite_friend') + '</div>' +
-        '<p class="settings-rules-text">' + tr('invite_desc') + '</p>' +
-        '<button id="btn-invite" class="game-btn primary">' + tr('btn_copy_link') + '</button></div>';
-    }
-
     var modal = document.createElement('div');
     modal.className = 'settings-modal';
     modal.id = 'tablo-settings-modal';
@@ -315,7 +308,6 @@
       '<button id="btn-import-stats" class="game-btn">' + tr('btn_import') + '</button>' +
       '<input type="file" id="import-file-input" accept=".json" style="display: none;">' +
       '<button id="btn-export-stats" class="game-btn primary">' + tr('btn_download') + '</button></div></div>' +
-      inviteSection +
       '<div class="settings-section"><div class="settings-section-title">' + tr('aria_theme_toggle') + '</div>' +
       '<div class="settings-row">' +
       '<button id="toggle-theme" class="game-btn">' + (currentTheme === 'dark' ? tr('theme_light') : tr('theme_dark')) + '</button></div></div>' +
@@ -338,28 +330,6 @@
             }
             BEFORE_INSTALL_PROMPT = null;
           });
-        }
-      });
-    }
-
-    var inviteBtn = modal.querySelector('#btn-invite');
-    if (inviteBtn) {
-      inviteBtn.addEventListener('click', function() {
-        var url = window.location.href;
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(url).then(function() {
-            showToast(tr('invite_link_copied'));
-          }).catch(function() {
-            showToast(tr('invite_copy_failed'));
-          });
-        } else {
-          var ta = document.createElement('textarea');
-          ta.value = url;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-          showToast(tr('invite_link_copied'));
         }
       });
     }
