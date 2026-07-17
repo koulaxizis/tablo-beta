@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Simon Says (Fixed flash issue)
+// Tablo — Simon Says
 // ============================================
 
 (function() {
@@ -13,12 +13,14 @@
   var waitingForUser = false;
 
   var tiles = [];
-  var startBtn = document.getElementById('simon-start');
+  var startBtn = document.getElementById('btn-start');
   var scoreEl = document.getElementById('score');
   var bestEl = document.getElementById('best-score');
   var roundEl = document.getElementById('round');
-  var messageEl = document.getElementById('message');
-  var restartBtn = document.getElementById('restart-btn');
+  var gameOverModal = document.getElementById('game-over-modal');
+  var gameOverTitle = document.getElementById('game-over-title');
+  var retryBtn = document.getElementById('btn-retry');
+  var finalScoreMsg = document.getElementById('final-score-msg');
   var toast = document.getElementById('toast');
 
   function tr(key) {
@@ -29,9 +31,12 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
-    setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 2500);
   }
 
   function getColors() {
@@ -42,7 +47,7 @@
     return [329.63, 392.00, 261.63, 293.66];
   }
 
-  function flashTile(index, duration, playSound) {
+  function flashTile(index, duration) {
     var tile = tiles[index];
     if (!tile) return;
 
@@ -76,21 +81,20 @@
     for (var i = 0; i < pattern.length; i++) {
       (function(i) {
         setTimeout(function() {
-          flashTile(pattern[i], speed, true);
+          flashTile(pattern[i], speed);
         }, i * speed);
       })(i);
     }
 
     setTimeout(function() {
       waitingForUser = true;
-      if (messageEl) messageEl.textContent = tr('simon_instruction');
     }, pattern.length * speed + 200);
   }
 
   function handleTileClick(index) {
     if (!waitingForUser || !gameActive) return;
 
-    flashTile(index, 200, true);
+    flashTile(index, 200);
     userPattern.push(index);
 
     var currentStep = userPattern.length - 1;
@@ -120,8 +124,12 @@
       if (bestEl) bestEl.textContent = score;
     }
 
-    if (messageEl) messageEl.textContent = tr('simon_game_over');
-    showToast(tr('simon_you_scored') + ' ' + score);
+    if (finalScoreMsg) {
+      finalScoreMsg.textContent = tr('simon_you_scored') + ': ' + score;
+    }
+
+    gameOverModal.classList.add('visible');
+    showToast('simon_game_over');
   }
 
   function startGame() {
@@ -132,18 +140,18 @@
     gameActive = true;
     waitingForUser = false;
 
-    if (roundEl) roundEl.textContent = round;
-    if (scoreEl) scoreEl.textContent = score;
-    if (messageEl) messageEl.textContent = tr('simon_instruction');
+    if (roundEl) roundEl.textContent = 1;
+    if (scoreEl) scoreEl.textContent = 0;
     if (startBtn) startBtn.disabled = true;
 
+    gameOverModal.classList.remove('visible');
     setTimeout(playPattern, 500);
   }
 
   function initGame() {
-    var grid = document.getElementById('simon-grid');
-    if (grid) {
-      tiles = grid.querySelectorAll('.simon-tile');
+    var board = document.getElementById('board');
+    if (board) {
+      tiles = board.querySelectorAll('.simon-button');
       tiles.forEach(function(tile, index) {
         tile.addEventListener('click', function() {
           handleTileClick(index);
@@ -155,11 +163,8 @@
       startBtn.addEventListener('click', startGame);
     }
 
-    if (restartBtn) {
-      restartBtn.addEventListener('click', function() {
-        startGame();
-        showToast(tr('toast_restarted'));
-      });
+    if (retryBtn) {
+      retryBtn.addEventListener('click', startGame);
     }
 
     var best = localStorage.getItem('tablo-simon-best');
