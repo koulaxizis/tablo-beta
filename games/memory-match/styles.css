@@ -1,14 +1,12 @@
 /* ============================================
    Tablo — Memory Match Game Styles
    GAME-SPECIFIC STYLES ONLY
-   Does NOT touch body, header, or footer
    ============================================ */
 
 /* ===== GAME WRAPPER ===== */
-/* overflow: visible (BOTH axes) kills the midfield scrollbar */
-/* display: flex centers the game content */
+/* No overflow override — let central CSS handle it */
+/* Just add centering for game content */
 .game-wrapper {
-  overflow: visible !important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -180,9 +178,6 @@
 }
 
 /* ===== CONGRATS MODAL ===== */
-/* Created by game.js on <html> (NOT <body>) */
-/* display: none completely removes from layout */
-/* display: flex brings it back as position: fixed */
 .congrats-modal {
   position: fixed;
   top: 0;
