@@ -1,9 +1,12 @@
 // ============================================
-// Tablo — Whack-a-Mole (Fixed emoji)
+// Tablo — Whack-a-Mole
 // ============================================
 
 (function() {
   'use strict';
+
+  var MOLE_EMOJI = '\uD83D\uDC39';
+  var HIT_EMOJI  = '\uD83D\uDCA5';
 
   var score = 0;
   var timeLeft = 30;
@@ -11,18 +14,17 @@
   var timerInterval = null;
   var moleInterval = null;
   var currentMoleHole = null;
+  var moles = [];
 
-  var holes = [];
-  var scoreEl = document.getElementById('whack-score');
-  var bestEl = document.getElementById('whack-best');
-  var timeEl = document.getElementById('whack-time');
-  var startBtn = document.getElementById('whack-start');
+  var scoreEl = document.getElementById('score');
+  var bestEl  = document.getElementById('best-score');
+  var timeEl  = document.getElementById('time-left');
+  var startBtn = document.getElementById('btn-start');
+  var retryBtn = document.getElementById('btn-retry');
   var gameOverModal = document.getElementById('game-over-modal');
   var finalScoreEl = document.getElementById('final-score');
-  var retryBtn = document.getElementById('btn-retry');
+  var finalBestEl  = document.getElementById('final-best');
   var toast = document.getElementById('toast');
-
-  var MOLE_EMOJI = '\uD83D\uDC39';
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -32,47 +34,62 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
-    setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 2000);
+  }
+
+  function hideAllMoles() {
+    moles.forEach(function(mole) {
+      if (mole) {
+        mole.classList.remove('up');
+        mole.classList.remove('hit');
+        mole.textContent = '';
+      }
+    });
   }
 
   function showMole() {
     if (!gameActive) return;
 
-    if (currentMoleHole !== null && holes[currentMoleHole]) {
-      holes[currentMoleHole].textContent = '';
-      holes[currentMoleHole].classList.remove('mole-visible');
-    }
+    hideAllMoles();
 
-    var newHole = Math.floor(Math.random() * holes.length);
-    while (newHole === currentMoleHole && holes.length > 1) {
-      newHole = Math.floor(Math.random() * holes.length);
+    var newHole = Math.floor(Math.random() * moles.length);
+    while (newHole === currentMoleHole && moles.length > 1) {
+      newHole = Math.floor(Math.random() * moles.length);
     }
     currentMoleHole = newHole;
 
-    if (holes[newHole]) {
-      holes[newHole].textContent = MOLE_EMOJI;
-      holes[newHole].classList.add('mole-visible');
+    if (moles[newHole]) {
+      moles[newHole].textContent = MOLE_EMOJI;
+      moles[newHole].classList.add('up');
     }
   }
 
   function whackMole(index) {
     if (!gameActive) return;
-    if (index === currentMoleHole) {
-      score++;
-      if (scoreEl) scoreEl.textContent = score;
-      holes[index].classList.add('whacked');
-      holes[index].textContent = '\uD83D\uDCA5';
+    if (index !== currentMoleHole) return;
 
-      setTimeout(function() {
-        holes[index].classList.remove('whacked');
-        holes[index].classList.remove('mole-visible');
-        holes[index].textContent = '';
-      }, 300);
+    score++;
+    if (scoreEl) scoreEl.textContent = score;
 
-      currentMoleHole = null;
+    if (moles[index]) {
+      moles[index].classList.add('hit');
+      moles[index].textContent = HIT_EMOJI;
     }
+
+    currentMoleHole = null;
+
+    setTimeout(function() {
+      if (moles[index]) {
+        moles[index].classList.remove('up');
+        moles[index].classList.remove('hit');
+        moles[index].textContent = '';
+      }
+    }, 300);
   }
 
   function startGame() {
@@ -82,20 +99,17 @@
 
     if (scoreEl) scoreEl.textContent = '0';
     if (timeEl) timeEl.textContent = '30';
-
     if (startBtn) startBtn.disabled = true;
     if (gameOverModal) gameOverModal.classList.remove('visible');
 
+    hideAllMoles();
     showMole();
-    moleInterval = setInterval(showMole, 800);
+    moleInterval = setInterval(showMole, 850);
 
     timerInterval = setInterval(function() {
       timeLeft--;
       if (timeEl) timeEl.textContent = timeLeft;
-
-      if (timeLeft <= 0) {
-        endGame();
-      }
+      if (timeLeft <= 0) endGame();
     }, 1000);
   }
 
@@ -103,28 +117,29 @@
     gameActive = false;
     clearInterval(timerInterval);
     clearInterval(moleInterval);
+    hideAllMoles();
 
-    if (currentMoleHole !== null && holes[currentMoleHole]) {
-      holes[currentMoleHole].textContent = '';
-      holes[currentMoleHole].classList.remove('mole-visible');
-    }
-
-    var best = localStorage.getItem('tablo-whack-best');
+    var best = localStorage.getItem('tablo-wam-best');
     if (!best || score > parseInt(best)) {
-      localStorage.setItem('tablo-whack-best', score.toString());
+      localStorage.setItem('tablo-wam-best', score.toString());
       if (bestEl) bestEl.textContent = score;
     }
 
+    var savedBest = localStorage.getItem('tablo-wam-best') || '0';
     if (finalScoreEl) finalScoreEl.textContent = score;
+    if (finalBestEl) finalBestEl.textContent = savedBest;
+
     if (gameOverModal) gameOverModal.classList.add('visible');
     if (startBtn) startBtn.disabled = false;
   }
 
   function initGame() {
-    var grid = document.getElementById('whack-grid');
+    var grid = document.getElementById('mole-grid');
     if (grid) {
-      var holeElements = grid.querySelectorAll('.mole-hole');
-      holes = Array.prototype.slice.call(holeElements);
+      var moleEls = grid.querySelectorAll('.mole');
+      moles = Array.prototype.slice.call(moleEls);
+
+      var holes = grid.querySelectorAll('.mole-hole');
       holes.forEach(function(hole, index) {
         hole.addEventListener('click', function() {
           whackMole(index);
@@ -132,8 +147,8 @@
       });
     }
 
-    var best = localStorage.getItem('tablo-whack-best');
-    if (bestEl) bestEl.textContent = best || '0';
+    var best = localStorage.getItem('tablo-wam-best') || '0';
+    if (bestEl) bestEl.textContent = best;
 
     if (startBtn) {
       startBtn.addEventListener('click', startGame);
