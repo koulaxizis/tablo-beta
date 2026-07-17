@@ -260,6 +260,11 @@
   transform: translateX(-50%) translateY(0);
 }
 
+.tile.empty {
+  background: transparent;
+  visibility: hidden;
+}
+
 @media (max-width: 768px) {
   .game-stats { gap: 16px; padding: 12px 16px; }
   .stat-value { font-size: 18px; }
