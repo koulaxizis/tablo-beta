@@ -180,8 +180,6 @@
 }
 
 /* ===== CONGRATS MODAL ===== */
-/* Modal is moved to a portal div on <html> by game.js */
-/* so it CANNOT affect body's flex layout */
 .congrats-modal {
   position: fixed;
   top: 0;
@@ -284,16 +282,95 @@
   font-family: 'Nunito', monospace;
 }
 
-/* ===== TOAST FIX ===== */
+/* ===== FOOTER FIX — STICKY FOOTER ===== */
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+}
+
+.sticky-footer .footer-content {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sticky-footer .footer-left,
+.sticky-footer .footer-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sticky-footer .footer-center {
+  text-align: center;
+  font-size: 13px;
+}
+
+.sticky-footer .footer-motto {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.sticky-footer .privacy-badge {
+  font-size: 11px;
+  background: var(--bg-surface);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.sticky-footer .version-number {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sticky-footer .channel-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.sticky-footer .channel-badge.beta {
+  background: var(--accent-secondary);
+  color: #000;
+}
+
+.sticky-footer .channel-badge.stable {
+  background: var(--accent-success);
+  color: #000;
+}
+
+.sticky-footer .last-updated {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.sticky-footer .made-by {
+  color: var(--text-secondary);
+}
+
+.sticky-footer .made-by a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.sticky-footer .made-by a:hover {
+  text-decoration: underline;
+}
+
+/* Toast fix */
 .tablo-toast {
   pointer-events: none;
   z-index: 9999;
-}
-
-/* Ensure footer is below game content with spacing */
-#tablo-footer {
-  flex-shrink: 0;
-  margin-top: 20px;
 }
 
 /* ===== RESPONSIVE LAYOUT ===== */
@@ -306,6 +383,10 @@
   .memory-game {
     max-width: 480px;
   }
+  
+  .sticky-footer .footer-content {
+    padding: 16px 24px;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
@@ -315,6 +396,10 @@
   
   .memory-game {
     max-width: 440px;
+  }
+  
+  .sticky-footer .footer-content {
+    padding: 14px 20px;
   }
 }
 
@@ -351,8 +436,16 @@
     justify-content: center;
   }
   
-  #tablo-footer {
-    margin-top: 12px;
+  .sticky-footer .footer-content {
+    padding: 12px 16px;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .sticky-footer .footer-left,
+  .sticky-footer .footer-right {
+    align-items: center;
   }
 }
 
@@ -388,7 +481,16 @@
     white-space: nowrap;
   }
   
-  #tablo-footer {
-    margin-top: 8px;
+  .sticky-footer .footer-content {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  .sticky-footer .footer-motto {
+    font-size: 12px;
+  }
+  
+  .sticky-footer .privacy-badge {
+    font-size: 10px;
   }
 }
