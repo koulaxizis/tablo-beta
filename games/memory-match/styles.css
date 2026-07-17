@@ -180,6 +180,8 @@
 }
 
 /* ===== CONGRATS MODAL ===== */
+/* Modal is moved to a portal div on <html> by game.js */
+/* so it CANNOT affect body's flex layout */
 .congrats-modal {
   position: fixed;
   top: 0;
@@ -203,7 +205,6 @@
   transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
-/* Dedicated overlay element */
 .congrats-modal-overlay {
   position: absolute;
   top: 0;
@@ -212,7 +213,6 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
   z-index: 0;
-  pointer-events: auto;
 }
 
 .congrats-content {
@@ -224,7 +224,7 @@
   padding: 32px 24px;
   text-align: center;
   max-width: 400px;
-  width: 90%;
+  width: 90vw;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
@@ -294,11 +294,6 @@
 #tablo-footer {
   flex-shrink: 0;
   margin-top: 20px;
-}
-
-/* ONLY overflow hidden — NO position: fixed, NO width changes */
-body.modal-open {
-  overflow: hidden !important;
 }
 
 /* ===== RESPONSIVE LAYOUT ===== */

@@ -44,6 +44,16 @@
     return;
   }
 
+  // ============================================
+  // MOVE MODAL OUT OF BODY FLEX FLOW
+  // This prevents the modal from affecting the
+  // body's flex layout (header / wrapper / footer)
+  // ============================================
+  var modalPortal = document.createElement('div');
+  modalPortal.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;z-index:20000;pointer-events:none;';
+  document.documentElement.appendChild(modalPortal);
+  modalPortal.appendChild(congratsModal);
+
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
@@ -59,14 +69,6 @@
     showToast._timer = setTimeout(function() {
       toast.classList.remove('visible');
     }, 3000);
-  }
-
-  function showModal() {
-    congratsModal.classList.add('visible');
-  }
-
-  function hideModal() {
-    congratsModal.classList.remove('visible');
   }
 
   function startTimer() {
@@ -195,7 +197,7 @@
 
     finalMoves.textContent = moves;
     finalTime.textContent = formatTime(secondsElapsed);
-    showModal();
+    congratsModal.classList.add('visible');
 
     var bestKey = 'tablo-memory-best';
     var currentBest = localStorage.getItem(bestKey);
@@ -236,7 +238,7 @@
       gameBoard.appendChild(card);
     });
 
-    hideModal();
+    congratsModal.classList.remove('visible');
   }
 
   window.initGame = function() {
