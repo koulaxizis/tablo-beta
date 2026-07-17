@@ -78,7 +78,7 @@
     }
   }
 
-  function svgEl(tag) {
+  function createSvg(tag) {
     return document.createElementNS('http://www.w3.org/2000/svg', tag);
   }
 
@@ -90,7 +90,7 @@
     // Render boxes (behind everything)
     for (var r = 0; r < GRID_SIZE; r++) {
       for (var c = 0; c < GRID_SIZE; c++) {
-        var rect = svgEl('rect');
+        var rect = createSvg('rect');
         rect.setAttribute('id', 'box-' + r + '-' + c);
         rect.setAttribute('x', dots[r][c].x);
         rect.setAttribute('y', dots[r][c].y);
@@ -100,7 +100,7 @@
         rect.setAttribute('class', 'box');
         svgEl.appendChild(rect);
 
-        var text = svgEl('text');
+        var text = createSvg('text');
         text.setAttribute('x', (dots[r][c].x + dots[r][c+1].x) / 2);
         text.setAttribute('y', (dots[r][c].y + dots[r+1][c].y) / 2);
         text.setAttribute('text-anchor', 'middle');
@@ -122,7 +122,7 @@
         var y2 = dots[r][c+1].y;
 
         // Invisible thick hit area
-        var hit = svgEl('line');
+        var hit = createSvg('line');
         hit.setAttribute('x1', x1);
         hit.setAttribute('y1', y1);
         hit.setAttribute('x2', x2);
@@ -141,7 +141,7 @@
         svgEl.appendChild(hit);
 
         // Visible line
-        var vis = svgEl('line');
+        var vis = createSvg('line');
         vis.setAttribute('id', lineId);
         vis.setAttribute('x1', x1);
         vis.setAttribute('y1', y1);
@@ -164,7 +164,7 @@
         var x2 = dots[r+1][c].x;
         var y2 = dots[r+1][c].y;
 
-        var hit = svgEl('line');
+        var hit = createSvg('line');
         hit.setAttribute('x1', x1);
         hit.setAttribute('y1', y1);
         hit.setAttribute('x2', x2);
@@ -182,7 +182,7 @@
         });
         svgEl.appendChild(hit);
 
-        var vis = svgEl('line');
+        var vis = createSvg('line');
         vis.setAttribute('id', lineId);
         vis.setAttribute('x1', x1);
         vis.setAttribute('y1', y1);
@@ -199,7 +199,7 @@
     // Render dots (on top)
     for (var r = 0; r < BOARD_SIZE; r++) {
       for (var c = 0; c < BOARD_SIZE; c++) {
-        var dot = svgEl('circle');
+        var dot = createSvg('circle');
         dot.setAttribute('cx', dots[r][c].x);
         dot.setAttribute('cy', dots[r][c].y);
         dot.setAttribute('r', 6);
