@@ -1,22 +1,11 @@
 /* ============================================
    Tablo — Memory Match Game Styles
-   ===== ONLY GAME-SPECIFIC STYLES ====
-   ===== HEADER/FOSTER LEFT UNTouched BY CENTRAL CSS =====
    ============================================ */
 
-/* ===== GAME WRAPPER — OVERRIDE CENTRAL CSS FOR SCROLLBAR FIX ===== */
+/* ===== GAME WRAPPER — MINIMAL OVERRIDE ONLY ===== */
+/* Just kill the midfield scrollbar, nothing else */
 .game-wrapper {
   overflow: visible !important;
-  min-height: auto !important;
-  flex: 0 1 auto !important;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0 20px 20px;
-  gap: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
 }
 
 .game-wrapper::before {
@@ -28,7 +17,6 @@
 
 /* ===== GAME STATS ===== */
 .game-stats {
-  flex-shrink: 0;
   display: flex;
   gap: 24px;
   padding: 16px 24px;
@@ -66,7 +54,6 @@
 
 /* ===== MEMORY GAME BOARD ===== */
 .memory-game {
-  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
@@ -139,7 +126,6 @@
 
 /* ===== GAME CONTROLS ===== */
 .game-controls {
-  flex-shrink: 0;
   display: flex;
   gap: 12px;
   justify-content: center;
@@ -181,8 +167,7 @@
   filter: brightness(1.1);
 }
 
-/* ===== CONGRATS MODAL — ISOLATED ON <html>, display: none ===== */
-/* NO styling that affects body layout */
+/* ===== CONGRATS MODAL — ON <html>, display: none ===== */
 .congrats-modal {
   position: fixed;
   top: 0;

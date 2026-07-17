@@ -39,12 +39,7 @@
     return;
   }
 
-  // =====================================================
-  // CREATE MODAL ON <html> — NOT <body>
-  // display: none completely removes it from layout
-  // display: flex brings it back as position: fixed
-  // This CANNOT affect body's flex layout
-  // =====================================================
+  // Create modal on <html> - NOT <body>
   var congratsModal = document.createElement('div');
   congratsModal.className = 'congrats-modal';
   congratsModal.innerHTML = 
@@ -63,7 +58,6 @@
   var finalMoves = document.getElementById('final-moves');
   var finalTime = document.getElementById('final-time');
 
-  // Translate modal labels
   function translateModal() {
     congratsModal.querySelector('.congrats-title').textContent = tr('memory_congrats');
     congratsModal.querySelector('[data-lbl="moves"]').textContent = tr('memory_moves');
@@ -264,7 +258,6 @@
     resetGame();
   };
 
-  // Listen for language changes to re-translate modal
   window.addEventListener('tablo:languageChanged', function() {
     translateModal();
   });
