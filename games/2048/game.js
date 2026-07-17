@@ -21,6 +21,7 @@
   var gameOverIcon = document.getElementById('game-over-icon');
   var gameOverTitle = document.getElementById('game-over-title');
   var gameOverMessage = document.getElementById('game-over-message');
+  var winnerButtons = document.getElementById('winner-buttons');
   var toast = document.getElementById('toast');
 
   function tr(key) {
@@ -31,10 +32,12 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    showToast._t = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 2000);
   }
 
   function initGrid() {
@@ -61,6 +64,7 @@
   }
 
   function render() {
+    if (!tileContainer) return;
     tileContainer.innerHTML = '';
     for (var r = 0; r < SIZE; r++) {
       for (var c = 0; c < SIZE; c++) {
@@ -98,18 +102,6 @@
     return { row: merged, gained: gained };
   }
 
-  function moveLeft() {
-    var moved = false;
-    var totalGained = 0;
-    for (var r = 0; r < SIZE; r++) {
-      var result = slideRow(grid[r]);
-      if (!arraysEqual(grid[r], result.row)) moved = true;
-      grid[r] = result.row;
-      totalGained += result.gained;
-    }
-    return { moved: moved, gained: totalGained };
-  }
-
   function arraysEqual(a, b) {
     for (var i = 0; i < a.length; i++) {
       if (a[i] !== b[i]) return false;
@@ -143,6 +135,18 @@
     grid = newGrid;
   }
 
+  function moveLeft() {
+    var moved = false;
+    var totalGained = 0;
+    for (var r = 0; r < SIZE; r++) {
+      var result = slideRow(grid[r]);
+      if (!arraysEqual(grid[r], result.row)) moved = true;
+      grid[r] = result.row;
+      totalGained += result.gained;
+    }
+    return { moved: moved, gained: totalGained };
+  }
+
   function move(direction) {
     var result;
     if (direction === 'left') {
@@ -165,13 +169,13 @@
 
     if (result.moved) {
       score += result.gained;
-      scoreEl.textContent = score;
+      if (scoreEl) scoreEl.textContent = score;
       addRandomTile();
       render();
 
       if (score > bestScore) {
         bestScore = score;
-        bestEl.textContent = bestScore;
+        if (bestEl) bestEl.textContent = bestScore;
         localStorage.setItem('tablo-2048-best', bestScore.toString());
       }
 
@@ -195,30 +199,45 @@
   }
 
   function showWinModal() {
-    gameOverIcon.textContent = '\uD83C\uDF89';
-    gameOverTitle.textContent = '2048!';
-    gameOverMessage.textContent = tr('game_2048_win_msg');
-    gameOverModal.classList.add('visible');
+    if (gameOverIcon) gameOverIcon.textContent = '\uD83C\uDF89';
+    if (gameOverTitle) gameOverTitle.textContent = tr('game_2048_win');
+    if (gameOverMessage) gameOverMessage.textContent = tr('game_2048_win_msg');
 
-    var continueBtn = document.createElement('button');
-    continueBtn.className = 'game-btn';
-    continueBtn.textContent = tr('game_2048_continue');
-    continueBtn.style.marginRight = '8px';
-    continueBtn.onclick = function() {
-      continueAfterWin = true;
-      gameOverModal.classList.remove('visible');
-    };
-    var existingBtn = gameOverModal.querySelector('.game-btn.primary');
-    if (existingBtn && existingBtn.parentNode) {
-      existingBtn.parentNode.insertBefore(continueBtn, existingBtn);
+    if (winnerButtons) {
+      winnerButtons.innerHTML = '';
+      var continueBtn = document.createElement('button');
+      continueBtn.className = 'game-btn';
+      continueBtn.textContent = tr('game_2048_continue');
+      continueBtn.onclick = function() {
+        continueAfterWin = true;
+        if (gameOverModal) gameOverModal.classList.remove('visible');
+      };
+      var playAgainBtn = document.createElement('button');
+      playAgainBtn.className = 'game-btn primary';
+      playAgainBtn.textContent = tr('btn_play_again');
+      playAgainBtn.onclick = newGame;
+      winnerButtons.appendChild(continueBtn);
+      winnerButtons.appendChild(playAgainBtn);
     }
+
+    if (gameOverModal) gameOverModal.classList.add('visible');
   }
 
   function showGameOver() {
-    gameOverIcon.textContent = '\uD83D\uDE22';
-    gameOverTitle.textContent = tr('snake_game_over');
-    gameOverMessage.textContent = tr('snake_score') + ': ' + score;
-    gameOverModal.classList.add('visible');
+    if (gameOverIcon) gameOverIcon.textContent = '\uD83D\uDE22';
+    if (gameOverTitle) gameOverTitle.textContent = tr('game_2048_game_over');
+    if (gameOverMessage) gameOverMessage.textContent = tr('game_2048_score') + ': ' + score;
+
+    if (winnerButtons) {
+      winnerButtons.innerHTML = '';
+      var playAgainBtn = document.createElement('button');
+      playAgainBtn.className = 'game-btn primary';
+      playAgainBtn.textContent = tr('btn_play_again');
+      playAgainBtn.onclick = newGame;
+      winnerButtons.appendChild(playAgainBtn);
+    }
+
+    if (gameOverModal) gameOverModal.classList.add('visible');
   }
 
   function newGame() {
@@ -226,8 +245,8 @@
     score = 0;
     gameWon = false;
     continueAfterWin = false;
-    scoreEl.textContent = '0';
-    gameOverModal.classList.remove('visible');
+    if (scoreEl) scoreEl.textContent = '0';
+    if (gameOverModal) gameOverModal.classList.remove('visible');
     addRandomTile();
     addRandomTile();
     render();
@@ -264,26 +283,32 @@
     e.preventDefault();
   }
 
-  var gridContainer = document.getElementById('grid-container');
-  gridContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-  gridContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
-
   function initGame() {
     var saved = localStorage.getItem('tablo-2048-best');
     if (saved) {
       bestScore = parseInt(saved) || 0;
-      bestEl.textContent = bestScore;
+      if (bestEl) bestEl.textContent = bestScore;
     }
+
     document.addEventListener('keydown', handleKey);
+
+    var gridContainer = document.getElementById('grid-container');
+    if (gridContainer) {
+      gridContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+      gridContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+    }
+
     if (newGameBtn) {
       newGameBtn.addEventListener('click', function() {
         newGame();
-        showToast(tr('toast_restarted'));
+        showToast('toast_restarted');
       });
     }
+
     if (retryBtn) {
       retryBtn.addEventListener('click', newGame);
     }
+
     newGame();
   }
 
