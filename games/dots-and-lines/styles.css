@@ -68,56 +68,15 @@
   flex-shrink: 0;
   max-width: 100%;
   height: auto;
+  width: 320px;
   user-select: none;
 }
 
-.dot {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  background: var(--accent, #2dd4bf);
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 10;
-  transition: transform 0.1s ease;
-}
-
-.dot:hover { transform: scale(1.2); }
-
-.line {
-  position: absolute;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.line.horizontal {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--text-muted, #5a6e7c);
-}
-
-.line.vertical {
-  width: 4px;
-  border-radius: 2px;
-  background: var(--text-muted, #5a6e7c);
-}
-
-.line:hover { opacity: 0.8; }
-
-.line.drawn.player1 {
-  background: var(--color-p1);
-  box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
-}
-
-.line.drawn.player2 {
-  background: var(--color-p2);
-  box-shadow: 0 0 8px rgba(255, 217, 61, 0.4);
-}
-
-.box-number {
-  font-size: 18px;
+.box-label {
+  font-size: 16px;
   font-weight: 700;
   font-family: 'Nunito', sans-serif;
+  pointer-events: none;
 }
 
 .game-controls {
@@ -273,5 +232,4 @@
 
 @media (max-width: 480px) {
   .game-wrapper { padding: 0 12px 12px; gap: 20px; }
-  .dot { width: 18px; height: 18px; }
 }

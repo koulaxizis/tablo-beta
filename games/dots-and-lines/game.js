@@ -5,6 +5,7 @@
 (function() {
   'use strict';
 
+  var SVG_SIZE = 320;
   var GRID_SIZE = 5;
   var BOARD_SIZE = GRID_SIZE + 1;
   var dots = [];
@@ -15,7 +16,7 @@
   var gameActive = false;
   var aiThinking = false;
 
-  var dotsEl = document.getElementById('game-svg');
+  var svgEl = document.getElementById('game-svg');
   var turnEl = document.getElementById('turn-display');
   var p1ScoreEl = document.getElementById('score-p1');
   var p2ScoreEl = document.getElementById('score-p2');
@@ -65,76 +66,92 @@
   }
 
   function calculatePositions() {
-    if (!dotsEl) return;
-    var width = dotsEl.clientWidth || dotsEl.offsetWidth;
-    var height = dotsEl.clientHeight || dotsEl.offsetHeight;
-    var dotSpacing = Math.min(width, height) / (GRID_SIZE + 1) * 0.85;
-    var startX = (width - dotSpacing * GRID_SIZE) / 2;
-    var startY = (height - dotSpacing * GRID_SIZE) / 2;
+    var padding = 30;
+    var usable = SVG_SIZE - padding * 2;
+    var spacing = usable / GRID_SIZE;
 
     for (var r = 0; r < BOARD_SIZE; r++) {
       for (var c = 0; c < BOARD_SIZE; c++) {
-        dots[r][c].x = startX + c * dotSpacing;
-        dots[r][c].y = startY + r * dotSpacing;
+        dots[r][c].x = padding + c * spacing;
+        dots[r][c].y = padding + r * spacing;
       }
     }
   }
 
+  function svgEl(tag) {
+    return document.createElementNS('http://www.w3.org/2000/svg', tag);
+  }
+
   function renderBoard() {
-    if (!dotsEl) return;
-    dotsEl.innerHTML = '';
+    if (!svgEl) return;
+    svgEl.innerHTML = '';
     calculatePositions();
 
-    var dotRadius = 12;
+    // Render boxes (behind everything)
+    for (var r = 0; r < GRID_SIZE; r++) {
+      for (var c = 0; c < GRID_SIZE; c++) {
+        var rect = svgEl('rect');
+        rect.setAttribute('id', 'box-' + r + '-' + c);
+        rect.setAttribute('x', dots[r][c].x);
+        rect.setAttribute('y', dots[r][c].y);
+        rect.setAttribute('width', dots[r][c+1].x - dots[r][c].x);
+        rect.setAttribute('height', dots[r+1][c].y - dots[r][c].y);
+        rect.setAttribute('fill', 'transparent');
+        rect.setAttribute('class', 'box');
+        svgEl.appendChild(rect);
 
-    // Render dots
-    for (var r = 0; r < BOARD_SIZE; r++) {
-      for (var c = 0; c < BOARD_SIZE; c++) {
-        var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        dot.setAttribute('cx', dots[r][c].x);
-        dot.setAttribute('cy', dots[r][c].y);
-        dot.setAttribute('r', dotRadius);
-        dot.setAttribute('fill', '#2dd4bf');
-        dot.setAttribute('class', 'dot');
-
-        var clickGroup = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        clickGroup.setAttribute('cx', dots[r][c].x);
-        clickGroup.setAttribute('cy', dots[r][c].y);
-        clickGroup.setAttribute('r', dotRadius * 2);
-        clickGroup.setAttribute('fill', 'transparent');
-        clickGroup.style.cursor = 'pointer';
-
-        clickGroup.addEventListener('click', function(e) {
-          e.stopPropagation();
-        });
-
-        dotsEl.appendChild(clickGroup);
-        dotsEl.appendChild(dot);
+        var text = svgEl('text');
+        text.setAttribute('x', (dots[r][c].x + dots[r][c+1].x) / 2);
+        text.setAttribute('y', (dots[r][c].y + dots[r+1][c].y) / 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('class', 'box-label');
+        text.setAttribute('id', 'box-label-' + r + '-' + c);
+        text.style.opacity = '0';
+        svgEl.appendChild(text);
       }
     }
 
-    // Render horizontal lines
+    // Render horizontal lines (clickable hit areas + visual lines)
     for (var r = 0; r < BOARD_SIZE; r++) {
       for (var c = 0; c < GRID_SIZE; c++) {
         var lineId = 'h-' + r + '-' + c;
-        var hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        hLine.setAttribute('id', lineId);
-        hLine.setAttribute('x1', dots[r][c].x);
-        hLine.setAttribute('y1', dots[r][c].y);
-        hLine.setAttribute('x2', dots[r][c+1].x);
-        hLine.setAttribute('y2', dots[r][c+1].y);
-        hLine.setAttribute('stroke-width', 4);
-        hLine.setAttribute('stroke-linecap', 'round');
-        hLine.setAttribute('data-type', 'horizontal');
-        hLine.setAttribute('data-r', r);
-        hLine.setAttribute('data-c', c);
+        var x1 = dots[r][c].x;
+        var y1 = dots[r][c].y;
+        var x2 = dots[r][c+1].x;
+        var y2 = dots[r][c+1].y;
 
-        hLine.addEventListener('click', function(e) {
+        // Invisible thick hit area
+        var hit = svgEl('line');
+        hit.setAttribute('x1', x1);
+        hit.setAttribute('y1', y1);
+        hit.setAttribute('x2', x2);
+        hit.setAttribute('y2', y2);
+        hit.setAttribute('stroke', 'transparent');
+        hit.setAttribute('stroke-width', 16);
+        hit.setAttribute('stroke-linecap', 'round');
+        hit.setAttribute('cursor', 'pointer');
+        hit.setAttribute('data-type', 'horizontal');
+        hit.setAttribute('data-r', r);
+        hit.setAttribute('data-c', c);
+        hit.addEventListener('click', function(e) {
           handleLineClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c), 'horizontal');
           e.stopPropagation();
         });
+        svgEl.appendChild(hit);
 
-        dotsEl.appendChild(hLine);
+        // Visible line
+        var vis = svgEl('line');
+        vis.setAttribute('id', lineId);
+        vis.setAttribute('x1', x1);
+        vis.setAttribute('y1', y1);
+        vis.setAttribute('x2', x2);
+        vis.setAttribute('y2', y2);
+        vis.setAttribute('stroke', 'rgba(90, 110, 124, 0.3)');
+        vis.setAttribute('stroke-width', 4);
+        vis.setAttribute('stroke-linecap', 'round');
+        vis.setAttribute('pointer-events', 'none');
+        svgEl.appendChild(vis);
       }
     }
 
@@ -142,24 +159,53 @@
     for (var r = 0; r < GRID_SIZE; r++) {
       for (var c = 0; c < BOARD_SIZE; c++) {
         var lineId = 'v-' + r + '-' + c;
-        var vLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        vLine.setAttribute('id', lineId);
-        vLine.setAttribute('x1', dots[r][c].x);
-        vLine.setAttribute('y1', dots[r][c].y);
-        vLine.setAttribute('x2', dots[r+1][c].x);
-        vLine.setAttribute('y2', dots[r+1][c].y);
-        vLine.setAttribute('stroke-width', 4);
-        vLine.setAttribute('stroke-linecap', 'round');
-        vLine.setAttribute('data-type', 'vertical');
-        vLine.setAttribute('data-r', r);
-        vLine.setAttribute('data-c', c);
+        var x1 = dots[r][c].x;
+        var y1 = dots[r][c].y;
+        var x2 = dots[r+1][c].x;
+        var y2 = dots[r+1][c].y;
 
-        vLine.addEventListener('click', function(e) {
+        var hit = svgEl('line');
+        hit.setAttribute('x1', x1);
+        hit.setAttribute('y1', y1);
+        hit.setAttribute('x2', x2);
+        hit.setAttribute('y2', y2);
+        hit.setAttribute('stroke', 'transparent');
+        hit.setAttribute('stroke-width', 16);
+        hit.setAttribute('stroke-linecap', 'round');
+        hit.setAttribute('cursor', 'pointer');
+        hit.setAttribute('data-type', 'vertical');
+        hit.setAttribute('data-r', r);
+        hit.setAttribute('data-c', c);
+        hit.addEventListener('click', function(e) {
           handleLineClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c), 'vertical');
           e.stopPropagation();
         });
+        svgEl.appendChild(hit);
 
-        dotsEl.appendChild(vLine);
+        var vis = svgEl('line');
+        vis.setAttribute('id', lineId);
+        vis.setAttribute('x1', x1);
+        vis.setAttribute('y1', y1);
+        vis.setAttribute('x2', x2);
+        vis.setAttribute('y2', y2);
+        vis.setAttribute('stroke', 'rgba(90, 110, 124, 0.3)');
+        vis.setAttribute('stroke-width', 4);
+        vis.setAttribute('stroke-linecap', 'round');
+        vis.setAttribute('pointer-events', 'none');
+        svgEl.appendChild(vis);
+      }
+    }
+
+    // Render dots (on top)
+    for (var r = 0; r < BOARD_SIZE; r++) {
+      for (var c = 0; c < BOARD_SIZE; c++) {
+        var dot = svgEl('circle');
+        dot.setAttribute('cx', dots[r][c].x);
+        dot.setAttribute('cy', dots[r][c].y);
+        dot.setAttribute('r', 6);
+        dot.setAttribute('fill', '#2dd4bf');
+        dot.setAttribute('pointer-events', 'none');
+        svgEl.appendChild(dot);
       }
     }
 
@@ -171,63 +217,112 @@
 
     var lineId = orientation === 'horizontal' ? 'h-' + r + '-' + c : 'v-' + r + '-' + c;
     var lineElement = document.getElementById(lineId);
-    if (!lineElement || lineElement.classList.contains('drawn')) return;
+    if (!lineElement) return;
+    if (lineElement.getAttribute('data-drawn') === 'true') return;
+
+    lineElement.setAttribute('data-drawn', 'true');
+    lineElement.setAttribute('stroke', currentPlayer === 0 ? '#ff6b6b' : '#ffd93d');
+    lineElement.setAttribute('stroke-width', 5);
 
     lines.push({ r: r, c: c, orientation: orientation, player: currentPlayer });
-    lineElement.classList.add('drawn');
-    lineElement.classList.add(currentPlayer === 0 ? 'player1' : 'player2');
 
-    var completedBox = checkCompletedBox(r, c, orientation);
-    if (completedBox !== null) {
-      scores[currentPlayer]++;
-      boxes[completedBox[0]][completedBox[1]].owner = currentPlayer;
+    // Check ALL adjacent boxes
+    var completedBoxes = checkCompletedBoxes(r, c, orientation);
+    if (completedBoxes.length > 0) {
+      for (var i = 0; i < completedBoxes.length; i++) {
+        var boxR = completedBoxes[i][0];
+        var boxC = completedBoxes[i][1];
+        scores[currentPlayer]++;
+        boxes[boxR][boxC].owner = currentPlayer;
+
+        var boxRect = document.getElementById('box-' + boxR + '-' + boxC);
+        if (boxRect) {
+          boxRect.setAttribute('fill', currentPlayer === 0 ? 'rgba(255, 107, 107, 0.2)' : 'rgba(255, 217, 61, 0.2)');
+        }
+        var boxLabel = document.getElementById('box-label-' + boxR + '-' + boxC);
+        if (boxLabel) {
+          boxLabel.textContent = currentPlayer === 0 ? 'P1' : 'P2';
+          boxLabel.setAttribute('fill', currentPlayer === 0 ? '#ff6b6b' : '#ffd93d');
+          boxLabel.style.opacity = '1';
+        }
+      }
       updateUI();
       checkWin();
+      // Player goes again — no switch
+      if (gameActive && currentPlayer === 1 && sizeSelect && sizeSelect.value === 'ai') {
+        setTimeout(aiMove, 600);
+      }
     } else {
       currentPlayer = currentPlayer === 0 ? 1 : 0;
       updateUI();
       checkWin();
       if (gameActive && currentPlayer === 1 && sizeSelect && sizeSelect.value === 'ai') {
-        setTimeout(aiMove, 500);
+        setTimeout(aiMove, 600);
       }
     }
   }
 
-  function checkCompletedBox(r, c, orientation) {
-    var boxR, boxC;
+  function isLineDrawn(id) {
+    var el = document.getElementById(id);
+    return el && el.getAttribute('data-drawn') === 'true';
+  }
+
+  function checkCompletedBoxes(r, c, orientation) {
+    var completed = [];
+
     if (orientation === 'horizontal') {
-      boxR = r;
-      boxC = c;
+      // Box above (r-1, c) — exists if r > 0
+      if (r > 0) {
+        var topId = 'h-' + (r-1) + '-' + c;
+        var leftId = 'v-' + (r-1) + '-' + c;
+        var rightId = 'v-' + (r-1) + '-' + (c+1);
+        var bottomId = 'h-' + r + '-' + c;
+        if (isLineDrawn(topId) && isLineDrawn(leftId) && isLineDrawn(rightId) && isLineDrawn(bottomId)) {
+          if (boxes[r-1][c].owner === null) completed.push([r-1, c]);
+        }
+      }
+      // Box below (r, c) — exists if r < GRID_SIZE
+      if (r < GRID_SIZE) {
+        var topId2 = 'h-' + r + '-' + c;
+        var leftId2 = 'v-' + r + '-' + c;
+        var rightId2 = 'v-' + r + '-' + (c+1);
+        var bottomId2 = 'h-' + (r+1) + '-' + c;
+        if (isLineDrawn(topId2) && isLineDrawn(leftId2) && isLineDrawn(rightId2) && isLineDrawn(bottomId2)) {
+          if (boxes[r][c].owner === null) completed.push([r, c]);
+        }
+      }
     } else {
-      boxR = r;
-      boxC = c;
+      // Box to the left (r, c-1) — exists if c > 0
+      if (c > 0) {
+        var topId = 'h-' + r + '-' + (c-1);
+        var bottomId = 'h-' + (r+1) + '-' + (c-1);
+        var leftId = 'v-' + r + '-' + (c-1);
+        var rightId = 'v-' + r + '-' + c;
+        if (isLineDrawn(topId) && isLineDrawn(bottomId) && isLineDrawn(leftId) && isLineDrawn(rightId)) {
+          if (boxes[r][c-1].owner === null) completed.push([r, c-1]);
+        }
+      }
+      // Box to the right (r, c) — exists if c < GRID_SIZE
+      if (c < GRID_SIZE) {
+        var topId2 = 'h-' + r + '-' + c;
+        var bottomId2 = 'h-' + (r+1) + '-' + c;
+        var leftId2 = 'v-' + r + '-' + c;
+        var rightId2 = 'v-' + r + '-' + (c+1);
+        if (isLineDrawn(topId2) && isLineDrawn(bottomId2) && isLineDrawn(leftId2) && isLineDrawn(rightId2)) {
+          if (boxes[r][c].owner === null) completed.push([r, c]);
+        }
+      }
     }
 
-    if (boxR < 0 || boxR >= GRID_SIZE || boxC < 0 || boxC >= GRID_SIZE) return null;
-    if (boxes[boxR][boxC].owner !== null) return null;
-
-    var topId = 'h-' + boxR + '-' + boxC;
-    var rightId = 'v-' + boxR + '-' + (boxC + 1);
-    var bottomId = 'h-' + (boxR + 1) + '-' + boxC;
-    var leftId = 'v-' + boxR + '-' + boxC;
-
-    var top = document.getElementById(topId);
-    var right = document.getElementById(rightId);
-    var bottom = document.getElementById(bottomId);
-    var left = document.getElementById(leftId);
-
-    if (top && right && bottom && left &&
-        top.classList.contains('drawn') &&
-        right.classList.contains('drawn') &&
-        bottom.classList.contains('drawn') &&
-        left.classList.contains('drawn')) {
-      return [boxR, boxC];
-    }
-    return null;
+    return completed;
   }
 
   function updateUI() {
-    if (turnEl) turnEl.textContent = tr('dots_player') + ' ' + (currentPlayer + 1);
+    if (turnEl) {
+      var label = currentPlayer === 0 ? tr('dots_player1') : tr('dots_player2');
+      turnEl.textContent = label;
+      turnEl.style.color = currentPlayer === 0 ? 'var(--color-p1)' : 'var(--color-p2)';
+    }
     if (p1ScoreEl) p1ScoreEl.textContent = scores[0];
     if (p2ScoreEl) p2ScoreEl.textContent = scores[1];
   }
@@ -250,8 +345,10 @@
         messageEl.textContent = tr('dots_draw');
       }
 
-      document.getElementById('final-score-p1').textContent = scores[0];
-      document.getElementById('final-score-p2').textContent = scores[1];
+      var fp1 = document.getElementById('final-score-p1');
+      var fp2 = document.getElementById('final-score-p2');
+      if (fp1) fp1.textContent = scores[0];
+      if (fp2) fp2.textContent = scores[1];
       winnerModal.classList.add('visible');
     }
   }
@@ -262,22 +359,25 @@
 
     setTimeout(function() {
       var availableLines = [];
-      var lines = dotsEl.querySelectorAll('[data-type]');
-      lines.forEach(function(line) {
-        if (!line.classList.contains('drawn')) {
+      var hits = svgEl.querySelectorAll('[data-type]');
+      for (var i = 0; i < hits.length; i++) {
+        var line = hits[i];
+        if (!line.getAttribute('data-drawn')) {
           availableLines.push({
-            type: line.dataset.type,
-            r: parseInt(line.dataset.r),
-            c: parseInt(line.dataset.c)
+            type: line.getAttribute('data-type'),
+            r: parseInt(line.getAttribute('data-r')),
+            c: parseInt(line.getAttribute('data-c'))
           });
         }
-      });
+      }
 
       if (availableLines.length > 0) {
         var chosen = availableLines[Math.floor(Math.random() * availableLines.length)];
+        aiThinking = false;
         handleLineClick(chosen.r, chosen.c, chosen.type);
+      } else {
+        aiThinking = false;
       }
-      aiThinking = false;
     }, 600);
   }
 
@@ -308,11 +408,6 @@
     if (sizeSelect) {
       sizeSelect.addEventListener('change', resizeBoard);
     }
-
-    window.addEventListener('resize', function() {
-      calculatePositions();
-      renderBoard();
-    });
   }
 
   window.initGame = initGame;
