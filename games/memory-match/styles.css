@@ -179,7 +179,8 @@
   filter: brightness(1.1);
 }
 
-/* ===== CONGRATS MODAL ===== */
+/* ===== CONGRATS MODAL — COMPLETE RESTRUCTURE ===== */
+/* Put this BEFORE the body starts its flex children */
 .congrats-modal {
   position: fixed;
   top: 0;
@@ -190,6 +191,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -203,16 +205,8 @@
   transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
-.congrats-modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 0;
-}
-
+/* No pseudo-elements, no child overlays */
+/* The background is directly on .congrats-modal */
 .congrats-content {
   position: relative;
   z-index: 1;
@@ -222,7 +216,7 @@
   padding: 32px 24px;
   text-align: center;
   max-width: 400px;
-  width: 90vw;
+  width: 90%;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
@@ -282,13 +276,20 @@
   font-family: 'Nunito', monospace;
 }
 
-/* ===== FOOTER FIX — STICKY FOOTER ===== */
+/* ===== TOAST FIX ===== */
+.tablo-toast {
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ===== FOOTER FIX — FORCE STICKY ===== */
 .sticky-footer {
   position: sticky;
-  bottom: 0;
-  z-index: 100;
-  background: var(--bg-primary);
+  bottom: 0 !important;
+  z-index: 100 !important;
+  background: var(--bg-primary) !important;
   border-top: 1px solid var(--border-color);
+  width: 100%;
 }
 
 .sticky-footer .footer-content {
@@ -298,6 +299,8 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .sticky-footer .footer-left,
@@ -367,12 +370,6 @@
   text-decoration: underline;
 }
 
-/* Toast fix */
-.tablo-toast {
-  pointer-events: none;
-  z-index: 9999;
-}
-
 /* ===== RESPONSIVE LAYOUT ===== */
 
 @media (min-width: 1200px) {
@@ -383,10 +380,6 @@
   .memory-game {
     max-width: 480px;
   }
-  
-  .sticky-footer .footer-content {
-    padding: 16px 24px;
-  }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
@@ -396,10 +389,6 @@
   
   .memory-game {
     max-width: 440px;
-  }
-  
-  .sticky-footer .footer-content {
-    padding: 14px 20px;
   }
 }
 
@@ -437,14 +426,8 @@
   }
   
   .sticky-footer .footer-content {
-    padding: 12px 16px;
     flex-direction: column;
     text-align: center;
-    align-items: center;
-  }
-  
-  .sticky-footer .footer-left,
-  .sticky-footer .footer-right {
     align-items: center;
   }
 }
@@ -479,18 +462,5 @@
   #best-score {
     font-size: 14px;
     white-space: nowrap;
-  }
-  
-  .sticky-footer .footer-content {
-    padding: 10px 12px;
-    gap: 8px;
-  }
-  
-  .sticky-footer .footer-motto {
-    font-size: 12px;
-  }
-  
-  .sticky-footer .privacy-badge {
-    font-size: 10px;
   }
 }

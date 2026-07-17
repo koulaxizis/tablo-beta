@@ -44,15 +44,16 @@
     return;
   }
 
-  // ============================================
-  // MOVE MODAL OUT OF BODY FLEX FLOW
-  // This prevents the modal from affecting the
-  // body's flex layout (header / wrapper / footer)
-  // ============================================
-  var modalPortal = document.createElement('div');
-  modalPortal.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;z-index:20000;pointer-events:none;';
-  document.documentElement.appendChild(modalPortal);
-  modalPortal.appendChild(congratsModal);
+  // =====================================================
+  // CRITICAL: Move modal to HTML level (NOT BODY)
+  // This ensures it CANNOT affect body's flex layout
+  // We use appendChild (move, not clone) to preserve event listeners
+  // =====================================================
+  var portal = document.createElement('div');
+  portal.id = 'modal-portal';
+  portal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:20000;pointer-events:none;';
+  document.documentElement.appendChild(portal);
+  portal.appendChild(congratsModal);
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
