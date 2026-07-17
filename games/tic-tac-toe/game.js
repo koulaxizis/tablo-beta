@@ -40,7 +40,7 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
     clearTimeout(showToast._timer);
     showToast._timer = setTimeout(function() {
@@ -197,9 +197,13 @@
   }
 
   function updateUI() {
-    turnDisplayEl.textContent = currentPlayer;
-    turnDisplayEl.style.color = currentPlayer === 'X' ? 'var(--color-x)' : 'var(--color-o)';
-    modeDisplayEl.textContent = gameMode === 'pvp' ? tr('ttt_pvp') : tr('ttt_vs_ai');
+    if (turnDisplayEl) {
+      turnDisplayEl.textContent = currentPlayer;
+      turnDisplayEl.style.color = currentPlayer === 'X' ? 'var(--color-x)' : 'var(--color-o)';
+    }
+    if (modeDisplayEl) {
+      modeDisplayEl.textContent = gameMode === 'pvp' ? tr('ttt_pvp') : tr('ttt_vs_ai');
+    }
   }
 
   function endGame(winner) {
@@ -209,18 +213,22 @@
     if (winner) {
       if (winner === 'X') winsX++;
       else winsO++;
-      winsXEl.textContent = winsX;
-      winsOEl.textContent = winsO;
+      if (winsXEl) winsXEl.textContent = winsX;
+      if (winsOEl) winsOEl.textContent = winsO;
 
-      winnerIcon.textContent = '🏆';
+      if (winnerIcon) winnerIcon.textContent = '🏆';
       var player = tr(winner === 'X' ? 'ttt_x_player' : 'ttt_o_player');
-      winnerTitle.textContent = player + ' ' + tr('ttt_wins');
-      winnerTitle.style.color = winner === 'X' ? 'var(--color-x)' : 'var(--color-o)';
+      if (winnerTitle) {
+        winnerTitle.textContent = player + ' ' + tr('ttt_wins_game');
+        winnerTitle.style.color = winner === 'X' ? 'var(--color-x)' : 'var(--color-o)';
+      }
       saveWins();
     } else {
-      winnerIcon.textContent = '🤝';
-      winnerTitle.textContent = tr('ttt_draw');
-      winnerTitle.style.color = 'var(--text-secondary)';
+      if (winnerIcon) winnerIcon.textContent = '🤝';
+      if (winnerTitle) {
+        winnerTitle.textContent = tr('ttt_draw');
+        winnerTitle.style.color = 'var(--text-secondary, #8892a0)';
+      }
     }
   }
 
@@ -234,8 +242,8 @@
       var parts = saved.split('/');
       winsX = parseInt(parts[0]) || 0;
       winsO = parseInt(parts[1]) || 0;
-      winsXEl.textContent = winsX;
-      winsOEl.textContent = winsO;
+      if (winsXEl) winsXEl.textContent = winsX;
+      if (winsOEl) winsOEl.textContent = winsO;
     }
   }
 
@@ -246,7 +254,6 @@
     aiThinking = false;
     winnerModal.classList.remove('visible');
 
-    // Clear winning highlights
     var cells = document.querySelectorAll('.cell');
     cells.forEach(function(c) { c.classList.remove('win-cell'); });
 
@@ -269,7 +276,7 @@
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
       resetGame();
-      showToast(tr('toast_restarted'));
+      showToast('toast_restarted');
     });
   }
 
