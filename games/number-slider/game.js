@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Number Slider (Fixed persistence)
+// Tablo — Number Slider
 // ============================================
 
 (function() {
@@ -13,12 +13,16 @@
   var timerInterval = null;
   var secondsElapsed = 0;
 
-  var boardEl = document.getElementById('slider-board');
+  var boardEl = document.getElementById('board');
   var movesEl = document.getElementById('moves');
-  var timeEl = document.getElementById('time');
+  var timeEl = document.getElementById('timer');
   var bestEl = document.getElementById('best-score');
-  var sizeSelect = document.getElementById('slider-size');
+  var sizeSelect = document.getElementById('grid-size');
   var newGameBtn = document.getElementById('btn-new-game');
+  var playAgainBtn = document.getElementById('btn-play-again');
+  var winnerModal = document.getElementById('winner-modal');
+  var finalMovesEl = document.getElementById('final-moves');
+  var finalTimeEl = document.getElementById('final-time');
   var toast = document.getElementById('toast');
 
   function tr(key) {
@@ -29,9 +33,12 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
-    setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 2500);
   }
 
   function initBoard() {
@@ -40,15 +47,17 @@
     var total = SIZE * SIZE - 1;
 
     for (var i = 0; i <= total; i++) values.push(i);
-    values.sort(function() { return Math.random() - 0.5; });
+    
+    // Shuffle until solvable (simple random shuffle for now)
+    do {
+      values.sort(function() { return Math.random() - 0.5; });
+    } while (!isSolvable(values));
 
     var idx = 0;
     for (var r = 0; r < SIZE; r++) {
       board[r] = [];
       for (var c = 0; c < SIZE; c++) {
-        if (idx < values.length) {
-          board[r][c] = values[idx++];
-        }
+        board[r][c] = values[idx++];
       }
     }
 
@@ -62,54 +71,50 @@
     }
   }
 
-  function saveState() {
-    var state = {
-      board: board.map(function(row) { return row.slice(); }),
-      emptyPos: { row: emptyPos.row, col: emptyPos.col },
-      moves: moves,
-      seconds: secondsElapsed,
-      size: SIZE
-    };
-    localStorage.setItem('tablo-slider-state', JSON.stringify(state));
-  }
-
-  function loadState() {
-    var saved = localStorage.getItem('tablo-slider-state');
-    if (saved) {
-      try {
-        var state = JSON.parse(saved);
-        if (state.size === SIZE) {
-          board = state.board;
-          emptyPos = state.emptyPos;
-          moves = state.moves;
-          secondsElapsed = state.seconds;
-          return true;
-        }
-      } catch (e) {}
+  function isSolvable(arr) {
+    var inversions = 0;
+    var emptyRow = 0;
+    
+    for (var i = 0; i < arr.length - 1; i++) {
+      if (arr[i] === 0) continue;
+      for (var j = i + 1; j < arr.length; j++) {
+        if (arr[j] === 0) continue;
+        if (arr[i] > arr[j]) inversions++;
+      }
     }
-    return false;
-  }
-
-  function clearSaved() {
-    localStorage.removeItem('tablo-slider-state');
+    
+    var gridWidth = SIZE;
+    if (gridWidth % 2 !== 0) {
+      return inversions % 2 === 0;
+    } else {
+      emptyRow = Math.floor((arr.indexOf(0)) / gridWidth);
+      if (emptyRow % 2 === 0) {
+        return inversions % 2 !== 0;
+      } else {
+        return inversions % 2 === 0;
+      }
+    }
   }
 
   function renderBoard() {
     boardEl.innerHTML = '';
-    var cellSize = (boardEl.offsetWidth - (SIZE + 1) * 4) / SIZE;
+    boardEl.className = 'slider-board grid-' + SIZE;
 
     for (var r = 0; r < SIZE; r++) {
       for (var c = 0; c < SIZE; c++) {
         var cell = document.createElement('div');
-        cell.className = 'slide-cell';
+        cell.className = 'tile';
         cell.dataset.r = r;
         cell.dataset.c = c;
 
         if (board[r][c] !== 0) {
           cell.textContent = board[r][c];
+          cell.classList.add('movable');
           cell.addEventListener('click', function(e) {
             handleCellClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c));
           });
+        } else {
+          cell.classList.add('empty');
         }
 
         boardEl.appendChild(cell);
@@ -131,16 +136,14 @@
       emptyPos.row = r;
       emptyPos.col = c;
       moves++;
-      saveState();
       renderBoard();
       checkWin();
     }
   }
 
   function checkWin() {
-    var total = SIZE * SIZE - 1;
-    var correct = true;
     var count = 1;
+    var correct = true;
 
     for (var r = 0; r < SIZE; r++) {
       for (var c = 0; c < SIZE; c++) {
@@ -169,8 +172,17 @@
         localStorage.setItem(bestKey, moves.toString());
       }
       if (bestEl) bestEl.textContent = moves;
-      clearSaved();
+      
+      if (finalMovesEl) finalMovesEl.textContent = moves;
+      if (finalTimeEl) finalTimeEl.textContent = formatTime(secondsElapsed);
+      winnerModal.classList.add('visible');
     }
+  }
+
+  function formatTime(sec) {
+    var mins = Math.floor(sec / 60);
+    var secs = sec % 60;
+    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
   }
 
   function startTimer() {
@@ -179,7 +191,6 @@
     timerInterval = setInterval(function() {
       secondsElapsed++;
       updateTimer();
-      saveState();
     }, 1000);
   }
 
@@ -189,14 +200,12 @@
   }
 
   function updateTimer() {
-    var mins = Math.floor(secondsElapsed / 60);
-    var secs = secondsElapsed % 60;
-    if (timeEl) timeEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    if (timeEl) timeEl.textContent = formatTime(secondsElapsed);
   }
 
   function newSize(size) {
     SIZE = parseInt(size) || 4;
-    clearSaved();
+    localStorage.removeItem('tablo-slider-state');
     initBoard();
     moves = 0;
     secondsElapsed = 0;
@@ -204,27 +213,29 @@
     stopTimer();
     startTimer();
     renderBoard();
+    
+    var bestKey = 'tablo-slider-best-' + SIZE;
+    var best = localStorage.getItem(bestKey);
+    if (bestEl) bestEl.textContent = best || '--';
   }
 
   function newGame() {
-    clearSaved();
+    localStorage.removeItem('tablo-slider-state');
     initBoard();
     moves = 0;
     secondsElapsed = 0;
     gameActive = true;
     stopTimer();
     startTimer();
+    winnerModal.classList.remove('visible');
     renderBoard();
-    showToast(tr('toast_restarted'));
+    showToast('toast_restarted');
   }
 
   function initGame() {
-    var savedLoaded = loadState();
-    if (!savedLoaded) {
-      initBoard();
-      moves = 0;
-      secondsElapsed = 0;
-    }
+    initBoard();
+    moves = 0;
+    secondsElapsed = 0;
     gameActive = true;
     startTimer();
     renderBoard();
@@ -243,9 +254,9 @@
       newGameBtn.addEventListener('click', newGame);
     }
 
-    window.addEventListener('beforeunload', function() {
-      if (gameActive) saveState();
-    });
+    if (playAgainBtn) {
+      playAgainBtn.addEventListener('click', newGame);
+    }
   }
 
   window.initGame = initGame;
