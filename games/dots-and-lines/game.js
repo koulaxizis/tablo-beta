@@ -405,6 +405,11 @@
       resetBtn.addEventListener('click', resetGame);
     }
 
+    var playAgainBtn = document.getElementById('btn-play-again');
+    if (playAgainBtn) {
+      playAgainBtn.addEventListener('click', resetGame);
+    }
+
     if (sizeSelect) {
       sizeSelect.addEventListener('change', resizeBoard);
     }
