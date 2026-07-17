@@ -1,22 +1,30 @@
 /* ============================================
    Tablo — Memory Match Game Styles
+   ONLY GAME-SPECIFIC STYLES (NO LAYOUT OVERRIDES)
    ============================================ */
 
-/* ===== GAME WRAPPER — MINIMAL OVERRIDE ONLY ===== */
-/* Just kill the midfield scrollbar, nothing else */
-.game-wrapper {
-  overflow: visible !important;
+/* ===== Spacer for fixed header (56px from central CSS) ===== */
+body {
+  padding-top: var(--header-height);
+  padding-bottom: var(--footer-height);
 }
 
+/* ===== GAME WRAPPER — Keep central CSS intact, just remove overflow-y ===== */
+.game-wrapper {
+  overflow-y: visible !important;
+}
+
+/* Spacer for header space inside game area */
 .game-wrapper::before {
   content: '';
   display: block;
-  flex-shrink: 0;
   height: 12px;
+  flex-shrink: 0;
 }
 
 /* ===== GAME STATS ===== */
 .game-stats {
+  flex-shrink: 0;
   display: flex;
   gap: 24px;
   padding: 16px 24px;
@@ -54,6 +62,7 @@
 
 /* ===== MEMORY GAME BOARD ===== */
 .memory-game {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
@@ -126,6 +135,7 @@
 
 /* ===== GAME CONTROLS ===== */
 .game-controls {
+  flex-shrink: 0;
   display: flex;
   gap: 12px;
   justify-content: center;
@@ -167,7 +177,7 @@
   filter: brightness(1.1);
 }
 
-/* ===== CONGRATS MODAL — ON <html>, display: none ===== */
+/* ===== CONGRATS MODAL — ON <html>, display: none (ZERO LAYOUT IMPACT) ===== */
 .congrats-modal {
   position: fixed;
   top: 0;
