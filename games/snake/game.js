@@ -11,7 +11,7 @@
   var TICK_SPEED = 120;
 
   var canvas = document.getElementById('snake-canvas');
-  var ctx = canvas.getContext('2d');
+  var ctx = canvas ? canvas.getContext('2d') : null;
 
   var snake = [];
   var direction = { x: 1, y: 0 };
@@ -41,10 +41,12 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    showToast._t = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 2000);
   }
 
   function initSnake() {
@@ -56,8 +58,8 @@
     direction = { x: 1, y: 0 };
     pendingDir = { x: 1, y: 0 };
     score = 0;
-    scoreEl.textContent = '0';
-    lengthEl.textContent = '3';
+    if (scoreEl) scoreEl.textContent = '0';
+    if (lengthEl) lengthEl.textContent = '3';
     spawnFood();
   }
 
@@ -86,13 +88,11 @@
       y: snake[0].y + direction.y
     };
 
-    // Wall collision
     if (head.x < 0 || head.x >= GRID_COLS || head.y < 0 || head.y >= GRID_ROWS) {
       endGame();
       return;
     }
 
-    // Self collision
     for (var i = 0; i < snake.length; i++) {
       if (snake[i].x === head.x && snake[i].y === head.y) {
         endGame();
@@ -102,11 +102,10 @@
 
     snake.unshift(head);
 
-    // Food collision
     if (head.x === food.x && head.y === food.y) {
       score++;
-      scoreEl.textContent = score;
-      lengthEl.textContent = snake.length;
+      if (scoreEl) scoreEl.textContent = score;
+      if (lengthEl) lengthEl.textContent = snake.length;
       spawnFood();
     } else {
       snake.pop();
@@ -116,11 +115,11 @@
   }
 
   function draw() {
-    // Background
+    if (!ctx) return;
+
     ctx.fillStyle = '#0f1923';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Grid lines (subtle)
     ctx.strokeStyle = 'rgba(255,255,255,0.03)';
     ctx.lineWidth = 1;
     for (var i = 0; i <= GRID_COLS; i++) {
@@ -136,7 +135,6 @@
       ctx.stroke();
     }
 
-    // Food
     ctx.fillStyle = '#f87171';
     ctx.beginPath();
     var fx = food.x * CELL_SIZE + CELL_SIZE / 2;
@@ -144,7 +142,6 @@
     ctx.arc(fx, fy, CELL_SIZE / 2 - 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Snake
     for (var k = 0; k < snake.length; k++) {
       if (k === 0) {
         ctx.fillStyle = '#5eead4';
@@ -161,9 +158,9 @@
     initSnake();
     gameRunning = true;
     gamePaused = false;
-    gameOverModal.classList.remove('visible');
-    startBtn.textContent = tr('snake_restart');
-    pauseBtn.disabled = false;
+    if (gameOverModal) gameOverModal.classList.remove('visible');
+    if (startBtn) startBtn.textContent = tr('snake_restart');
+    if (pauseBtn) pauseBtn.disabled = false;
 
     if (loopInterval) clearInterval(loopInterval);
     loopInterval = setInterval(tick, TICK_SPEED);
@@ -173,25 +170,29 @@
   function togglePause() {
     if (!gameRunning) return;
     gamePaused = !gamePaused;
-    pauseBtn.textContent = gamePaused ? tr('snake_resume') : tr('snake_pause');
+    if (pauseBtn) pauseBtn.textContent = gamePaused ? tr('snake_resume') : tr('snake_pause');
   }
 
   function endGame() {
     gameRunning = false;
-    clearInterval(loopInterval);
+    if (loopInterval) clearInterval(loopInterval);
 
     if (score > bestScore) {
       bestScore = score;
-      bestEl.textContent = bestScore;
+      if (bestEl) bestEl.textContent = bestScore;
       localStorage.setItem('tablo-snake-best', bestScore.toString());
     }
 
-    finalScoreEl.textContent = tr('snake_score') + ': ' + score;
-    gameOverModal.classList.add('visible');
+    if (finalScoreEl) finalScoreEl.textContent = tr('snake_score') + ': ' + score;
+    if (gameOverModal) gameOverModal.classList.add('visible');
+    if (startBtn) startBtn.textContent = tr('snake_start');
+    if (pauseBtn) {
+      pauseBtn.textContent = tr('snake_pause');
+      pauseBtn.disabled = true;
+    }
   }
 
   function setDirection(dx, dy) {
-    // Prevent reversing
     if (direction.x === -dx && direction.y === -dy) return;
     if (dx === 0 && dy === 0) return;
     pendingDir = { x: dx, y: dy };
@@ -207,44 +208,45 @@
     else if (key === ' ') { togglePause(); e.preventDefault(); }
   }
 
-  // Touch / swipe
-  var touchStartX = 0, touchStartY = 0;
-  canvas.addEventListener('touchstart', function(e) {
-    var t = e.touches[0];
-    touchStartX = t.clientX;
-    touchStartY = t.clientY;
-    e.preventDefault();
-  }, { passive: false });
-
-  canvas.addEventListener('touchend', function(e) {
-    var t = e.changedTouches[0];
-    var dx = t.clientX - touchStartX;
-    var dy = t.clientY - touchStartY;
-    var absX = Math.abs(dx);
-    var absY = Math.abs(dy);
-
-    if (absX < 20 && absY < 20) return;
-
-    if (absX > absY) {
-      setDirection(dx > 0 ? 1 : -1, 0);
-    } else {
-      setDirection(0, dy > 0 ? 1 : -1);
-    }
-    e.preventDefault();
-  }, { passive: false });
-
   function initGame() {
     var saved = localStorage.getItem('tablo-snake-best');
     if (saved) {
       bestScore = parseInt(saved) || 0;
-      bestEl.textContent = bestScore;
+      if (bestEl) bestEl.textContent = bestScore;
     }
 
-    // Initial draw
     initSnake();
     draw();
 
     document.addEventListener('keydown', handleKey);
+
+    if (canvas) {
+      var touchStartX = 0, touchStartY = 0;
+
+      canvas.addEventListener('touchstart', function(e) {
+        var t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+        e.preventDefault();
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', function(e) {
+        var t = e.changedTouches[0];
+        var dx = t.clientX - touchStartX;
+        var dy = t.clientY - touchStartY;
+        var absX = Math.abs(dx);
+        var absY = Math.abs(dy);
+
+        if (absX < 20 && absY < 20) return;
+
+        if (absX > absY) {
+          setDirection(dx > 0 ? 1 : -1, 0);
+        } else {
+          setDirection(0, dy > 0 ? 1 : -1);
+        }
+        e.preventDefault();
+      }, { passive: false });
+    }
 
     if (startBtn) {
       startBtn.addEventListener('click', startGame);
@@ -257,7 +259,6 @@
       retryBtn.addEventListener('click', startGame);
     }
 
-    // D-pad buttons
     var dpadBtns = document.querySelectorAll('.dpad-btn');
     dpadBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
