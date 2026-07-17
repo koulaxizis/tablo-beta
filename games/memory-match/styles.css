@@ -1,20 +1,14 @@
 /* ============================================
    Tablo — Memory Match Game Styles
-   ONLY GAME-SPECIFIC STYLES (NO LAYOUT OVERRIDES)
+   GAME-SPECIFIC STYLES ONLY
    ============================================ */
 
-/* ===== Spacer for fixed header (56px from central CSS) ===== */
-body {
-  padding-top: var(--header-height);
-  padding-bottom: var(--footer-height);
-}
-
-/* ===== GAME WRAPPER — Keep central CSS intact, just remove overflow-y ===== */
+/* ===== GAME WRAPPER — Just kill the midfield scrollbar ===== */
 .game-wrapper {
   overflow-y: visible !important;
 }
 
-/* Spacer for header space inside game area */
+/* Spacer for visual distance from header */
 .game-wrapper::before {
   content: '';
   display: block;
@@ -177,7 +171,7 @@ body {
   filter: brightness(1.1);
 }
 
-/* ===== CONGRATS MODAL — ON <html>, display: none (ZERO LAYOUT IMPACT) ===== */
+/* ===== CONGRATS MODAL — ON <html>, display: none ===== */
 .congrats-modal {
   position: fixed;
   top: 0;
