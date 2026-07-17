@@ -5,14 +5,14 @@
 /* ===== GAME WRAPPER — OVERRIDE CENTRAL CSS ===== */
 .game-wrapper {
   flex: 1;
-  min-height: 0;
-  overflow: visible !important;  /* Override central style.css overflow-y: auto */
+  min-height: auto;  /* Changed from 0 to auto */
+  overflow: visible !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 20px 32px;
-  gap: 32px;
+  padding: 0 20px 20px;
+  gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -21,7 +21,7 @@
   content: '';
   display: block;
   flex-shrink: 0;
-  height: 68px;
+  height: 48px;  /* Reduced from 68px to 48px */
 }
 
 /* ===== GAME STATS ===== */
@@ -203,7 +203,7 @@
   transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
-/* Overlay as pseudo-element — no separate DOM element */
+/* Overlay as pseudo-element */
 .congrats-modal::before {
   content: '';
   position: absolute;
@@ -287,11 +287,17 @@
   z-index: 9999;
 }
 
+/* Ensure footer is below game content with spacing */
+#tablo-footer {
+  flex-shrink: 0;
+  margin-top: 20px;
+}
+
 /* ===== RESPONSIVE LAYOUT ===== */
 
 @media (min-width: 1200px) {
   .game-wrapper::before {
-    height: 68px;
+    height: 48px;
   }
   
   .memory-game {
@@ -301,7 +307,7 @@
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .game-wrapper::before {
-    height: 64px;
+    height: 44px;
   }
   
   .memory-game {
@@ -311,12 +317,12 @@
 
 @media (max-width: 767px) {
   .game-wrapper {
-    padding: 0 12px 20px;
+    padding: 0 12px 16px;
     gap: 20px;
   }
   
   .game-wrapper::before {
-    height: 62px;
+    height: 42px;
   }
   
   .game-stats {
@@ -341,16 +347,20 @@
     width: 100%;
     justify-content: center;
   }
+  
+  #tablo-footer {
+    margin-top: 12px;
+  }
 }
 
 @media (max-width: 479px) {
   .game-wrapper {
-    padding: 0 12px 16px;
+    padding: 0 12px 12px;
     gap: 16px;
   }
   
   .game-wrapper::before {
-    height: 60px;
+    height: 40px;
   }
   
   .stat-item {
@@ -373,5 +383,9 @@
   #best-score {
     font-size: 14px;
     white-space: nowrap;
+  }
+  
+  #tablo-footer {
+    margin-top: 8px;
   }
 }
