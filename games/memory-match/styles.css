@@ -190,10 +190,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  overflow: hidden;
   transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
@@ -202,17 +202,6 @@
   visibility: visible;
   pointer-events: auto;
   transition: opacity 0.2s ease, visibility 0s linear 0s;
-}
-
-/* Overlay as pseudo-element — position: fixed to match viewport exactly */
-.congrats-modal::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
 }
 
 .congrats-content {

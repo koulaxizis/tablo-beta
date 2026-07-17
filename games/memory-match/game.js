@@ -61,6 +61,27 @@
     }, 3000);
   }
 
+  function lockBodyScroll() {
+    var scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = '-' + scrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function unlockBodyScroll() {
+    var scrollY = parseInt(document.body.style.top || '0') * -1;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, scrollY);
+  }
+
   function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     secondsElapsed = 0;
@@ -187,6 +208,8 @@
 
     finalMoves.textContent = moves;
     finalTime.textContent = formatTime(secondsElapsed);
+    
+    lockBodyScroll();
     congratsModal.classList.add('visible');
 
     var bestKey = 'tablo-memory-best';
@@ -229,6 +252,7 @@
     });
 
     congratsModal.classList.remove('visible');
+    unlockBodyScroll();
   }
 
   window.initGame = function() {
