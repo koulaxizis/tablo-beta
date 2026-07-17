@@ -9,7 +9,6 @@
   var board = [];
   var moves = 0;
   var level = 1;
-  var hintsUsed = 0;
 
   var boardEl = document.getElementById('board');
   var movesEl = document.getElementById('moves');
@@ -30,10 +29,12 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(function() { toast.classList.remove('visible'); }, 3000);
+    showToast._t = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 2500);
   }
 
   function initBoard() {
@@ -59,7 +60,7 @@
     toggleCell(r, c - 1);
     toggleCell(r, c + 1);
     moves++;
-    movesEl.textContent = moves;
+    if (movesEl) movesEl.textContent = moves;
     renderBoard();
 
     if (checkSolved()) {
@@ -77,7 +78,6 @@
   }
 
   function shuffleBoard() {
-    // Start from solved state, apply random clicks
     var numShuffles = 3 + level * 2;
     for (var i = 0; i < numShuffles; i++) {
       var r = Math.floor(Math.random() * GRID_SIZE);
@@ -88,13 +88,13 @@
       toggleCell(r, c - 1);
       toggleCell(r, c + 1);
     }
-    // Make sure it's not already solved
     if (checkSolved()) {
       shuffleBoard();
     }
   }
 
   function renderBoard() {
+    if (!boardEl) return;
     boardEl.innerHTML = '';
     for (var r = 0; r < GRID_SIZE; r++) {
       for (var c = 0; c < GRID_SIZE; c++) {
@@ -112,7 +112,7 @@
 
   function updateBest() {
     var best = localStorage.getItem('tablo-lights-best');
-    bestEl.textContent = best || '--';
+    if (bestEl) bestEl.textContent = best || '--';
   }
 
   function onSolved() {
@@ -121,15 +121,16 @@
       localStorage.setItem('tablo-lights-best', level.toString());
       updateBest();
     }
-    winnerStats.textContent = tr('lights_moves') + ': ' + moves + ' · ' + tr('lights_level') + ': ' + level;
+    if (winnerStats) {
+      winnerStats.textContent = tr('lights_moves') + ': ' + moves + ' · ' + tr('lights_level') + ': ' + level;
+    }
     winnerModal.classList.add('visible');
   }
 
   function newGame() {
     moves = 0;
-    hintsUsed = 0;
-    movesEl.textContent = '0';
-    levelEl.textContent = level;
+    if (movesEl) movesEl.textContent = '0';
+    if (levelEl) levelEl.textContent = level;
     winnerModal.classList.remove('visible');
 
     initBoard();
@@ -143,18 +144,20 @@
   }
 
   function showHint() {
-    // Find first lit cell and suggest clicking it
     for (var r = 0; r < GRID_SIZE; r++) {
       for (var c = 0; c < GRID_SIZE; c++) {
         if (board[r][c]) {
-          hintsUsed++;
           var cells = document.querySelectorAll('.light-cell');
           var idx = r * GRID_SIZE + c;
-          cells[idx].classList.add('hint');
-          setTimeout(function() {
-            cells[idx].classList.remove('hint');
-          }, 1500);
-          showToast(tr('lights_hint') + ' (' + (r + 1) + ',' + (c + 1) + ')');
+          if (cells[idx]) {
+            cells[idx].classList.add('hint');
+            (function(cell) {
+              setTimeout(function() {
+                cell.classList.remove('hint');
+              }, 1500);
+            })(cells[idx]);
+          }
+          showToast('lights_hint');
           return;
         }
       }
@@ -170,7 +173,7 @@
       newGameBtn.addEventListener('click', function() {
         level = 1;
         newGame();
-        showToast(tr('toast_restarted'));
+        showToast('toast_restarted');
       });
     }
 
