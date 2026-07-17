@@ -21,7 +21,7 @@
   content: '';
   display: block;
   flex-shrink: 0;
-  height: 36px;  /* Reduced from 48px to 36px */
+  height: 36px;
 }
 
 /* ===== GAME STATS ===== */
@@ -297,7 +297,7 @@
 
 @media (min-width: 1200px) {
   .game-wrapper::before {
-    height: 48px;
+    height: 36px;
   }
   
   .memory-game {
@@ -307,7 +307,7 @@
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .game-wrapper::before {
-    height: 44px;
+    height: 34px;
   }
   
   .memory-game {
@@ -322,7 +322,7 @@
   }
   
   .game-wrapper::before {
-    height: 42px;
+    height: 32px;
   }
   
   .game-stats {
@@ -360,7 +360,7 @@
   }
   
   .game-wrapper::before {
-    height: 40px;
+    height: 30px;
   }
   
   .stat-item {
