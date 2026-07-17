@@ -40,7 +40,7 @@
 
   function showToast(message) {
     if (!toast) return;
-    toast.textContent = message;
+    toast.textContent = tr(message);
     toast.classList.add('visible');
     clearTimeout(showToast._timer);
     showToast._timer = setTimeout(function() {
@@ -102,7 +102,7 @@
 
     var row = findDropRow(col);
     if (row === -1) {
-      showToast(tr('connect4_column_full'));
+      showToast('connect4_column_full');
       return;
     }
 
@@ -314,7 +314,7 @@
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
       resetGame();
-      showToast(tr('toast_restarted'));
+      showToast('toast_restarted');
     });
   }
 

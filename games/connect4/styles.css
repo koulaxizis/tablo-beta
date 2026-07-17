@@ -7,45 +7,23 @@
   --color-p2: #ffd93d;
 }
 
-.back-home {
-  position: absolute;
-  top: 80px;
-  left: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 10;
-  transition: all var(--transition);
-}
-
-.back-home:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: translateX(-4px);
-}
-
-.back-home svg {
-  width: 16px;
-  height: 16px;
-}
-
 .game-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 20px 20px;
-  gap: 32px;
+  gap: 24px;
+}
+
+.game-wrapper::before {
+  content: '';
+  display: block;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 .game-stats {
+  flex-shrink: 0;
   display: flex;
   gap: 24px;
   padding: 16px 24px;
@@ -54,7 +32,8 @@
   border-radius: var(--radius-lg);
   flex-wrap: wrap;
   justify-content: center;
-  flex-shrink: 0;
+  width: 100%;
+  max-width: 500px;
 }
 
 .stat-item {
@@ -81,6 +60,7 @@
 }
 
 .connect4-board {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: var(--accent);
@@ -88,7 +68,6 @@
   border-radius: var(--radius-lg);
   box-shadow: 0 8px 32px rgba(45, 212, 191, 0.2);
   gap: 8px;
-  flex-shrink: 0;
 }
 
 .row {
@@ -119,12 +98,12 @@
 }
 
 .game-controls {
+  flex-shrink: 0;
   display: flex;
   gap: 12px;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  flex-shrink: 0;
   z-index: 10;
   position: relative;
 }
@@ -258,5 +237,4 @@
 @media (max-width: 480px) {
   .game-wrapper { padding: 0 12px 12px; gap: 20px; }
   .cell { width: 38px; height: 38px; }
-  .back-home { top: 70px; left: 12px; padding: 6px 12px; font-size: 12px; }
 }
