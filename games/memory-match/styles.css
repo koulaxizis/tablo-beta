@@ -2,8 +2,11 @@
    Tablo — Memory Match Game Styles
    ============================================ */
 
-/* ===== GAME WRAPPER ===== */
+/* ===== GAME WRAPPER — OVERRIDE CENTRAL CSS ===== */
 .game-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: visible !important;  /* Override central style.css overflow-y: auto */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,11 +20,13 @@
 .game-wrapper::before {
   content: '';
   display: block;
+  flex-shrink: 0;
   height: 68px;
 }
 
 /* ===== GAME STATS ===== */
 .game-stats {
+  flex-shrink: 0;
   display: flex;
   gap: 24px;
   padding: 16px 24px;
@@ -59,6 +64,7 @@
 
 /* ===== MEMORY GAME BOARD ===== */
 .memory-game {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
@@ -131,6 +137,7 @@
 
 /* ===== GAME CONTROLS ===== */
 .game-controls {
+  flex-shrink: 0;
   display: flex;
   gap: 12px;
   justify-content: center;
@@ -175,7 +182,10 @@
 /* ===== CONGRATS MODAL ===== */
 .congrats-modal {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: 20000;
   display: flex;
   align-items: center;
@@ -184,7 +194,6 @@
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.2s ease, visibility 0s linear 0.2s;
-  /* REMOVED overflow: hidden - can cause issues */
 }
 
 .congrats-modal.visible {
@@ -194,17 +203,20 @@
   transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
-/* MODAL OVERLAY - integrated as pseudo-element */
+/* Overlay as pseudo-element — no separate DOM element */
 .congrats-modal::before {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.85);
-  z-index: -1;
 }
 
 .congrats-content {
   position: relative;
+  z-index: 1;
   background: var(--bg-secondary);
   border: 2px solid var(--accent);
   border-radius: var(--radius-lg);
@@ -213,13 +225,12 @@
   max-width: 400px;
   width: 90%;
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
-  transform: translateY(20px);
+  transform: scale(0.9);
   transition: transform 0.2s ease;
-  z-index: 1;
 }
 
 .congrats-modal.visible .congrats-content {
-  transform: translateY(0);
+  transform: scale(1);
 }
 
 .congrats-icon {
@@ -279,15 +290,6 @@
 /* ===== RESPONSIVE LAYOUT ===== */
 
 @media (min-width: 1200px) {
-  body {
-    overflow-y: auto;
-  }
-  
-  .game-wrapper {
-    padding: 0 20px 32px;
-    gap: 32px;
-  }
-  
   .game-wrapper::before {
     height: 68px;
   }
@@ -295,18 +297,9 @@
   .memory-game {
     max-width: 480px;
   }
-  
-  #tablo-footer {
-    margin-top: auto;
-  }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
-  .game-wrapper {
-    padding: 0 20px 32px;
-    gap: 32px;
-  }
-  
   .game-wrapper::before {
     height: 64px;
   }
