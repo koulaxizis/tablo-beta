@@ -61,21 +61,12 @@
     }, 3000);
   }
 
-  function lockBodyScroll() {
-    // Save current scroll position
-    window._savedScrollPosition = window.scrollY;
-    // Add class instead of inline styles
-    document.body.classList.add('modal-open');
+  function showModal() {
+    congratsModal.classList.add('visible');
   }
 
-  function unlockBodyScroll() {
-    // Remove class
-    document.body.classList.remove('modal-open');
-    // Restore scroll position
-    if (window._savedScrollPosition !== undefined) {
-      window.scrollTo(0, window._savedScrollPosition);
-      delete window._savedScrollPosition;
-    }
+  function hideModal() {
+    congratsModal.classList.remove('visible');
   }
 
   function startTimer() {
@@ -204,9 +195,7 @@
 
     finalMoves.textContent = moves;
     finalTime.textContent = formatTime(secondsElapsed);
-    
-    lockBodyScroll();
-    congratsModal.classList.add('visible');
+    showModal();
 
     var bestKey = 'tablo-memory-best';
     var currentBest = localStorage.getItem(bestKey);
@@ -247,8 +236,7 @@
       gameBoard.appendChild(card);
     });
 
-    congratsModal.classList.remove('visible');
-    unlockBodyScroll();
+    hideModal();
   }
 
   window.initGame = function() {

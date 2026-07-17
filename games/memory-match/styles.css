@@ -203,7 +203,7 @@
   transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
-/* Dedicated overlay element - separate from modal container */
+/* Dedicated overlay element */
 .congrats-modal-overlay {
   position: absolute;
   top: 0;
@@ -296,11 +296,9 @@
   margin-top: 20px;
 }
 
-/* Force modal-open class on body to prevent layout shift */
+/* ONLY overflow hidden — NO position: fixed, NO width changes */
 body.modal-open {
   overflow: hidden !important;
-  position: fixed !important;
-  width: 100% !important;
 }
 
 /* ===== RESPONSIVE LAYOUT ===== */
