@@ -1,10 +1,10 @@
 /* ============================================
    Tablo — Memory Match Game Styles
+   ===== ONLY GAME-SPECIFIC STYLES ====
+   ===== HEADER/FOSTER LEFT UNTouched BY CENTRAL CSS =====
    ============================================ */
 
-/* ===== GAME WRAPPER — OVERRIDE CENTRAL CSS ===== */
-/* overflow: visible kills the midfield scrollbar */
-/* flex: 0 1 auto lets page scroll naturally */
+/* ===== GAME WRAPPER — OVERRIDE CENTRAL CSS FOR SCROLLBAR FIX ===== */
 .game-wrapper {
   overflow: visible !important;
   min-height: auto !important;
@@ -181,10 +181,8 @@
   filter: brightness(1.1);
 }
 
-/* ===== CONGRATS MODAL ===== */
-/* display: NONE completely removes from layout */
-/* display: FLEX brings it back as position:fixed */
-/* NO visibility, NO opacity tricks */
+/* ===== CONGRATS MODAL — ISOLATED ON <html>, display: none ===== */
+/* NO styling that affects body layout */
 .congrats-modal {
   position: fixed;
   top: 0;
@@ -265,95 +263,6 @@
   z-index: 9999;
 }
 
-/* ===== FOOTER ===== */
-#tablo-footer {
-  flex-shrink: 0;
-}
-
-.sticky-footer {
-  background: var(--bg-primary);
-  border-top: 1px solid var(--border-color);
-  width: 100%;
-}
-
-.sticky-footer .footer-content {
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.sticky-footer .footer-left,
-.sticky-footer .footer-right {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.sticky-footer .footer-center {
-  text-align: center;
-  font-size: 13px;
-}
-
-.sticky-footer .footer-motto {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.sticky-footer .privacy-badge {
-  font-size: 11px;
-  background: var(--bg-surface);
-  padding: 4px 8px;
-  border-radius: 4px;
-  color: var(--text-secondary);
-}
-
-.sticky-footer .version-number {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.sticky-footer .channel-badge {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.sticky-footer .channel-badge.beta {
-  background: var(--accent-secondary);
-  color: #000;
-}
-
-.sticky-footer .channel-badge.stable {
-  background: var(--accent-success);
-  color: #000;
-}
-
-.sticky-footer .last-updated {
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.sticky-footer .made-by {
-  color: var(--text-secondary);
-}
-
-.sticky-footer .made-by a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.sticky-footer .made-by a:hover {
-  text-decoration: underline;
-}
-
 /* ===== RESPONSIVE ===== */
 
 @media (min-width: 1200px) {
@@ -395,12 +304,6 @@
   .game-btn {
     width: 100%;
     justify-content: center;
-  }
-  
-  .sticky-footer .footer-content {
-    flex-direction: column;
-    text-align: center;
-    align-items: center;
   }
 }
 
