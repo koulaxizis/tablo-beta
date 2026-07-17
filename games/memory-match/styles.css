@@ -190,7 +190,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.85);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -202,6 +201,18 @@
   visibility: visible;
   pointer-events: auto;
   transition: opacity 0.2s ease, visibility 0s linear 0s;
+}
+
+/* Dedicated overlay element - separate from modal container */
+.congrats-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 0;
+  pointer-events: auto;
 }
 
 .congrats-content {
@@ -283,6 +294,13 @@
 #tablo-footer {
   flex-shrink: 0;
   margin-top: 20px;
+}
+
+/* Force modal-open class on body to prevent layout shift */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
 }
 
 /* ===== RESPONSIVE LAYOUT ===== */
