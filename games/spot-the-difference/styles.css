@@ -6,9 +6,9 @@
   display: flex;
   gap: 24px;
   padding: 16px 24px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  background: var(--bg-surface, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: var(--radius-lg, 12px);
   flex-wrap: wrap;
   justify-content: center;
   margin-bottom: 20px;
@@ -23,14 +23,14 @@
 .stat-label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #94a3b8);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 .stat-value {
   font-size: 20px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent, #2dd4bf);
 }
 
 .spot-container {
@@ -40,27 +40,24 @@
   justify-content: center;
   margin-bottom: 20px;
 }
-
 .spot-image-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
-
 .spot-canvas {
   width: 400px;
   height: 300px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  background: #0f1923;
+  border: 1px solid var(--border-color, #334155);
   cursor: crosshair;
 }
-
 .spot-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #94a3b8);
 }
 
 .game-controls {
@@ -69,29 +66,28 @@
   justify-content: center;
 }
 .game-btn {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
+  background: var(--bg-surface, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  color: var(--text-primary, #e2e8f0);
   padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-family: var(--font-primary);
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-primary, sans-serif);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--transition, 0.2s ease);
 }
 .game-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--accent, #2dd4bf);
+  color: var(--accent, #2dd4bf);
 }
 .game-btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent, #2dd4bf);
+  border-color: var(--accent, #2dd4bf);
   color: #0f1923;
 }
 .game-btn.primary:hover {
-  background: var(--accent-light);
+  background: var(--accent-light, #5eead4);
 }
 
 .modal-buttons {
@@ -103,7 +99,7 @@
 
 .game-hint {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-muted, #64748b);
   text-align: center;
   margin-top: 8px;
 }
@@ -122,36 +118,36 @@
 .winner-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
 }
 .winner-content {
   position: relative;
-  background: var(--bg-panel);
-  border: 2px solid var(--accent);
-  border-radius: var(--radius-lg);
+  background: #1e293b;
+  border: 2px solid #2dd4bf;
+  border-radius: 12px;
   padding: 32px 24px;
   text-align: center;
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 16px 64px rgba(0,0,0,0.5);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6);
 }
 .winner-icon { font-size: 48px; margin-bottom: 16px; }
-.winner-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
-.winner-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+.winner-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; color: #e2e8f0; }
+.winner-message { font-size: 14px; color: #94a3b8; margin-bottom: 24px; }
 
 .tablo-toast {
   position: fixed;
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #e2e8f0;
   padding: 12px 24px;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 13px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   z-index: 10001;
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
