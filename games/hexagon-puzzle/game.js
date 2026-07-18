@@ -10,22 +10,15 @@
     '#2dd4bf', '#f59e0b', '#f87171',
     '#a78bfa', '#60a5fa', '#4ade80'
   ];
-  var canvas = document.getElementById('hex-canvas');
-  var ctx = canvas.getContext('2d');
-  var colorPickerEl = document.getElementById('color-picker');
-  var movesEl = document.getElementById('moves');
-  var parEl = document.getElementById('par');
-  var bestEl = document.getElementById('best-score');
-  var newGameBtn = document.getElementById('btn-new-game');
-  var nextBtn = document.getElementById('btn-next');
-  var winnerModal = document.getElementById('winner-modal');
-  var winnerStats = document.getElementById('winner-stats');
-  var toast = document.getElementById('toast');
+
+  var canvas, ctx, colorPickerEl;
+  var movesEl, parEl, bestEl;
+  var newGameBtn, nextBtn;
+  var winnerModal, winnerStats, toast;
 
   var hexSize = 22;
   var centerX = 210, centerY = 200;
   var grid = {};
-  var currentColor = 0;
   var moves = 0;
   var par = 0;
   var gameActive = false;
@@ -191,13 +184,16 @@
       localStorage.setItem('tablo-hex-best', moves.toString());
       updateBest();
     }
-    winnerStats.textContent = tr('hex_moves') + ': ' + moves + ' / ' + tr('hex_par') + ': ' + par;
-    winnerModal.classList.add('visible');
+    if (winnerStats) winnerStats.textContent = tr('hex_moves') + ': ' + moves + ' / ' + tr('hex_par') + ': ' + par;
+    if (winnerModal) {
+      winnerModal.classList.add('visible');
+      winnerModal.style.display = 'flex';
+    }
   }
 
   function updateBest() {
     var best = localStorage.getItem('tablo-hex-best');
-    bestEl.textContent = best || '--';
+    if (bestEl) bestEl.textContent = best || '--';
   }
 
   function renderColorPicker() {
@@ -229,15 +225,30 @@
     generateGrid();
     moves = 0;
     par = calculatePar();
-    movesEl.textContent = '0';
-    parEl.textContent = par;
+    if (movesEl) movesEl.textContent = '0';
+    if (parEl) parEl.textContent = par;
     gameActive = true;
-    winnerModal.classList.remove('visible');
+    if (winnerModal) {
+      winnerModal.classList.remove('visible');
+      winnerModal.style.display = 'none';
+    }
     draw();
     updateColorPicker();
   }
 
   function initGame() {
+    canvas = document.getElementById('hex-canvas');
+    ctx = canvas ? canvas.getContext('2d') : null;
+    colorPickerEl = document.getElementById('hex-color-picker');
+    movesEl = document.getElementById('hex-moves');
+    parEl = document.getElementById('hex-par');
+    bestEl = document.getElementById('hex-best');
+    newGameBtn = document.getElementById('btn-new-game');
+    nextBtn = document.getElementById('btn-next');
+    winnerModal = document.getElementById('hex-winner');
+    winnerStats = document.getElementById('hex-winner-stats');
+    toast = document.getElementById('toast');
+
     updateBest();
     renderColorPicker();
 
@@ -251,15 +262,17 @@
       nextBtn.addEventListener('click', newGame);
     }
 
-    canvas.addEventListener('click', function(e) {
-      var rect = canvas.getBoundingClientRect();
-      var x = (e.clientX - rect.left) * (canvas.width / rect.width);
-      var y = (e.clientY - rect.top) * (canvas.height / rect.height);
-      var h = pixelToHex(x, y);
-      if (grid[hexKey(h.q, h.r)]) {
-        flood(grid[hexKey(h.q, h.r)].color);
-      }
-    });
+    if (canvas) {
+      canvas.addEventListener('click', function(e) {
+        var rect = canvas.getBoundingClientRect();
+        var x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        var y = (e.clientY - rect.top) * (canvas.height / rect.height);
+        var h = pixelToHex(x, y);
+        if (grid[hexKey(h.q, h.r)]) {
+          flood(grid[hexKey(h.q, h.r)].color);
+        }
+      });
+    }
 
     newGame();
   }

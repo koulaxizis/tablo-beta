@@ -7,31 +7,25 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
   <link rel="manifest" href="../../manifest.json">
   <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="../../assets/css/icons.css">
   <link rel="stylesheet" href="styles.css">
   <meta name="theme-color" content="#0f1923">
 </head>
 <body>
   <div id="tablo-header"></div>
 
-  <a href="../../index.html" class="back-home mobile-hide">
-    <i class="fa fa-arrow-left"></i>
-    <span data-i18n="btn_back_home">Back to Games</span>
-  </a>
-
   <div class="game-wrapper">
     <div class="game-stats">
       <div class="stat-item">
         <span class="stat-label" data-i18n="hex_moves">Moves</span>
-        <span class="stat-value" id="moves">0</span>
+        <span class="stat-value" id="hex-moves">0</span>
       </div>
       <div class="stat-item">
         <span class="stat-label" data-i18n="hex_par">Par</span>
-        <span class="stat-value" id="par">--</span>
+        <span class="stat-value" id="hex-par">--</span>
       </div>
       <div class="stat-item">
         <span class="stat-label" data-i18n="hex_best">Best</span>
-        <span class="stat-value" id="best-score">--</span>
+        <span class="stat-value" id="hex-best">--</span>
       </div>
     </div>
 
@@ -39,10 +33,10 @@
       <canvas id="hex-canvas" width="420" height="400"></canvas>
     </div>
 
-    <div class="hex-color-picker" id="color-picker"></div>
+    <div class="hex-color-picker" id="hex-color-picker"></div>
 
     <div class="game-controls">
-      <button class="game-btn primary" id="btn-new-game" data-i18n="slider_new_game">New Game</button>
+      <button class="game-btn primary" id="btn-new-game" data-i18n="hex_new_game">New Game</button>
     </div>
 
     <p class="game-hint" data-i18n="hex_hint">Pick a color to flood the board from the center. Fill all hexes with one color!</p>
@@ -50,12 +44,12 @@
 
   <div id="tablo-footer"></div>
 
-  <div class="winner-modal" id="winner-modal">
+  <div class="winner-modal" id="hex-winner" style="display:none;">
     <div class="winner-overlay"></div>
     <div class="winner-content">
       <div class="winner-icon">&#127881;</div>
       <h2 class="winner-title" data-i18n="hex_solved">Solved!</h2>
-      <p class="winner-message" id="winner-stats"></p>
+      <p class="winner-message" id="hex-winner-stats"></p>
       <button class="game-btn primary" id="btn-next" data-i18n="btn_play_again">Play Again</button>
     </div>
   </div>
@@ -65,21 +59,29 @@
   <script src="../../assets/js/config.js"></script>
   <script src="../../assets/js/header.js"></script>
   <script src="../../assets/js/footer.js"></script>
-
   <script>
-    fetch('../../assets/js/translations.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        window.TABLO_TRANSLATIONS = data;
-        if (typeof window.applyTabloTranslations === 'function') {
-          window.applyTabloTranslations();
-        }
+    (function() {
+      var attempts = 0;
+      function loadGame() {
         var s = document.createElement('script');
         s.src = 'game.js';
-        s.onload = function() { if (typeof initGame === 'function') initGame(); };
+        s.onload = function() {
+          if (typeof initGame === 'function') initGame();
+        };
         document.body.appendChild(s);
-      })
-      .catch(function(e) { console.error('Load failed:', e); });
+      }
+      function check() {
+        if (window.TABLO_TRANSLATIONS) {
+          loadGame();
+        } else if (attempts < 50) {
+          attempts++;
+          setTimeout(check, 100);
+        } else {
+          loadGame();
+        }
+      }
+      check();
+    })();
   </script>
 </body>
 </html>
