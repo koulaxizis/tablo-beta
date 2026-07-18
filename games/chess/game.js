@@ -19,8 +19,7 @@
   var aiThinking = false;
   var timerInterval = null;
   var secondsElapsed = 0;
-  var dragPiece = null;
-  var dragStart = null;
+  var dragStartCoords = null;
 
   var PIECES = {
     'wp': '\u2659', 'wr': '\u265C', 'wn': '\u265E', 'wb': '\u265D', 'wq': '\u265B', 'wk': '\u2654',
@@ -89,12 +88,6 @@
     if (!best || secondsElapsed < parseInt(best)) {
       localStorage.setItem(key, secondsElapsed.toString());
     }
-  }
-
-  function getBestTime() {
-    var key = 'tablo-chess-best-' + gameMode;
-    var best = localStorage.getItem(key);
-    return best ? formatTime(parseInt(best)) : '-';
   }
 
   function initBoard() {
@@ -471,6 +464,7 @@
 
     if (!hasAnyLegalMove(currentPlayer)) {
       saveBestTime();
+      stopTimer();
       if (isInCheck(currentPlayer)) {
         var winner = currentPlayer === 'white' ? 'black' : 'white';
         modalIcon.textContent = '\uD83C\uDFC6';
@@ -483,7 +477,6 @@
       }
       gameOverModal.classList.add('visible');
       gameOverModal.style.display = 'flex';
-      stopTimer();
       return;
     }
 
@@ -596,127 +589,37 @@
     }
   }
 
-  function getCoordsFromEvent(e) {
+  function getCoordsFromPoint(clientX, clientY) {
     var rect = boardEl.getBoundingClientRect();
-    var x = e.clientX - rect.left;
-    var y = e.clientY - rect.top;
-    var cols = rect.width / 8;
-    var rows = rect.height / 8;
-    var col = Math.floor(x / cols);
-    var row = Math.floor(y / rows);
+    var x = clientX - rect.left;
+    var y = clientY - rect.top;
+    var col = Math.floor((x / rect.width) * 8);
+    var row = Math.floor((y / rect.height) * 8);
+    if (col < 0) col = 0;
+    if (col > 7) col = 7;
+    if (row < 0) row = 0;
+    if (row > 7) row = 7;
     return { r: row, c: col };
   }
 
-  function handleDragStart(e, r, c) {
-    if (aiThinking) { e.preventDefault(); return; }
-    var piece = board[r][c];
-    if (!piece || pieceColor(piece) !== currentPlayer) {
-      e.preventDefault();
-      return;
-    }
-    dragPiece = piece;
-    dragStart = { r: r, c: c };
-    selected = [r, c];
-    validMoves = getValidMoves(r, c);
-    render();
-    
-    var el = e.target;
-    if (el.classList.contains('piece')) {
-      el.classList.add('dragging');
-    }
-  }
-
-  function handleDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    var coords = getCoordsFromEvent(e);
-    var squares = boardEl.querySelectorAll('.square');
-    squares.forEach(function(sq) {
-      sq.classList.remove('drag-over');
-    });
-    if (coords.r >= 0 && coords.r < 8 && coords.c >= 0 && coords.c < 8) {
-      var idx = coords.r * 8 + coords.c;
-      squares[idx].classList.add('drag-over');
-    }
-  }
-
-  function handleDragLeave(e) {
-    var squares = boardEl.querySelectorAll('.square');
-    squares.forEach(function(sq) {
-      sq.classList.remove('drag-over');
-    });
-  }
-
-  function handleDrop(e, r, c) {
-    e.preventDefault();
-    var squares = boardEl.querySelectorAll('.square');
-    squares.forEach(function(sq) {
-      sq.classList.remove('drag-over');
-    });
-
-    if (!dragPiece || !dragStart) return;
-
-    var valid = false;
+  function isValidMoveTarget(r, c) {
     for (var i = 0; i < validMoves.length; i++) {
-      if (validMoves[i][0] === r && validMoves[i][1] === c) {
-        valid = true;
-        break;
-      }
+      if (validMoves[i][0] === r && validMoves[i][1] === c) return true;
     }
-
-    var el = e.target;
-    while (el && el.parentElement !== boardEl) {
-      if (el.classList && el.classList.contains('piece')) {
-        el.classList.remove('dragging');
-        break;
-      }
-      el = el.parentElement;
-    }
-
-    if (valid) {
-      saveState();
-      makeMove(dragStart.r, dragStart.c, r, c);
-    } else {
-      selected = null;
-      validMoves = [];
-      render();
-    }
-    dragPiece = null;
-    dragStart = null;
+    return false;
   }
 
-  function handleTouchStart(e) {
-    if (e.touches.length !== 1) return;
-    var touch = e.touches[0];
-    var coords = getCoordsFromEvent(touch);
-    if (coords.r >= 0 && coords.r < 8 && coords.c >= 0 && coords.c < 8) {
-      var piece = board[coords.r][coords.c];
-      if (piece && pieceColor(piece) === currentPlayer) {
-        e.preventDefault();
-        handleDragStart({ preventDefault: function(){}, target: e.target }, coords.r, coords.c);
-      }
-    }
-  }
-
-  function handleTouchEnd(e) {
-    if (!dragPiece || !dragStart || e.changedTouches.length === 0) return;
-    var touch = e.changedTouches[0];
-    var coords = getCoordsFromEvent(touch);
-    if (coords.r >= 0 && coords.r < 8 && coords.c >= 0 && coords.c < 8) {
-      handleDrop({ preventDefault: function(){}, target: e.target }, coords.r, coords.c);
-    } else {
-      selected = null;
-      validMoves = [];
-      render();
-      dragPiece = null;
-      dragStart = null;
-      var pieces = document.querySelectorAll('.piece');
-      pieces.forEach(function(p) { p.classList.remove('dragging'); });
-    }
+  function tryMove(fromR, fromC, toR, toC) {
+    if (fromR === toR && fromC === toC) return false;
+    if (!isValidMoveTarget(toR, toC)) return false;
+    saveState();
+    makeMove(fromR, fromC, toR, toC);
+    return true;
   }
 
   function render() {
     boardEl.innerHTML = '';
+
     for (var r = 0; r < 8; r++) {
       for (var c = 0; c < 8; c++) {
         var sq = document.createElement('div');
@@ -738,17 +641,14 @@
           var pieceEl = document.createElement('span');
           pieceEl.className = 'piece';
           pieceEl.textContent = PIECES[board[r][c]];
+          pieceEl.setAttribute('draggable', 'true');
+          pieceEl.dataset.r = r;
+          pieceEl.dataset.c = c;
           if (pieceColor(board[r][c]) === 'white') {
             pieceEl.classList.add('white-piece');
           } else {
             pieceEl.classList.add('black-piece');
           }
-          
-          // Mouse drag events
-          pieceEl.addEventListener('mousedown', function(e) {
-            handleDragStart(e, r, c);
-          });
-          
           sq.appendChild(pieceEl);
         }
 
@@ -757,25 +657,92 @@
         }
 
         sq.addEventListener('click', function(e) {
-          handleSquareClick(parseInt(e.currentTarget.dataset.r), parseInt(e.currentTarget.dataset.c));
+          if (dragStartCoords) { dragStartCoords = null; return; }
+          var sr = parseInt(this.dataset.r);
+          var sc = parseInt(this.dataset.c);
+          handleSquareClick(sr, sc);
         });
 
         boardEl.appendChild(sq);
       }
     }
-
-    // Board drag events
-    boardEl.addEventListener('dragover', handleDragOver);
-    boardEl.addEventListener('dragleave', handleDragLeave);
-    boardEl.addEventListener('drop', function(e) {
-      var coords = getCoordsFromEvent(e);
-      handleDrop(e, coords.r, coords.c);
-    });
-
-    // Touch events
-    boardEl.addEventListener('touchstart', handleTouchStart, { passive: false });
-    boardEl.addEventListener('touchend', handleTouchEnd);
   }
+
+  // --- Drag & Drop (mouse) ---
+  boardEl.addEventListener('dragstart', function(e) {
+    var target = e.target;
+    if (!target.classList || !target.classList.contains('piece')) { e.preventDefault(); return; }
+    if (aiThinking) { e.preventDefault(); return; }
+    var r = parseInt(target.dataset.r);
+    var c = parseInt(target.dataset.c);
+    if (pieceColor(board[r][c]) !== currentPlayer) { e.preventDefault(); return; }
+    dragStartCoords = { r: r, c: c };
+    selected = [r, c];
+    validMoves = getValidMoves(r, c);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', r + ',' + c);
+    render();
+    // Re-find the dragged element after re-render
+    var pieces = boardEl.querySelectorAll('.piece');
+    pieces.forEach(function(p) {
+      if (parseInt(p.dataset.r) === r && parseInt(p.dataset.c) === c) {
+        p.classList.add('dragging');
+      }
+    });
+  });
+
+  boardEl.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    var coords = getCoordsFromPoint(e.clientX, e.clientY);
+    var squares = boardEl.querySelectorAll('.square');
+    squares.forEach(function(sq) { sq.classList.remove('drag-over'); });
+    var idx = coords.r * 8 + coords.c;
+    if (squares[idx]) squares[idx].classList.add('drag-over');
+  });
+
+  boardEl.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var squares = boardEl.querySelectorAll('.square');
+    squares.forEach(function(sq) { sq.classList.remove('drag-over'); });
+    if (!dragStartCoords) return;
+    var coords = getCoordsFromPoint(e.clientX, e.clientY);
+    var moved = tryMove(dragStartCoords.r, dragStartCoords.c, coords.r, coords.c);
+    dragStartCoords = null;
+    if (!moved) {
+      selected = null;
+      validMoves = [];
+      render();
+    }
+  });
+
+  boardEl.addEventListener('dragend', function(e) {
+    var pieces = boardEl.querySelectorAll('.piece.dragging');
+    pieces.forEach(function(p) { p.classList.remove('dragging'); });
+    dragStartCoords = null;
+  });
+
+  // --- Touch support (tap to select, tap to move) ---
+  boardEl.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    var touch = e.touches[0];
+    var coords = getCoordsFromPoint(touch.clientX, touch.clientY);
+    var piece = board[coords.r][coords.c];
+    if (selected && isValidMoveTarget(coords.r, coords.c)) {
+      e.preventDefault();
+      saveState();
+      makeMove(selected[0], selected[1], coords.r, coords.c);
+    } else if (piece && pieceColor(piece) === currentPlayer) {
+      e.preventDefault();
+      selected = [coords.r, coords.c];
+      validMoves = getValidMoves(coords.r, coords.c);
+      render();
+    } else {
+      selected = null;
+      validMoves = [];
+      render();
+    }
+  }, { passive: false });
 
   function renderCaptured() {
     capWhiteEl.textContent = capturedByWhite.map(function(p) { return PIECES[p]; }).join(' ');
