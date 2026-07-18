@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Chess (Full Implementation)
+// Tablo — Chess (Full Implementation + Drag & Drop + Timer)
 // ============================================
 
 (function() {
@@ -17,6 +17,10 @@
   var enPassantTarget = null;
   var castlingRights = { wk: true, wq: true, bk: true, bq: true };
   var aiThinking = false;
+  var timerInterval = null;
+  var secondsElapsed = 0;
+  var dragPiece = null;
+  var dragStart = null;
 
   var PIECES = {
     'wp': '\u2659', 'wr': '\u265C', 'wn': '\u265E', 'wb': '\u265D', 'wq': '\u265B', 'wk': '\u2654',
@@ -26,6 +30,7 @@
   var boardEl = document.getElementById('board');
   var turnEl = document.getElementById('turn-display');
   var modeEl = document.getElementById('mode-display');
+  var timerEl = document.getElementById('timer');
   var moveNumEl = document.getElementById('move-num');
   var modeSelect = document.getElementById('game-mode-select');
   var newGameBtn = document.getElementById('btn-new-game');
@@ -53,6 +58,43 @@
     toast.classList.add('visible');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+  }
+
+  function formatTime(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function startTimer() {
+    stopTimer();
+    secondsElapsed = 0;
+    timerEl.textContent = '00:00';
+    timerInterval = setInterval(function() {
+      secondsElapsed++;
+      timerEl.textContent = formatTime(secondsElapsed);
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function saveBestTime() {
+    var key = 'tablo-chess-best-' + gameMode;
+    var best = localStorage.getItem(key);
+    if (!best || secondsElapsed < parseInt(best)) {
+      localStorage.setItem(key, secondsElapsed.toString());
+    }
+  }
+
+  function getBestTime() {
+    var key = 'tablo-chess-best-' + gameMode;
+    var best = localStorage.getItem(key);
+    return best ? formatTime(parseInt(best)) : '-';
   }
 
   function initBoard() {
@@ -194,7 +236,6 @@
     var savedEP = enPassantTarget;
 
     if (pieceType(savedFrom) === 'p' && toC !== fromC && !savedTo) {
-      var epDir = color === 'white' ? 1 : -1;
       board[fromR][toC] = null;
     }
 
@@ -215,9 +256,6 @@
 
     board[fromR][fromC] = savedFrom;
     board[toR][toC] = savedTo;
-    if (pieceType(savedFrom) === 'p' && toC !== fromC && !savedTo) {
-      board[fromR][toC] = 'p' === pieceType(savedFrom) ? (color === 'white' ? 'bp' : 'wp') : savedTo;
-    }
     enPassantTarget = savedEP;
 
     if (pieceType(savedFrom) === 'k' && Math.abs(toC - fromC) === 2) {
@@ -349,7 +387,6 @@
     var captured = board[toR][toC];
 
     if (pieceType(piece) === 'p' && toC !== fromC && !captured) {
-      var epDir = pieceColor(piece) === 'white' ? 1 : -1;
       captured = board[fromR][toC];
       board[fromR][toC] = null;
     }
@@ -433,6 +470,7 @@
     renderCaptured();
 
     if (!hasAnyLegalMove(currentPlayer)) {
+      saveBestTime();
       if (isInCheck(currentPlayer)) {
         var winner = currentPlayer === 'white' ? 'black' : 'white';
         modalIcon.textContent = '\uD83C\uDFC6';
@@ -445,6 +483,7 @@
       }
       gameOverModal.classList.add('visible');
       gameOverModal.style.display = 'flex';
+      stopTimer();
       return;
     }
 
@@ -498,8 +537,6 @@
 
     for (var i = 0; i < moves.length; i++) {
       var m = moves[i];
-      var captured = board[m.to[0]][m.to[1]];
-
       saveState();
       var piece = board[m.from[0]][m.from[1]];
       board[m.to[0]][m.to[1]] = piece;
@@ -559,6 +596,125 @@
     }
   }
 
+  function getCoordsFromEvent(e) {
+    var rect = boardEl.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    var cols = rect.width / 8;
+    var rows = rect.height / 8;
+    var col = Math.floor(x / cols);
+    var row = Math.floor(y / rows);
+    return { r: row, c: col };
+  }
+
+  function handleDragStart(e, r, c) {
+    if (aiThinking) { e.preventDefault(); return; }
+    var piece = board[r][c];
+    if (!piece || pieceColor(piece) !== currentPlayer) {
+      e.preventDefault();
+      return;
+    }
+    dragPiece = piece;
+    dragStart = { r: r, c: c };
+    selected = [r, c];
+    validMoves = getValidMoves(r, c);
+    render();
+    
+    var el = e.target;
+    if (el.classList.contains('piece')) {
+      el.classList.add('dragging');
+    }
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    var coords = getCoordsFromEvent(e);
+    var squares = boardEl.querySelectorAll('.square');
+    squares.forEach(function(sq) {
+      sq.classList.remove('drag-over');
+    });
+    if (coords.r >= 0 && coords.r < 8 && coords.c >= 0 && coords.c < 8) {
+      var idx = coords.r * 8 + coords.c;
+      squares[idx].classList.add('drag-over');
+    }
+  }
+
+  function handleDragLeave(e) {
+    var squares = boardEl.querySelectorAll('.square');
+    squares.forEach(function(sq) {
+      sq.classList.remove('drag-over');
+    });
+  }
+
+  function handleDrop(e, r, c) {
+    e.preventDefault();
+    var squares = boardEl.querySelectorAll('.square');
+    squares.forEach(function(sq) {
+      sq.classList.remove('drag-over');
+    });
+
+    if (!dragPiece || !dragStart) return;
+
+    var valid = false;
+    for (var i = 0; i < validMoves.length; i++) {
+      if (validMoves[i][0] === r && validMoves[i][1] === c) {
+        valid = true;
+        break;
+      }
+    }
+
+    var el = e.target;
+    while (el && el.parentElement !== boardEl) {
+      if (el.classList && el.classList.contains('piece')) {
+        el.classList.remove('dragging');
+        break;
+      }
+      el = el.parentElement;
+    }
+
+    if (valid) {
+      saveState();
+      makeMove(dragStart.r, dragStart.c, r, c);
+    } else {
+      selected = null;
+      validMoves = [];
+      render();
+    }
+    dragPiece = null;
+    dragStart = null;
+  }
+
+  function handleTouchStart(e) {
+    if (e.touches.length !== 1) return;
+    var touch = e.touches[0];
+    var coords = getCoordsFromEvent(touch);
+    if (coords.r >= 0 && coords.r < 8 && coords.c >= 0 && coords.c < 8) {
+      var piece = board[coords.r][coords.c];
+      if (piece && pieceColor(piece) === currentPlayer) {
+        e.preventDefault();
+        handleDragStart({ preventDefault: function(){}, target: e.target }, coords.r, coords.c);
+      }
+    }
+  }
+
+  function handleTouchEnd(e) {
+    if (!dragPiece || !dragStart || e.changedTouches.length === 0) return;
+    var touch = e.changedTouches[0];
+    var coords = getCoordsFromEvent(touch);
+    if (coords.r >= 0 && coords.r < 8 && coords.c >= 0 && coords.c < 8) {
+      handleDrop({ preventDefault: function(){}, target: e.target }, coords.r, coords.c);
+    } else {
+      selected = null;
+      validMoves = [];
+      render();
+      dragPiece = null;
+      dragStart = null;
+      var pieces = document.querySelectorAll('.piece');
+      pieces.forEach(function(p) { p.classList.remove('dragging'); });
+    }
+  }
+
   function render() {
     boardEl.innerHTML = '';
     for (var r = 0; r < 8; r++) {
@@ -587,6 +743,12 @@
           } else {
             pieceEl.classList.add('black-piece');
           }
+          
+          // Mouse drag events
+          pieceEl.addEventListener('mousedown', function(e) {
+            handleDragStart(e, r, c);
+          });
+          
           sq.appendChild(pieceEl);
         }
 
@@ -601,6 +763,18 @@
         boardEl.appendChild(sq);
       }
     }
+
+    // Board drag events
+    boardEl.addEventListener('dragover', handleDragOver);
+    boardEl.addEventListener('dragleave', handleDragLeave);
+    boardEl.addEventListener('drop', function(e) {
+      var coords = getCoordsFromEvent(e);
+      handleDrop(e, coords.r, coords.c);
+    });
+
+    // Touch events
+    boardEl.addEventListener('touchstart', handleTouchStart, { passive: false });
+    boardEl.addEventListener('touchend', handleTouchEnd);
   }
 
   function renderCaptured() {
@@ -612,6 +786,7 @@
     turnEl.textContent = currentPlayer === 'white' ? tr('chess_white') : tr('chess_black');
     modeEl.textContent = gameMode === 'pvp' ? tr('ttt_pvp') : tr('ttt_vs_ai');
     moveNumEl.textContent = moveCount;
+    timerEl.textContent = formatTime(secondsElapsed);
   }
 
   function newGame() {
@@ -630,6 +805,7 @@
     gameOverModal.style.display = 'none';
     promotionModal.classList.remove('visible');
     promotionModal.style.display = 'none';
+    startTimer();
     render();
     updateUI();
     renderCaptured();
