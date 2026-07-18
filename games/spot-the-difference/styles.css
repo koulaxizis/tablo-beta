@@ -94,6 +94,13 @@
   background: var(--accent-light);
 }
 
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
 .game-hint {
   font-size: 13px;
   color: var(--text-muted);
