@@ -6,8 +6,8 @@
   'use strict';
 
   var WORDS = {
-    en: ['apple','beach','chair','dance','eagle','flame','globe','horse','input','jolly','knife','lemon','mango','night','ocean','piano','queen','river','sound','table','uncle','voice','water','youth','zebra','brave','cloud','dream','earth','fruit','ghost','happy','ivory','jewel','magic','noble','ocean','peace','quest','royal','smart','trust','unity','vivid','world','yacht','bloom','crisp','drive'],
-    el: ['σπίτι','ζωή','νύχτα','γάλα','καλη','έρωτα','ηλία','τραγού','φωτιά','θάλασ','άνθρωπ','σχολει','βιβλίο','κόκκινο','φίλος','κάμερα','πόλη','πόρε','νερό','ουρανό','δέντρο','τούτα','σπόρο','ψυχή','φως','συννεφ','γιώργο','ωραίο','σπίτου','μύλο'],
+    en: ['apple','beach','chair','dance','eagle','flame','globe','horse','input','jolly','knife','lemon','mango','night','ocean','piano','queen','river','sound','table','uncle','voice','water','youth','zebra','brave','cloud','dream','earth','fruit','ghost','happy','ivory','jewel','magic','peace','quest','royal','smart','trust','unity','vivid','world','yacht','bloom','crisp','drive','grape','house'],
+    el: ['σπίτι','ζωή','νύχτα','γάλα','καλή','έρωτα','ηλιά','τραγού','φωτιά','θάλασ','άνθρωπ','σχολει','βιβλίο','κόκκινο','φίλος','κάμερα','πόλη','πόρε','νερό','ουρανό','δέντρο','τούτα','σπόρο','ψυχή','φως','σύννεφ','γιώργ','ωραίο','σπιτού','μύλο'],
     es: ['playa','gatos','libro','mesas','cantar','verde','agua','solis','lunas','rojas','blanc','negro','fuego','tierr','cielo','mares','flores','panes','villa','reloj','norte','sur','este','oeste','arbol','piedra','arroz','leche','tortuga','manos'],
     it: ['rosso','gatto','casa','libro','mare','sole','luna','stella','fiori','montagna','amore','pane','acqua','fuoco','bacio','sogno','notte','giorno','vita','donna','uomini','cuore','mente','voce','senza','vento','pioggia','tempi','lucci','scala'],
     fr: ['rouge','chatte','maison','livre','mer','soleil','lune','etoile','fleur','montagne','amour','pain','eau','feu','baiser','reve','nuit','jour','vie','femme','homme','coeur','esprit','voix','sans','vent','pluie','temps','lumiere','ecran'],
@@ -23,29 +23,35 @@
 
   var boardEl = document.getElementById('wordle-board');
   var keyboardEl = document.getElementById('wordle-keyboard');
-  var streakEl = document.getElementById('wordle-streak');
-  var bestEl = document.getElementById('wordle-best-streak');
+  var streakEl = document.getElementById('streak');
+  var bestEl = document.getElementById('best-streak');
   var newWordBtn = document.getElementById('btn-new-word');
-  var hintEl = document.getElementById('wordle-hint');
+  var guessCountEl = document.getElementById('guess-count');
   var winnerModal = document.getElementById('winner-modal');
+  var winnerIcon = document.getElementById('winner-icon');
   var winnerTitle = document.getElementById('winner-title');
-  var winnerStats = document.getElementById('winner-stats');
-  var nextBtn = document.getElementById('btn-next');
+  var winnerMessage = document.getElementById('winner-message');
+  var winnerAnswer = document.getElementById('winner-answer');
+  var retryBtn = document.getElementById('btn-retry');
   var toast = document.getElementById('toast');
 
   var MAX_GUESSES = 6;
   var WORD_LENGTH = 5;
 
   function tr(key) {
-    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[currentLang];
+    var lang = localStorage.getItem('tablo-language') || 'en';
+    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
     return t ? (t[key] || key) : key;
   }
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = msg;
+    toast.textContent = tr(msg);
     toast.classList.add('visible');
-    setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 2000);
   }
 
   function getWords() {
@@ -70,58 +76,33 @@
     currentGuess = '';
     gameOver = false;
     won = false;
-    winnerModal.classList.remove('visible');
+    if (winnerModal) winnerModal.classList.remove('visible');
+    updateGuessCount();
     renderBoard();
     renderKeyboard();
-    if (hintEl) hintEl.textContent = tr('wordle_guesses') + ': 0/' + MAX_GUESSES;
+  }
+
+  function updateGuessCount() {
+    if (guessCountEl) guessCountEl.textContent = guesses.length + '/' + MAX_GUESSES;
   }
 
   function renderBoard() {
     if (!boardEl) return;
     boardEl.innerHTML = '';
     for (var r = 0; r < MAX_GUESSES; r++) {
-      var row = document.createElement('div');
-      row.className = 'wordle-row';
-      for (var c = 0; c < WORD_LENGTH; c++) {
-        var cell = document.createElement('div');
-        cell.className = 'wordle-cell';
-        if (guesses[r]) {
-          cell.textContent = guesses[r][c] || '';
-          var evalResult = evaluateGuess(guesses[r]);
-          if (evalResult[c] === 'correct') cell.classList.add('correct');
-          else if (evalResult[c] === 'present') cell.classList.add('present');
-          else cell.classList.add('absent');
-        } else if (r === guesses.length && currentGuess[c]) {
-          cell.textContent = currentGuess[c];
-        }
-      }
-      row.appendChild(cell);
-    }
-    // Fix: append rows properly
-    var existingRows = boardEl.querySelectorAll('.wordle-row');
-    if (existingRows.length === 0) {
-      for (var r2 = 0; r2 < MAX_GUESSES; r2++) {
-        boardEl.appendChild(document.createElement('div'));
-      }
-    }
-    // Clear and rebuild
-    boardEl.innerHTML = '';
-    for (var r3 = 0; r3 < MAX_GUESSES; r3++) {
       var rowEl = document.createElement('div');
       rowEl.className = 'wordle-row';
-      for (var c3 = 0; c3 < WORD_LENGTH; c3++) {
+      for (var c = 0; c < WORD_LENGTH; c++) {
         var cellEl = document.createElement('div');
         cellEl.className = 'wordle-cell';
-        if (guesses[r3]) {
-          cellEl.textContent = (guesses[r3][c3] || '').toUpperCase();
-          var evalR = evaluateGuess(guesses[r3]);
-          if (evalR[c3] === 'correct') cellEl.classList.add('correct');
-          else if (evalR[c3] === 'present') cellEl.classList.add('present');
+        if (guesses[r]) {
+          cellEl.textContent = (guesses[r][c] || '').toUpperCase();
+          var evalR = evaluateGuess(guesses[r]);
+          if (evalR[c] === 'correct') cellEl.classList.add('correct');
+          else if (evalR[c] === 'present') cellEl.classList.add('present');
           else cellEl.classList.add('absent');
-          cellEl.classList.add('revealed');
-        } else if (r3 === guesses.length && c3 < currentGuess.length) {
-          cellEl.textContent = currentGuess[c3].toUpperCase();
-          cellEl.classList.add('filled');
+        } else if (r === guesses.length && c < currentGuess.length) {
+          cellEl.textContent = currentGuess[c].toUpperCase();
         }
         rowEl.appendChild(cellEl);
       }
@@ -190,7 +171,8 @@
           btn.textContent = key.toUpperCase();
           if (knownStates[key]) btn.classList.add(knownStates[key]);
         }
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
           handleKey(key);
         });
         rowEl.appendChild(btn);
@@ -207,11 +189,11 @@
       renderBoard();
     } else if (key === 'enter') {
       if (currentGuess.length < WORD_LENGTH) {
-        showToast(tr('wordle_short'));
+        showToast('wordle_too_short');
         return;
       }
       submitGuess();
-    } else if (/^[a-z\u03B1-\u03C9]$/i.test(key)) {
+    } else if (/^[a-zA-Z\u03B1-\u03C9]$/.test(key)) {
       if (currentGuess.length < WORD_LENGTH) {
         currentGuess += key.toLowerCase();
         renderBoard();
@@ -221,11 +203,10 @@
 
   function submitGuess() {
     var wordList = getWords();
-    var isInList = wordList.some(function(w) { return w === currentGuess; });
-    
-    // Allow if in list OR if it matches target (for safety)
+    var isInList = wordList.some(function(w) { return w.toLowerCase() === currentGuess.toLowerCase(); });
+
     if (!isInList && currentGuess !== targetWord) {
-      showToast(tr('wordle_invalid'));
+      showToast('wordle_not_in_list');
       return;
     }
 
@@ -233,7 +214,7 @@
     currentGuess = '';
     renderBoard();
     renderKeyboard();
-    if (hintEl) hintEl.textContent = tr('wordle_guesses') + ': ' + guesses.length + '/' + MAX_GUESSES;
+    updateGuessCount();
 
     var lastGuess = guesses[guesses.length - 1];
     if (lastGuess === targetWord) {
@@ -258,9 +239,12 @@
       if (bestEl) bestEl.textContent = streak;
     }
 
-    winnerTitle.textContent = tr('wordle_won');
-    winnerStats.textContent = tr('wordle_guessed_in') + ' ' + guesses.length + ' ' + tr('wordle_tries');
-    winnerModal.classList.add('visible');
+    if (winnerIcon) winnerIcon.textContent = '\uD83C\uDF89';
+    if (winnerTitle) winnerTitle.textContent = tr('wordle_won');
+    if (winnerMessage) winnerMessage.textContent = tr('wordle_guessed_in') + ' ' + guesses.length + ' ' + tr('wordle_tries');
+    if (winnerAnswer) winnerAnswer.textContent = '';
+
+    if (winnerModal) winnerModal.classList.add('visible');
   }
 
   function handleLoss() {
@@ -268,9 +252,12 @@
     localStorage.setItem('tablo-wordle-streak', '0');
     if (streakEl) streakEl.textContent = '0';
 
-    winnerTitle.textContent = tr('wordle_lost');
-    winnerStats.textContent = tr('wordle_answer') + ': ' + targetWord.toUpperCase();
-    winnerModal.classList.add('visible');
+    if (winnerIcon) winnerIcon.textContent = '\uD83D\uDE22';
+    if (winnerTitle) winnerTitle.textContent = tr('wordle_lost');
+    if (winnerMessage) winnerMessage.textContent = '';
+    if (winnerAnswer) winnerAnswer.textContent = tr('wordle_answer') + ': ' + targetWord.toUpperCase();
+
+    if (winnerModal) winnerModal.classList.add('visible');
   }
 
   function handlePhysicalKey(e) {
@@ -293,12 +280,12 @@
     if (newWordBtn) {
       newWordBtn.addEventListener('click', function() {
         newGame();
-        showToast(tr('wordle_new_word_ready'));
+        showToast('wordle_new_word_ready');
       });
     }
 
-    if (nextBtn) {
-      nextBtn.addEventListener('click', newGame);
+    if (retryBtn) {
+      retryBtn.addEventListener('click', newGame);
     }
 
     newGame();
