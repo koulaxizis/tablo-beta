@@ -1,36 +1,39 @@
 // ============================================
-// Tablo — Spot the Difference (Fixed cursor + markers)
+// Tablo — Spot the Difference (Randomized)
 // ============================================
 
 (function() {
   'use strict';
 
-  var differences = [
-    { x: 120, y: 80, found: false },
-    { x: 250, y: 150, found: false },
-    { x: 80, y: 220, found: false },
-    { x: 310, y: 60, found: false },
-    { x: 180, y: 280, found: false },
-    { x: 340, y: 200, found: false },
-    { x: 50, y: 140, found: false }
+  // Pool of possible differences (12 total)
+  var diffPool = [
+    { id: 'sun_color', x: 300, y: 60, w: 35, h: 35 },
+    { id: 'tree1_color', x: 30, y: 216, w: 18, h: 25 },
+    { id: 'tree2_color', x: 120, y: 216, w: 18, h: 25 },
+    { id: 'tree3_color', x: 210, y: 216, w: 18, h: 25 },
+    { id: 'tree4_color', x: 300, y: 216, w: 18, h: 25 },
+    { id: 'door_color', x: 155, y: 195, w: 20, h: 20 },
+    { id: 'star1_present', x: 60, y: 40, w: 4, h: 4 },
+    { id: 'star2_present', x: 140, y: 60, w: 4, h: 4 },
+    { id: 'star3_present', x: 80, y: 80, w: 4, h: 4 },
+    { id: 'bird_present', x: 180, y: 100, w: 12, h: 8 },
+    { id: 'flower_present', x: 50, y: 250, w: 10, h: 10 },
+    { id: 'butterfly_present', x: 320, y: 180, w: 10, h: 8 }
   ];
 
-  var HIT_RADIUS = 25;
+  var NUM_DIFFERENCES = 5;
+  var HIT_RADIUS = 20;
+  
+  var activeDifferences = [];
   var foundCount = 0;
   var startTime = null;
   var timerInterval = null;
   var elapsedSeconds = 0;
   var gameActive = false;
 
-  var canvasB = document.getElementById('canvas-b');
-  var ctxB = canvasB ? canvasB.getContext('2d') : null;
-  var foundEl = document.getElementById('spot-found');
-  var timeEl = document.getElementById('spot-time');
-  var bestEl = document.getElementById('spot-best');
-  var winnerModal = document.getElementById('spot-winner');
-  var winnerStats = document.getElementById('spot-winner-stats');
-  var nextBtn = document.getElementById('btn-next');
-  var toast = document.getElementById('toast');
+  var canvasA, canvasB, ctxA, ctxB;
+  var foundEl, timeEl, bestEl;
+  var winnerModal, winnerStats, nextBtn, newGameBtn, toast;
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -45,7 +48,25 @@
     setTimeout(function() { toast.classList.remove('visible'); }, 2000);
   }
 
-  function drawScene(ctx, isImageB) {
+  function shuffle(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    return array;
+  }
+
+  function selectDifferences() {
+    var shuffled = shuffle(diffPool.slice());
+    var selected = shuffled.slice(0, NUM_DIFFERENCES);
+    return selected.map(function(d) { 
+      return { ...d, found: false }; 
+    });
+  }
+
+  function drawScene(ctx, hasDiff) {
     if (!ctx) return;
     var w = ctx.canvas.width;
     var h = ctx.canvas.height;
@@ -59,11 +80,42 @@
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
+    // Stars (base layer)
+    var starPositions = [
+      { x: 60, y: 40 }, { x: 140, y: 60 }, { x: 80, y: 80 },
+      { x: 220, y: 35 }, { x: 300, y: 75 }, { x: 120, y: 100 }
+    ];
+    starPositions.forEach(function(star, idx) {
+      var present = !hasDiff || activeDifferences.every(function(d) {
+        return !(d.id === 'star1_present' && idx === 0) &&
+               !(d.id === 'star2_present' && idx === 1) &&
+               !(d.id === 'star3_present' && idx === 2);
+      });
+      // Simplified: show all stars unless specific difference applies
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
     // Sun/Moon
+    var sunColor = !hasDiff || !activeDifferences.some(function(d) { return d.id === 'sun_color'; }) ? '#fbbf24' : '#f59e0b';
     ctx.beginPath();
     ctx.arc(w * 0.75, h * 0.2, 35, 0, Math.PI * 2);
-    ctx.fillStyle = isImageB ? '#f59e0b' : '#fbbf24';
+    ctx.fillStyle = sunColor;
     ctx.fill();
+
+    // Birds
+    if (!hasDiff || !activeDifferences.some(function(d) { return d.id === 'bird_present'; })) {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(180, 100);
+      ctx.lineTo(186, 96);
+      ctx.lineTo(192, 100);
+      ctx.lineTo(186, 104);
+      ctx.closePath();
+      ctx.fill();
+    }
 
     // Mountains
     ctx.beginPath();
@@ -80,17 +132,13 @@
     ctx.fillStyle = '#2d4a3e';
     ctx.fill();
 
-    // Trees
-    for (var i = 0; i < 4; i++) {
-      var tx = 30 + i * 90;
-      var ty = h * 0.72;
-      ctx.fillStyle = '#3a2a1a';
-      ctx.fillRect(tx - 4, ty, 8, 25);
-      ctx.beginPath();
-      ctx.arc(tx, ty - 5, 18, 0, Math.PI * 2);
-      ctx.fillStyle = isImageB && i === 1 ? '#5a8a5a' : '#4a7a4a';
-      ctx.fill();
-    }
+    // Clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.arc(80, 50, 20, 0, Math.PI * 2);
+    ctx.arc(110, 45, 25, 0, Math.PI * 2);
+    ctx.arc(140, 50, 20, 0, Math.PI * 2);
+    ctx.fill();
 
     // House
     ctx.fillStyle = '#8a6a4a';
@@ -102,33 +150,68 @@
     ctx.closePath();
     ctx.fillStyle = '#6a4a3a';
     ctx.fill();
-    ctx.fillStyle = isImageB ? '#5dd4bf' : '#2dd4bf';
+
+    var doorColor = !hasDiff || !activeDifferences.some(function(d) { return d.id === 'door_color'; }) ? '#2dd4bf' : '#5dd4bf';
+    ctx.fillStyle = doorColor;
     ctx.fillRect(w * 0.3 + 25, h * 0.65, 20, 20);
 
-    // Clouds
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.beginPath();
-    ctx.arc(80, 50, 20, 0, Math.PI * 2);
-    ctx.arc(110, 45, 25, 0, Math.PI * 2);
-    ctx.arc(140, 50, 20, 0, Math.PI * 2);
-    ctx.fill();
+    // Windows
+    ctx.fillStyle = '#1a2a3a';
+    ctx.fillRect(w * 0.32, h * 0.58, 12, 12);
+    ctx.fillRect(w * 0.46, h * 0.58, 12, 12);
 
-    // Stars
-    for (var s = 0; s < 8; s++) {
-      var sx = (s * 53 + 20) % w;
-      var sy = (s * 31 + 15) % (h * 0.3);
-      ctx.fillStyle = isImageB && s === 3 ? '#ff6b6b' : '#ffffff';
+    // Trees
+    var treeColors = ['#4a7a4a', '#5a8a5a'];
+    var treePositions = [{x:30,y:216},{x:120,y:216},{x:210,y:216},{x:300,y:216}];
+    
+    treePositions.forEach(function(tree, idx) {
+      var isDiffTree = hasDiff && activeDifferences.some(function(d) {
+        var diffIdx = ['tree1_color','tree2_color','tree3_color','tree4_color'].indexOf(d.id);
+        return diffIdx === idx;
+      });
+      
+      // Trunk
+      ctx.fillStyle = '#3a2a1a';
+      ctx.fillRect(tree.x - 4, tree.y, 8, 25);
+      
+      // Leaves
       ctx.beginPath();
-      ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+      ctx.arc(tree.x, tree.y - 5, 18, 0, Math.PI * 2);
+      ctx.fillStyle = isDiffTree ? '#5a8a5a' : treeColors[idx % 2];
+      ctx.fill();
+    });
+
+    // Flower
+    if (!hasDiff || !activeDifferences.some(function(d) { return d.id === 'flower_present'; })) {
+      ctx.fillStyle = '#ff6b6b';
+      ctx.beginPath();
+      ctx.arc(50, 255, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff9c4';
+      ctx.beginPath();
+      ctx.arc(50, 255, 2, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Draw found markers on image B
-    if (isImageB) {
-      for (var d = 0; d < differences.length; d++) {
-        if (differences[d].found) {
+    // Butterfly
+    if (!hasDiff || !activeDifferences.some(function(d) { return d.id === 'butterfly_present'; })) {
+      ctx.fillStyle = '#ba46d6';
+      ctx.beginPath();
+      ctx.arc(325, 180, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ff9eff';
+      ctx.beginPath();
+      ctx.arc(318, 177, 3, 0, Math.PI * 2);
+      ctx.arc(332, 177, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Draw found markers on image B only
+    if (hasDiff) {
+      for (var i = 0; i < activeDifferences.length; i++) {
+        if (activeDifferences[i].found) {
           ctx.beginPath();
-          ctx.arc(differences[d].x, differences[d].y, HIT_RADIUS, 0, Math.PI * 2);
+          ctx.arc(activeDifferences[i].x, activeDifferences[i].y, HIT_RADIUS, 0, Math.PI * 2);
           ctx.strokeStyle = '#ff3333';
           ctx.lineWidth = 3;
           ctx.stroke();
@@ -145,45 +228,23 @@
     var x = (e.clientX - rect.left) * scaleX;
     var y = (e.clientY - rect.top) * scaleY;
 
-    for (var i = 0; i < differences.length; i++) {
-      if (differences[i].found) continue;
-      var dx = x - differences[i].x;
-      var dy = y - differences[i].y;
+    for (var i = 0; i < activeDifferences.length; i++) {
+      if (activeDifferences[i].found) continue;
+      var dx = x - activeDifferences[i].x;
+      var dy = y - activeDifferences[i].y;
       var dist = Math.sqrt(dx * dx + dy * dy);
       if (dist <= HIT_RADIUS) {
-        differences[i].found = true;
+        activeDifferences[i].found = true;
         foundCount++;
-        if (foundEl) foundEl.textContent = foundCount + '/' + differences.length;
+        if (foundEl) foundEl.textContent = foundCount + '/' + NUM_DIFFERENCES;
         drawScene(ctxB, true);
 
-        if (foundCount === differences.length) {
+        if (foundCount === NUM_DIFFERENCES) {
           endGame();
         }
         return;
       }
     }
-  }
-
-  function handleMouseMove(e) {
-    if (!gameActive) return;
-    var rect = canvasB.getBoundingClientRect();
-    var scaleX = canvasB.width / rect.width;
-    var scaleY = canvasB.height / rect.height;
-    var x = (e.clientX - rect.left) * scaleX;
-    var y = (e.clientY - rect.top) * scaleY;
-
-    var hovering = false;
-    for (var i = 0; i < differences.length; i++) {
-      if (differences[i].found) continue;
-      var dx = x - differences[i].x;
-      var dy = y - differences[i].y;
-      var dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist <= HIT_RADIUS) {
-        hovering = true;
-        break;
-      }
-    }
-    canvasB.style.cursor = hovering ? 'crosshair' : 'crosshair';
   }
 
   function startTimer() {
@@ -211,34 +272,42 @@
   }
 
   function newGame() {
-    for (var i = 0; i < differences.length; i++) {
-      differences[i].found = false;
-    }
+    activeDifferences = selectDifferences();
     foundCount = 0;
     elapsedSeconds = 0;
-    if (foundEl) foundEl.textContent = '0/' + differences.length;
+    if (foundEl) foundEl.textContent = '0/' + NUM_DIFFERENCES;
     if (timeEl) timeEl.textContent = '00:00';
     if (winnerModal) winnerModal.classList.remove('visible');
 
-    var canvasA = document.getElementById('canvas-a');
-    if (canvasA) {
-      drawScene(canvasA.getContext('2d'), false);
-    }
-    if (ctxB) {
-      drawScene(ctxB, true);
-    }
+    if (ctxA) drawScene(ctxA, false);
+    if (ctxB) drawScene(ctxB, true);
 
     gameActive = true;
     startTimer();
   }
 
   function initGame() {
+    canvasA = document.getElementById('canvas-a');
+    canvasB = document.getElementById('canvas-b');
+    ctxA = canvasA ? canvasA.getContext('2d') : null;
+    ctxB = canvasB ? canvasB.getContext('2d') : null;
+    foundEl = document.getElementById('spot-found');
+    timeEl = document.getElementById('spot-time');
+    bestEl = document.getElementById('spot-best');
+    winnerModal = document.getElementById('spot-winner');
+    winnerStats = document.getElementById('spot-winner-stats');
+    nextBtn = document.getElementById('btn-next');
+    newGameBtn = document.getElementById('btn-new-game');
+    toast = document.getElementById('toast');
+
     if (canvasB) {
       canvasB.addEventListener('click', handleClick);
-      canvasB.addEventListener('mousemove', handleMouseMove);
     }
     if (nextBtn) {
       nextBtn.addEventListener('click', newGame);
+    }
+    if (newGameBtn) {
+      newGameBtn.addEventListener('click', newGame);
     }
 
     var best = localStorage.getItem('tablo-spot-best');

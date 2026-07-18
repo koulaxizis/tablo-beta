@@ -7,47 +7,41 @@
   <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
   <link rel="manifest" href="../../manifest.json">
   <link rel="stylesheet" href="../../assets/css/style.css">
-  <link rel="stylesheet" href="../../assets/css/icons.css">
   <link rel="stylesheet" href="styles.css">
   <meta name="theme-color" content="#0f1923">
 </head>
 <body>
   <div id="tablo-header"></div>
 
-  <a href="../../index.html" class="back-home mobile-hide">
-    <i class="fa fa-arrow-left"></i>
-    <span data-i18n="btn_back_home">Back to Games</span>
-  </a>
-
   <div class="game-wrapper">
     <div class="game-stats">
       <div class="stat-item">
         <span class="stat-label" data-i18n="spot_found">Found</span>
-        <span class="stat-value" id="found">0/7</span>
+        <span class="stat-value" id="spot-found">0/5</span>
       </div>
       <div class="stat-item">
         <span class="stat-label" data-i18n="spot_time">Time</span>
-        <span class="stat-value" id="timer">00:00</span>
+        <span class="stat-value" id="spot-time">00:00</span>
       </div>
       <div class="stat-item">
         <span class="stat-label" data-i18n="spot_best">Best</span>
-        <span class="stat-value" id="best-time">--:--</span>
+        <span class="stat-value" id="spot-best">--:--</span>
       </div>
     </div>
 
     <div class="spot-container">
       <div class="spot-image-wrapper">
-        <svg id="scene-left" viewBox="0 0 400 300" class="spot-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <canvas id="canvas-a" width="400" height="300" class="spot-canvas"></canvas>
         <p class="spot-label" data-i18n="spot_left">Image A</p>
       </div>
       <div class="spot-image-wrapper">
-        <svg id="scene-right" viewBox="0 0 400 300" class="spot-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <canvas id="canvas-b" width="400" height="300" class="spot-canvas"></canvas>
         <p class="spot-label" data-i18n="spot_right">Image B</p>
       </div>
     </div>
 
     <div class="game-controls">
-      <button class="game-btn primary" id="btn-new-game" data-i18n="slider_new_game">New Game</button>
+      <button class="game-btn primary" id="btn-new-game" data-i18n="spot_new_game">New Game</button>
     </div>
 
     <p class="game-hint" data-i18n="spot_hint">Click on the differences in Image B!</p>
@@ -55,12 +49,12 @@
 
   <div id="tablo-footer"></div>
 
-  <div class="winner-modal" id="winner-modal">
+  <div class="winner-modal" id="spot-winner" style="display:none;">
     <div class="winner-overlay"></div>
     <div class="winner-content">
       <div class="winner-icon">&#128270;</div>
       <h2 class="winner-title" data-i18n="spot_completed">All Differences Found!</h2>
-      <p class="winner-message" id="winner-stats"></p>
+      <p class="winner-message" id="spot-winner-stats"></p>
       <button class="game-btn primary" id="btn-next" data-i18n="btn_play_again">Play Again</button>
     </div>
   </div>
@@ -70,21 +64,29 @@
   <script src="../../assets/js/config.js"></script>
   <script src="../../assets/js/header.js"></script>
   <script src="../../assets/js/footer.js"></script>
-
   <script>
-    fetch('../../assets/js/translations.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        window.TABLO_TRANSLATIONS = data;
-        if (typeof window.applyTabloTranslations === 'function') {
-          window.applyTabloTranslations();
-        }
+    (function() {
+      var attempts = 0;
+      function loadGame() {
         var s = document.createElement('script');
         s.src = 'game.js';
-        s.onload = function() { if (typeof initGame === 'function') initGame(); };
+        s.onload = function() {
+          if (typeof initGame === 'function') initGame();
+        };
         document.body.appendChild(s);
-      })
-      .catch(function(e) { console.error('Load failed:', e); });
+      }
+      function check() {
+        if (window.TABLO_TRANSLATIONS) {
+          loadGame();
+        } else if (attempts < 50) {
+          attempts++;
+          setTimeout(check, 100);
+        } else {
+          loadGame();
+        }
+      }
+      check();
+    })();
   </script>
 </body>
 </html>
