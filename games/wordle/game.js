@@ -18,7 +18,6 @@
     'mirth','nurse','olive','plumb','quart','raven','scout','trail','union','vault'
   ];
 
-  var currentLang = 'en';
   var targetWord = '';
   var guesses = [];
   var currentGuess = '';
@@ -203,6 +202,15 @@
 
     if (!isInList) {
       showToast('wordle_not_in_list');
+      var activeRow = boardEl.children[guesses.length];
+      if (activeRow) {
+        activeRow.classList.add('shake');
+        setTimeout(function() {
+          activeRow.classList.remove('shake');
+        }, 500);
+      }
+      currentGuess = '';
+      renderBoard();
       return;
     }
 

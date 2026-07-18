@@ -5,32 +5,77 @@
 (function() {
   'use strict';
 
-  var FOOTER_TEMPLATE = function(config) {
-    var channelBadge = config.channel === 'beta' ? '<span class="channel-badge beta">BETA</span>' : '<span class="channel-badge stable">STABLE</span>';
+  console.log('[Footer] Script loaded');
+
+  function getPrefix() {
+    if (window.TABLO_CONFIG && window.TABLO_CONFIG.baseHref) {
+      return window.TABLO_CONFIG.baseHref;
+    }
+    var path = window.location.pathname;
+    if (path.includes('/games/')) return '../';
+    return './';
+  }
+
+  function getChannelBadge(channel) {
+    if (channel === 'beta') {
+      return '<span class="channel-badge beta">BETA</span>';
+    }
+    return '<span class="channel-badge stable">STABLE</span>';
+  }
+
+  function getDateStr() {
     var today = new Date();
-    var dateStr = String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
+    var d = String(today.getDate()).padStart(2, '0');
+    var m = String(today.getMonth() + 1).padStart(2, '0');
+    var y = today.getFullYear();
+    return d + '/' + m + '/' + y;
+  }
+
+  function getFooterHTML() {
+    var version = (window.TABLO_CONFIG && window.TABLO_CONFIG.version) || '0.4.0';
+    var channel = (window.TABLO_CONFIG && window.TABLO_CONFIG.channel) || 'beta';
+    var prefix = getPrefix();
 
     return '<div class="tablo-footer">' +
       '<div class="footer-left">' +
-        '<span class="version">' + config.version + '</span>' +
-        ' ' + channelBadge +
-        ' <span class="last-updated">• ' + dateStr + '</span>' +
+        '<span class="version">v' + version + '</span>' +
+        getChannelBadge(channel) +
+        '<span class="last-updated">' + getDateStr() + '</span>' +
       '</div>' +
       '<div class="footer-center">' +
-        '<span class="made-by">' + tr('footer_made_by_prefix', 'Made with 🤍 by') + '</span> ' +
-        '<span class="author">Christos Koulaxizis</span>' +
-        ' • <span class="slogan">' + tr('footer_motto', 'Play freely, enjoy life.') + '</span>' +
+        '<span data-i18n="footer_made_by_prefix">Made with \u{1F495} by</span> ' +
+        '<a href="https://koulaxizis.gr" class="footer-author" target="_blank" rel="noopener">Christos Koulaxizis</a>' +
+        '<span class="footer-sep">\u2022</span>' +
+        '<span data-i18n="footer_motto">Play freely, enjoy life.</span>' +
       '</div>' +
       '<div class="footer-right">' +
-        '<span class="privacy-badge">' + tr('footer_privacy_badge', 'Open Source · No Tracking · No Ads · Privacy First') + '</span>' +
+        '<span data-i18n="footer_privacy_badge">Open Source \u00B7 No Tracking \u00B7 No Ads \u00B7 Privacy First</span>' +
       '</div>' +
     '</div>';
-  };
+  }
 
-  function tr(key, fallback) {
+  function applyTranslations() {
+    var container = document.getElementById('tablo-footer');
+    if (!container) return;
+
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
-    return t ? (t[key] || fallback || key) : (fallback || key);
+
+    if (!t) {
+      console.log('[Footer] Translations not available');
+      return;
+    }
+
+    var elements = container.querySelectorAll('[data-i18n]');
+    console.log('[Footer] Applying translations...');
+    console.log('[Footer] Found ' + elements.length + ' elements to translate');
+    elements.forEach(function(el) {
+      var key = el.getAttribute('data-i18n');
+      if (t[key]) {
+        el.textContent = t[key];
+        console.log('[Footer] ' + key + ' -> ' + t[key]);
+      }
+    });
   }
 
   function renderFooter() {
@@ -42,67 +87,53 @@
 
     console.log('[Footer] Initializing...');
 
-    // Wait for translations
+    if (document.readyState === 'loading') {
+      console.log('[Footer] DOM not ready, waiting...');
+    } else {
+      console.log('[Footer] DOM already ready');
+    }
+
     var maxAttempts = 50;
     var attempt = 0;
 
     function tryRender() {
       attempt++;
-      var hasTranslations = window.TABLO_TRANSLATIONS && typeof window.TABLO_TRANSLATIONS === 'object';
+      var hasTranslations = window.TABLO_TRANSLATIONS && typeof window.TABLO_TRANSED === 'object';
+      hasTranslations = window.TABLO_TRANSLATIONS && typeof window.TABLO_TRANSLATIONS === 'object';
       console.log('[Footer] Waiting for translations... attempt ' + attempt + ' / ' + maxAttempts + ' hasTranslations:', hasTranslations);
 
       if (hasTranslations) {
-        console.log('[Footer] Proceeding to render. Translations: true');
-        console.log('[Footer] Rendering with version: ' + (window.TABLO_CONFIG && window.TABLO_CONFIG.version || '0.4.0') + ' channel: ' + (window.TABLO_CONFIG && window.TABLO_CONFIG.channel || 'beta'));
+        var version = (window.TABLO_CONFIG && window.TABLO_CONFIG.version) || '0.4.0';
+        var channel = (window.TABLO_CONFIG && window.TABLO_CONFIG.channel) || 'beta';
+        console.log('[Footer] Rendering with version: ' + version + ' channel: ' + channel);
+        console.log('[Footer] Translations available: true');
 
-        var config = {
-          version: window.TABLO_CONFIG && window.TABLO_CONFIG.version || '0.4.0',
-          channel: window.TABLO_CONFIG && window.TABLO_CONFIG.channel || 'beta'
-        };
-
-        container.innerHTML = FOOTER_TEMPLATE(config);
-        
+        container.innerHTML = getFooterHTML();
         applyTranslations();
-        
-        console.log('[Footer] Footer rendered successfully');
         return;
       }
 
       if (attempt < maxAttempts) {
         setTimeout(tryRender, 100);
       } else {
-        console.warn('[Footer] Timeout waiting for translations');
-        var config = {
-          version: window.TABLO_CONFIG && window.TABLO_CONFIG.version || '0.4.0',
-          channel: window.TABLO_CONFIG && window.TABLO_CONFIG.channel || 'beta'
-        };
-        container.innerHTML = FOOTER_TEMPLATE(config);
+        console.warn('[Footer] Timeout waiting for translations, rendering with defaults');
+        container.innerHTML = getFooterHTML();
       }
     }
 
     tryRender();
   }
 
-  function applyTranslations() {
-    var container = document.getElementById('tablo-footer');
-    if (!container) return;
-
-    var elements = container.querySelectorAll('[data-i18n]');
-    elements.forEach(function(el) {
-      var key = el.getAttribute('data-i18n');
-      var lang = localStorage.getItem('tablo-language') || 'en';
-      var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
-      if (t && t[key]) {
-        el.textContent = t[key];
-      }
-    });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderFooter);
+  } else {
+    renderFooter();
   }
 
-  document.addEventListener('DOMContentLoaded', renderFooter);
-
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    document.addEventListener('lumo-translations-loaded', applyTranslations);
-  }
+  document.addEventListener('tablo-language-changed', function() {
+    console.log('[Footer] Language changed event received');
+    renderFooter();
+  });
 
   window.renderTabloFooter = renderFooter;
 })();

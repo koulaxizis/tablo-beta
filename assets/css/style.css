@@ -268,55 +268,59 @@ body {
   border: 1px solid var(--border-color);
 }
 
-/* Tablo Footer - Compact Single Row */
+/* ============================================
+   Tablo Footer — Compact Single Row
+   ============================================ */
 
 .tablo-footer {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 20px;
   background: var(--bg-surface, #1a2332);
   border-top: 1px solid var(--border-color, #2a3441);
-  padding: 8px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   font-size: 12px;
   color: var(--text-secondary, #8892a0);
-  gap: 16px;
-}
-
-.footer-left,
-.footer-center,
-.footer-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
+  min-height: 36px;
 }
 
 .footer-left {
-  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .footer-center {
-  justify-content: center;
-  flex-direction: column;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .footer-right {
-  justify-content: flex-end;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .version {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary, #e4e7eb);
-  font-family: 'Nunito', monospace;
 }
 
 .channel-badge {
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 4px;
   font-weight: 700;
   font-size: 10px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .channel-badge.beta {
@@ -334,56 +338,67 @@ body {
   font-size: 11px;
 }
 
-.made-by {
-  color: var(--text-secondary, #8892a0);
-}
-
-.author {
+.footer-author {
+  color: var(--accent, #2dd4bf);
+  text-decoration: none;
   font-weight: 600;
-  color: var(--text-primary, #e4e7eb);
+  transition: opacity 0.2s ease;
 }
 
-.slogan {
-  color: var(--text-secondary, #8892a0);
-  font-style: italic;
+.footer-author:hover {
+  opacity: 0.8;
 }
 
-.privacy-badge {
+.footer-sep {
+  color: var(--text-muted, #5a6e7c);
+}
+
+.footer-right span {
   font-size: 11px;
   color: var(--text-muted, #5a6e7c);
 }
 
 @media (max-width: 768px) {
   .tablo-footer {
-    flex-direction: column;
-    gap: 8px;
-    padding: 8px 12px;
-  }
-  
-  .footer-center {
-    flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
+    gap: 4px 12px;
+    padding: 6px 12px;
+    font-size: 11px;
   }
-  
-  .privacy-badge {
-    text-align: center;
+
+  .footer-center {
+    order: 3;
     width: 100%;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .footer-right span {
+    font-size: 10px;
   }
 }
 
 @media (max-width: 480px) {
   .tablo-footer {
+    padding: 6px 8px;
+  }
+
+  .version {
     font-size: 11px;
   }
-  
+
   .channel-badge {
-    padding: 1px 4px;
+    padding: 1px 6px;
     font-size: 9px;
   }
-  
-  .footer-left, .footer-right {
+
+  .last-updated {
     font-size: 10px;
+  }
+
+  .footer-center {
+    font-size: 10px;
+    gap: 4px;
   }
 }
 
