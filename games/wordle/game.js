@@ -1,18 +1,22 @@
 // ============================================
-// Tablo — Wordle (Multilingual word lists)
+// Tablo — Wordle (English word list, all langs)
 // ============================================
 
 (function() {
   'use strict';
 
-  var WORDS = {
-    en: ['apple','beach','chair','dance','eagle','flame','globe','horse','input','jolly','knife','lemon','mango','night','ocean','piano','queen','river','sound','table','uncle','voice','water','youth','zebra','brave','cloud','dream','earth','fruit','ghost','happy','ivory','jewel','magic','peace','quest','royal','smart','trust','unity','vivid','world','yacht','bloom','crisp','drive','grape','house'],
-    el: ['σπίτι','ζωή','νύχτα','γάλα','καλή','έρωτα','ηλιά','τραγού','φωτιά','θάλασ','άνθρωπ','σχολει','βιβλίο','κόκκινο','φίλος','κάμερα','πόλη','πόρε','νερό','ουρανό','δέντρο','τούτα','σπόρο','ψυχή','φως','σύννεφ','γιώργ','ωραίο','σπιτού','μύλο'],
-    es: ['playa','gatos','libro','mesas','cantar','verde','agua','solis','lunas','rojas','blanc','negro','fuego','tierr','cielo','mares','flores','panes','villa','reloj','norte','sur','este','oeste','arbol','piedra','arroz','leche','tortuga','manos'],
-    it: ['rosso','gatto','casa','libro','mare','sole','luna','stella','fiori','montagna','amore','pane','acqua','fuoco','bacio','sogno','notte','giorno','vita','donna','uomini','cuore','mente','voce','senza','vento','pioggia','tempi','lucci','scala'],
-    fr: ['rouge','chatte','maison','livre','mer','soleil','lune','etoile','fleur','montagne','amour','pain','eau','feu','baiser','reve','nuit','jour','vie','femme','homme','coeur','esprit','voix','sans','vent','pluie','temps','lumiere','ecran'],
-    de: ['haus','wasser','blume','berge','nacht','tag','liebe','brot','feuer','kuss','traum','herz','geist','stimme','ohne','wind','regen','zeit','licht','hund','katze','tisch','stuhl','buch','welt','kind','sonne','mond','stern','himmel']
-  };
+  var WORDS = [
+    'apple','beach','chair','dance','eagle','flame','globe','horse','input','jolly',
+    'knife','lemon','mango','night','ocean','piano','queen','river','sound','table',
+    'uncle','voice','water','youth','zebra','brave','cloud','dream','earth','fruit',
+    'ghost','happy','ivory','jewel','magic','peace','quest','royal','smart','trust',
+    'unity','vivid','world','yacht','bloom','crisp','drive','grape','house','stone',
+    'light','music','space','tiger','sweet','bread','cream','field','green','heart',
+    'ideal','juice','knock','large','mouse','novel','opera','pride','quiet','range',
+    'sharp','tower','urban','valor','wheat','xenon','yield','zesty','amber','black',
+    'candy','depth','equal','flint','glory','hover','index','jumbo','karma','latch',
+    'mirth','nurse','olive','plumb','quart','raven','scout','trail','union','vault'
+  ];
 
   var currentLang = 'en';
   var targetWord = '';
@@ -54,20 +58,9 @@
     }, 2000);
   }
 
-  function getWords() {
-    var lang = localStorage.getItem('tablo-language') || 'en';
-    currentLang = lang;
-    if (WORDS[lang] && WORDS[lang].length > 0) {
-      var list = WORDS[lang].filter(function(w) { return w.length === WORD_LENGTH; });
-      if (list.length > 0) return list;
-    }
-    return WORDS['en'];
-  }
-
   function pickWord() {
-    var wordList = getWords();
-    var idx = Math.floor(Math.random() * wordList.length);
-    return wordList[idx].toLowerCase();
+    var idx = Math.floor(Math.random() * WORDS.length);
+    return WORDS[idx].toLowerCase();
   }
 
   function newGame() {
@@ -193,7 +186,7 @@
         return;
       }
       submitGuess();
-    } else if (/^[a-zA-Z\u03B1-\u03C9]$/.test(key)) {
+    } else if (/^[a-zA-Z]$/.test(key)) {
       if (currentGuess.length < WORD_LENGTH) {
         currentGuess += key.toLowerCase();
         renderBoard();
@@ -202,15 +195,18 @@
   }
 
   function submitGuess() {
-    var wordList = getWords();
-    var isInList = wordList.some(function(w) { return w.toLowerCase() === currentGuess.toLowerCase(); });
+    var lower = currentGuess.toLowerCase();
 
-    if (!isInList && currentGuess !== targetWord) {
+    var isInList = WORDS.some(function(w) {
+      return w.toLowerCase() === lower;
+    });
+
+    if (!isInList) {
       showToast('wordle_not_in_list');
       return;
     }
 
-    guesses.push(currentGuess);
+    guesses.push(lower);
     currentGuess = '';
     renderBoard();
     renderKeyboard();
@@ -248,7 +244,6 @@
   }
 
   function handleLoss() {
-    var streak = 0;
     localStorage.setItem('tablo-wordle-streak', '0');
     if (streakEl) streakEl.textContent = '0';
 
