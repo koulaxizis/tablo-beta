@@ -20,7 +20,7 @@
 
   var PIECES = {
     'wp': '\u2659', 'wr': '\u265C', 'wn': '\u265E', 'wb': '\u265D', 'wq': '\u265B', 'wk': '\u2654',
-    'bp': '\u265F', 'br': '\u265A', 'bn': '\u265C', 'bb': '\u265D', 'bq': '\u265B', 'bk': '\u265A'
+    'bp': '\u265F', 'br': '\u265C', 'bn': '\u265E', 'bb': '\u265D', 'bq': '\u265B', 'bk': '\u265A'
   };
 
   var boardEl = document.getElementById('board');
@@ -63,7 +63,6 @@
         board[r][c] = null;
       }
     }
-    // Black pieces (top, rows 0-1)
     var backRank = ['r','n','b','q','k','b','n','r'];
     for (var c2 = 0; c2 < 8; c2++) {
       board[0][c2] = 'b' + backRank[c2];
@@ -97,22 +96,18 @@
     if (type === 'p') {
       var dir = color === 'white' ? -1 : 1;
       var startRow = color === 'white' ? 6 : 1;
-      // Forward 1
       if (inBounds(r + dir, c) && !board[r + dir][c]) {
         moves.push([r + dir, c]);
-        // Forward 2
         if (r === startRow && !board[r + 2 * dir][c]) {
           moves.push([r + 2 * dir, c]);
         }
       }
-      // Captures
       for (var dc = -1; dc <= 1; dc += 2) {
         var nc = c + dc;
         if (inBounds(r + dir, nc)) {
           if (board[r + dir][nc] && pieceColor(board[r + dir][nc]) !== color) {
             moves.push([r + dir, nc]);
           }
-          // En passant
           if (enPassantTarget && enPassantTarget[0] === r + dir && enPassantTarget[1] === nc) {
             moves.push([r + dir, nc]);
           }
@@ -158,7 +153,6 @@
           }
         }
       }
-      // Castling
       if (color === 'white' && r === 7 && c === 4) {
         if (castlingRights.wk && !board[7][5] && !board[7][6] && board[7][7] === 'wr') {
           if (!isSquareAttacked(7, 4, 'black') && !isSquareAttacked(7, 5, 'black') && !isSquareAttacked(7, 6, 'black')) {
@@ -185,7 +179,6 @@
       }
     }
 
-    // Filter moves that leave king in check
     var filtered = [];
     for (var f = 0; f < moves.length; f++) {
       if (!leavesKingInCheck(r, c, moves[f][0], moves[f][1], color)) {
@@ -200,7 +193,6 @@
     var savedTo = board[toR][toC];
     var savedEP = enPassantTarget;
 
-    // Handle en passant capture
     if (pieceType(savedFrom) === 'p' && toC !== fromC && !savedTo) {
       var epDir = color === 'white' ? 1 : -1;
       board[fromR][toC] = null;
@@ -209,7 +201,6 @@
     board[toR][toC] = savedFrom;
     board[fromR][fromC] = null;
 
-    // Handle castling rook move
     if (pieceType(savedFrom) === 'k' && Math.abs(toC - fromC) === 2) {
       if (toC > fromC) {
         board[toR][toC - 1] = board[toR][7];
@@ -222,7 +213,6 @@
 
     var inCheck = isInCheck(color);
 
-    // Restore
     board[fromR][fromC] = savedFrom;
     board[toR][toC] = savedTo;
     if (pieceType(savedFrom) === 'p' && toC !== fromC && !savedTo) {
@@ -230,7 +220,6 @@
     }
     enPassantTarget = savedEP;
 
-    // Restore castling rook
     if (pieceType(savedFrom) === 'k' && Math.abs(toC - fromC) === 2) {
       if (toC > fromC) {
         board[toR][7] = board[toR][toC - 1];
@@ -265,7 +254,6 @@
         } else if (pieceType(piece) === 'k') {
           if (Math.abs(fr - r) <= 1 && Math.abs(fc - c) <= 1 && !(fr === r && fc === c)) return true;
         } else {
-          // For other pieces, simulate raw attack moves (no check filtering to avoid recursion)
           var attacks = getRawAttacks(fr, fc, byColor);
           for (var a = 0; a < attacks.length; a++) {
             if (attacks[a][0] === r && attacks[a][1] === c) return true;
@@ -360,20 +348,17 @@
     var piece = board[fromR][fromC];
     var captured = board[toR][toC];
 
-    // En passant capture
     if (pieceType(piece) === 'p' && toC !== fromC && !captured) {
       var epDir = pieceColor(piece) === 'white' ? 1 : -1;
       captured = board[fromR][toC];
       board[fromR][toC] = null;
     }
 
-    // Track captures
     if (captured) {
       if (pieceColor(piece) === 'white') capturedByWhite.push(captured);
       else capturedByBlack.push(captured);
     }
 
-    // Castling
     var isCastling = false;
     if (pieceType(piece) === 'k' && Math.abs(toC - fromC) === 2) {
       isCastling = true;
@@ -386,7 +371,6 @@
       }
     }
 
-    // Update castling rights
     if (piece === 'wk') { castlingRights.wk = false; castlingRights.wq = false; }
     if (piece === 'bk') { castlingRights.bk = false; castlingRights.bq = false; }
     if (piece === 'wr' && fromR === 7 && fromC === 0) castlingRights.wq = false;
@@ -394,13 +378,11 @@
     if (piece === 'br' && fromR === 0 && fromC === 0) castlingRights.bq = false;
     if (piece === 'br' && fromR === 0 && fromC === 7) castlingRights.bk = false;
 
-    // En passant target
     enPassantTarget = null;
     if (pieceType(piece) === 'p' && Math.abs(toR - fromR) === 2) {
       enPassantTarget = [(fromR + toR) / 2, fromC];
     }
 
-    // Promotion check
     var isPromotion = false;
     if (pieceType(piece) === 'p') {
       if ((pieceColor(piece) === 'white' && toR === 0) || (pieceColor(piece) === 'black' && toR === 7)) {
@@ -450,7 +432,6 @@
     updateUI();
     renderCaptured();
 
-    // Check for checkmate / stalemate
     if (!hasAnyLegalMove(currentPlayer)) {
       if (isInCheck(currentPlayer)) {
         var winner = currentPlayer === 'white' ? 'black' : 'white';
@@ -463,6 +444,7 @@
         modalMessage.textContent = tr('chess_draw');
       }
       gameOverModal.classList.add('visible');
+      gameOverModal.style.display = 'flex';
       return;
     }
 
@@ -470,7 +452,6 @@
       showToast(tr('chess_check'));
     }
 
-    // AI move
     if (gameMode === 'ai' && currentPlayer === 'black') {
       aiThinking = true;
       updateUI();
@@ -512,7 +493,6 @@
     var moves = getAllMoves('black');
     if (moves.length === 0) return;
 
-    // Simple greedy with some randomness
     var bestScore = -Infinity;
     var bestMoves = [];
 
@@ -520,18 +500,14 @@
       var m = moves[i];
       var captured = board[m.to[0]][m.to[1]];
 
-      // Simulate
       saveState();
       var piece = board[m.from[0]][m.from[1]];
       board[m.to[0]][m.to[1]] = piece;
       board[m.from[0]][m.from[1]] = null;
 
       var score = evaluateBoard();
-
-      // Add small random factor
       score += Math.random() * 0.5;
 
-      // Restore
       var state = history.pop();
       board = state.board;
       currentPlayer = state.currentPlayer;
@@ -558,7 +534,6 @@
     if (aiThinking) return;
 
     if (selected) {
-      // Check if clicking a valid move
       for (var i = 0; i < validMoves.length; i++) {
         if (validMoves[i][0] === r && validMoves[i][1] === c) {
           saveState();
@@ -566,7 +541,6 @@
           return;
         }
       }
-      // Select new piece or deselect
       if (board[r][c] && pieceColor(board[r][c]) === currentPlayer) {
         selected = [r, c];
         validMoves = getValidMoves(r, c);
@@ -616,7 +590,6 @@
           sq.appendChild(pieceEl);
         }
 
-        // Highlight king in check
         if (board[r][c] && pieceType(board[r][c]) === 'k' && isInCheck(pieceColor(board[r][c]))) {
           sq.classList.add('in-check');
         }
@@ -654,7 +627,9 @@
     castlingRights = { wk: true, wq: true, bk: true, bq: true };
     aiThinking = false;
     gameOverModal.classList.remove('visible');
+    gameOverModal.style.display = 'none';
     promotionModal.classList.remove('visible');
+    promotionModal.style.display = 'none';
     render();
     updateUI();
     renderCaptured();
