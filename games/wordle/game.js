@@ -196,24 +196,6 @@
   function submitGuess() {
     var lower = currentGuess.toLowerCase();
 
-    var isInList = WORDS.some(function(w) {
-      return w.toLowerCase() === lower;
-    });
-
-    if (!isInList) {
-      showToast('wordle_not_in_list');
-      var activeRow = boardEl.children[guesses.length];
-      if (activeRow) {
-        activeRow.classList.add('shake');
-        setTimeout(function() {
-          activeRow.classList.remove('shake');
-        }, 500);
-      }
-      currentGuess = '';
-      renderBoard();
-      return;
-    }
-
     guesses.push(lower);
     currentGuess = '';
     renderBoard();
