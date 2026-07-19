@@ -20,13 +20,13 @@
   ];
 
   var SHAPES = [
-    [[1,1,1,1]],                                  // I
-    [[1,1],[1,1]],                                // O
-    [[0,1,0],[1,1,1]],                            // T
-    [[0,1,1],[1,1,0]],                            // S
-    [[1,1,0],[0,1,1]],                            // Z
-    [[1,0,0],[1,1,1]],                            // J
-    [[0,0,1],[1,1,1]]                             // L
+    [[1,1,1,1]],                    // I
+    [[1,1],[1,1]],                  // O
+    [[0,1,0],[1,1,1]],             // T
+    [[0,1,1],[1,1,0]],             // S
+    [[1,1,0],[0,1,1]],             // Z
+    [[1,0,0],[1,1,1]],             // J
+    [[0,0,1],[1,1,1]]              // L
   ];
 
   var board = [];
@@ -39,11 +39,19 @@
   var lastDrop = 0;
   var gameOver = false;
   var running = false;
+  var paused = false;
   var animId = null;
 
   var canvas, ctx, nextCanvas, nextCtx;
-  var scoreEl, linesEl, levelEl, finalScoreEl, finalLinesEl;
-  var gameOverModal, startBtn, playAgainBtn, toast;
+  var scoreEl, linesEl, levelEl, bestEl;
+  var gameOverModal, modalTitle, modalMessage;
+  var startBtn, pauseBtn, playAgainBtn, toast;
+
+  function tr(key) {
+    var lang = localStorage.getItem('tablo-language') || 'en';
+    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+    return t ? (t[key] || key) : key;
+  }
 
   function showToast(msg) {
     if (!toast) return;
@@ -52,14 +60,14 @@
     clearTimeout(showToast._timer);
     showToast._timer = setTimeout(function() {
       toast.classList.remove('visible');
-    }, 2500);
+    }, 2000);
   }
 
   function createBoard() {
     board = [];
     for (var r = 0; r < ROWS; r++) {
       var row = [];
-      for (var c = 0; c < COLS; c++) row.push 0;
+      for (var c = 0; c < COLS; c++) row.push(0);
       board.push(row);
     }
   }
@@ -133,7 +141,7 @@
       if (full) {
         board.splice(r, 1);
         var emptyRow = [];
-        for (var c = 0; c < COLS; c++) emptyRow.push 0;
+        for (var c = 0; c < COLS; c++) emptyRow.push(0);
         board.unshift(emptyRow);
         cleared++;
         r++;
@@ -148,10 +156,21 @@
       scoreEl.textContent = score;
       linesEl.textContent = lines;
       levelEl.textContent = level;
-      var bestKey = 'tablo-tetris-best';
-      var best = parseInt(localStorage.getItem(bestKey) || '0');
-      if (score > best) localStorage.setItem(bestKey, score);
+      saveBest();
     }
+  }
+
+  function saveBest() {
+    var best = parseInt(localStorage.getItem('tablo-tetris-best') || '0');
+    if (score > best) {
+      localStorage.setItem('tablo-tetris-best', score.toString());
+      bestEl.textContent = score;
+    }
+  }
+
+  function loadBest() {
+    var best = parseInt(localStorage.getItem('tablo-tetris-best') || '0');
+    bestEl.textContent = best;
   }
 
   function drawCell(c, r, color, context) {
@@ -161,13 +180,8 @@
     context.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
   }
 
-  function drawBlock(cx, cy, color, context, cellSize) {
-    context.fillStyle = color;
-    context.fillRect(cx + 1, cy + 1, cellSize - 2, cellSize - 2);
-  }
-
   function draw() {
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-surface').trim() || '#16242f';
+    ctx.fillStyle = '#16242f';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (var r = 0; r < ROWS; r++) {
@@ -190,7 +204,7 @@
   }
 
   function drawNext() {
-    nextCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary').trim() || '#1a2a3a';
+    nextCtx.fillStyle = '#0f1923';
     nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
     if (!nextPiece) return;
     var size = 20;
@@ -207,7 +221,7 @@
   }
 
   function move(dx) {
-    if (!currentPiece || gameOver) return;
+    if (!currentPiece || gameOver || paused) return;
     if (!collides(currentPiece, dx, 0)) {
       currentPiece.x += dx;
       draw();
@@ -215,7 +229,7 @@
   }
 
   function rotate() {
-    if (!currentPiece || gameOver) return;
+    if (!currentPiece || gameOver || paused) return;
     var rotated = rotateShape(currentPiece.shape);
     var test = { shape: rotated, x: currentPiece.x, y: currentPiece.y, color: currentPiece.color };
     var kicks = [0, -1, 1, -2, 2];
@@ -230,7 +244,7 @@
   }
 
   function softDrop() {
-    if (!currentPiece || gameOver) return;
+    if (!currentPiece || gameOver || paused) return;
     if (!collides(currentPiece, 0, 1)) {
       currentPiece.y++;
       score++;
@@ -243,7 +257,7 @@
   }
 
   function hardDrop() {
-    if (!currentPiece || gameOver) return;
+    if (!currentPiece || gameOver || paused) return;
     while (!collides(currentPiece, 0, 1)) {
       currentPiece.y++;
       score += 2;
@@ -254,7 +268,7 @@
   }
 
   function loop(timestamp) {
-    if (gameOver || !running) return;
+    if (gameOver || !running || paused) return;
     if (!lastDrop) lastDrop = timestamp;
     if (timestamp - lastDrop > dropInterval) {
       if (!collides(currentPiece, 0, 1)) {
@@ -271,15 +285,31 @@
   function endGame() {
     gameOver = true;
     running = false;
-    cancelAnimationFrame(animId);
-    finalScoreEl.textContent = score;
-    finalLinesEl.textContent = lines;
+    if (animId) cancelAnimationFrame(animId);
+    saveBest();
+    modalTitle.textContent = tr('tetris_game_over');
+    modalMessage.textContent = tr('tetris_final_score') + ': ' + score + ' • ' + tr('tetris_lines') + ': ' + lines;
     gameOverModal.classList.add('visible');
+    gameOverModal.style.display = 'flex';
+  }
+
+  function togglePause() {
+    if (gameOver || !running) return;
+    paused = !paused;
+    if (paused) {
+      if (animId) cancelAnimationFrame(animId);
+      pauseBtn.textContent = tr('tetris_resume');
+    } else {
+      pauseBtn.textContent = tr('tetris_pause');
+      lastDrop = 0;
+      animId = requestAnimationFrame(loop);
+    }
   }
 
   function startGame() {
     gameOver = false;
     running = true;
+    paused = false;
     score = 0;
     lines = 0;
     level = 1;
@@ -291,13 +321,15 @@
     scoreEl.textContent = '0';
     linesEl.textContent = '0';
     levelEl.textContent = '1';
+    pauseBtn.textContent = tr('tetris_pause');
     gameOverModal.classList.remove('visible');
+    gameOverModal.style.display = 'none';
     draw();
     drawNext();
     animId = requestAnimationFrame(loop);
   }
 
-  function init() {
+  function initGame() {
     canvas = document.getElementById('tetris-canvas');
     ctx = canvas.getContext('2d');
     nextCanvas = document.getElementById('next-canvas');
@@ -305,18 +337,26 @@
     scoreEl = document.getElementById('score');
     linesEl = document.getElementById('lines');
     levelEl = document.getElementById('level');
-    finalScoreEl = document.getElementById('final-score');
-    finalLinesEl = document.getElementById('final-lines');
+    bestEl = document.getElementById('best');
     gameOverModal = document.getElementById('game-over-modal');
+    modalTitle = document.getElementById('modal-title');
+    modalMessage = document.getElementById('modal-message');
     startBtn = document.getElementById('btn-start');
+    pauseBtn = document.getElementById('btn-pause');
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
+
+    loadBest();
 
     if (startBtn) {
       startBtn.addEventListener('click', function() {
         startGame();
-        showToast('Game restarted');
+        showToast(tr('toast_restarted'));
       });
+    }
+
+    if (pauseBtn) {
+      pauseBtn.addEventListener('click', togglePause);
     }
 
     if (playAgainBtn) {
@@ -327,6 +367,8 @@
 
     document.addEventListener('keydown', function(e) {
       if (!running) return;
+      if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePause(); return; }
+      if (paused) return;
       switch(e.key) {
         case 'ArrowLeft': e.preventDefault(); move(-1); break;
         case 'ArrowRight': e.preventDefault(); move(1); break;
@@ -376,5 +418,5 @@
     draw();
   }
 
-  window.initGame = init;
+  window.initGame = initGame;
 })();
