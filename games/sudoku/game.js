@@ -46,7 +46,7 @@
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
-        var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
     return t ? (t[key] || key) : key;
   }
 
@@ -228,12 +228,11 @@
           cell.classList.add('selected');
         }
 
-        if (selectedR >= 0) {
+        // Highlights only when conflicts toggle is ON
+        if (conflictsOn && selectedR >= 0) {
           var sr = selectedR, sc = selectedC;
-          if (Math.floor(sr/3) === Math.floor(r/3) && Math.floor(sc/5) === Math.floor(c/3)) {
-            cell.classList.add('highlight-region');
-          }
-          if (r === sr || c === sc) {
+          var sameBox = Math.floor(sr/3) === Math.floor(r/3) && Math.floor(sc/3) === Math.floor(c/3);
+          if (sameBox || r === sr || c === sc) {
             cell.classList.add('highlight-region');
           }
           if (puzzle[sr][sc] !== 0 && puzzle[r][c] === puzzle[sr][sc] && !(r === sr && c === sc)) {
@@ -241,6 +240,7 @@
           }
         }
 
+        // Conflict highlighting (only when toggle is ON)
         if (conflictsOn && !given[r][c] && puzzle[r][c] !== 0) {
           if (!isValidForCurrent(puzzle, r, c, puzzle[r][c], true)) {
             cell.classList.add('conflict');
