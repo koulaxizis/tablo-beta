@@ -11,8 +11,24 @@
   <meta name="theme-color" content="#0f1923">
 </head>
 <body>
-
   <div id="tablo-header"></div>
+
+  <svg style="display: none;" aria-hidden="true">
+    <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2"/><path d="M12 20v2"/>
+      <path d="M2 12h2"/><path d="M20 12h2"/>
+      <path d="M4.9 4.9l1.4 1.4"/><path d="M17.7 17.7l1.4 1.4"/>
+      <path d="M4.9 19.1l1.4-1.4"/><path d="M17.7 6.3l1.4-1.4"/>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06-.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+    </symbol>
+  </svg>
 
   <div class="game-wrapper">
     <div class="game-stats">
@@ -24,30 +40,29 @@
         <span class="stat-label" data-i18n="mahjong_pairs">Pairs</span>
         <span class="stat-value" id="pairs-count">0</span>
       </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="mahjong_best">Best</span>
+        <span class="stat-value" id="best-score">0</span>
+      </div>
     </div>
 
     <div class="mahjong-board" id="board"></div>
 
     <div class="game-controls">
-      <button class="game-btn primary" id="btn-restart" data-i18n="btn_restart">Restart</button>
+      <button class="game-btn primary" id="btn-restart" data-i18n="mahjong_new_game">New Game</button>
     </div>
+
+    <p class="game-hint" data-i18n="mahjong_hint">Tap two tiles with matching symbols to clear them.</p>
   </div>
 
   <div id="tablo-footer"></div>
 
-  <div class="congrats-modal" id="win-modal">
-    <div class="congrats-overlay"></div>
-    <div class="congrats-content">
-      <div class="congrats-icon">&#127881;</div>
-      <h2 class="congrats-title" data-i18n="mahjong_win">All tiles cleared!</h2>
-      <div class="congrats-stats">
-        <div class="congrats-stat-row">
-          <div class="congrats-stat">
-            <div class="congrats-stat-label" data-i18n="mahjong_pairs">Pairs</div>
-            <div class="congrats-stat-value" id="final-pairs">0</div>
-          </div>
-        </div>
-      </div>
+  <div class="winner-modal" id="win-modal" style="display:none;">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon" id="modal-icon">&#127881;</div>
+      <h2 class="winner-title" id="modal-title"></h2>
+      <p class="winner-message" id="modal-message"></p>
       <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
     </div>
   </div>
@@ -58,18 +73,28 @@
   <script src="../../assets/js/header.js"></script>
   <script src="../../assets/js/footer.js"></script>
   <script>
-    var gameScript = document.createElement('script');
-    gameScript.src = 'game.js';
-    gameScript.onload = function() {
-      if (typeof window.applyTabloTranslations === 'function') {
-        window.applyTabloTranslations();
+    (function() {
+      var attempts = 0;
+      function loadGame() {
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() {
+          if (typeof initGame === 'function') initGame();
+        };
+        document.body.appendChild(s);
       }
-      if (typeof initGame === 'function') {
-        initGame();
+      function check() {
+        if (window.TABLO_TRANSLATIONS) {
+          loadGame();
+        } else if (attempts < 50) {
+          attempts++;
+          setTimeout(check, 100);
+        } else {
+          loadGame();
+        }
       }
-    };
-    document.body.appendChild(gameScript);
+      check();
+    })();
   </script>
-
 </body>
 </html>

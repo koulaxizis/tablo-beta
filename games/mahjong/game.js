@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Mahjong Solitaire Game
+// Tablo — Mahjong Solitaire
 // ============================================
 
 (function() {
@@ -19,7 +19,15 @@
   var selectedTile = null;
   var pairsMatched = 0;
   var tilesLeft = 0;
-  var boardEl, tilesLeftEl, pairsEl, restartBtn, playAgainBtn, winModal, finalPairsEl, toast;
+
+  var boardEl, tilesLeftEl, pairsEl, bestEl;
+  var restartBtn, playAgainBtn, winModal, modalIcon, modalTitle, modalMessage, toast;
+
+  function tr(key) {
+    var lang = localStorage.getItem('tablo-language') || 'en';
+    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+    return t ? (t[key] || key) : key;
+  }
 
   function showToast(msg) {
     if (!toast) return;
@@ -28,7 +36,7 @@
     clearTimeout(showToast._timer);
     showToast._timer = setTimeout(function() {
       toast.classList.remove('visible');
-    }, 2500);
+    }, 2000);
   }
 
   function shuffle(arr) {
@@ -121,34 +129,50 @@
     }
   }
 
+  function loadBest() {
+    var best = parseInt(localStorage.getItem('tablo-mahjong-best') || '0');
+    bestEl.textContent = best;
+  }
+
   function gameWon() {
-    finalPairsEl.textContent = pairsMatched;
-    winModal.classList.add('visible');
     var bestKey = 'tablo-mahjong-best';
     var best = parseInt(localStorage.getItem(bestKey) || '0');
-    if (pairsMatched > best) localStorage.setItem(bestKey, pairsMatched);
+    if (pairsMatched > best) {
+      localStorage.setItem(bestKey, pairsMatched.toString());
+      bestEl.textContent = pairsMatched;
+    }
+    modalIcon.innerHTML = '&#127881;';
+    modalTitle.textContent = tr('mahjong_win');
+    modalMessage.textContent = tr('mahjong_pairs') + ': ' + pairsMatched;
+    winModal.classList.add('visible');
+    winModal.style.display = 'flex';
   }
 
   function resetGame() {
     initTiles();
+    loadBest();
     renderBoard();
     winModal.classList.remove('visible');
+    winModal.style.display = 'none';
   }
 
-  function init() {
+  function initGame() {
     boardEl = document.getElementById('board');
     tilesLeftEl = document.getElementById('tiles-left');
     pairsEl = document.getElementById('pairs-count');
+    bestEl = document.getElementById('best-score');
     restartBtn = document.getElementById('btn-restart');
     playAgainBtn = document.getElementById('btn-play-again');
     winModal = document.getElementById('win-modal');
-    finalPairsEl = document.getElementById('final-pairs');
+    modalIcon = document.getElementById('modal-icon');
+    modalTitle = document.getElementById('modal-title');
+    modalMessage = document.getElementById('modal-message');
     toast = document.getElementById('toast');
 
     if (restartBtn) {
       restartBtn.addEventListener('click', function() {
         resetGame();
-        showToast('Game restarted');
+        showToast(tr('toast_restarted'));
       });
     }
 
@@ -161,5 +185,5 @@
     resetGame();
   }
 
-  window.initGame = init;
+  window.initGame = initGame;
 })();
