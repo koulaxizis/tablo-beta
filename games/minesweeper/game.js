@@ -13,14 +13,20 @@
   var revealed = [];
   var flagged = [];
   var gameOver = false;
-  var gameWon = false;
   var firstClick = true;
   var flagCount = 0;
   var revealedCount = 0;
   var timerInterval = null;
   var secondsElapsed = 0;
 
-  var board, mineCountEl, flagCountEl, timerEl, restartBtn, playAgainBtn, resultModal, resultTitle, resultIcon, finalTimeEl, toast;
+  var board, mineCountEl, flagCountEl, timerEl;
+  var restartBtn, playAgainBtn, resultModal, resultTitle, resultIcon, resultMessage, toast;
+
+  function tr(key) {
+    var lang = localStorage.getItem('tablo-language') || 'en';
+    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+    return t ? (t[key] || key) : key;
+  }
 
   function showToast(msg) {
     if (!toast) return;
@@ -29,7 +35,13 @@
     clearTimeout(showToast._timer);
     showToast._timer = setTimeout(function() {
       toast.classList.remove('visible');
-    }, 2500);
+    }, 2000);
+  }
+
+  function formatTime(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
   }
 
   function initGrid() {
@@ -51,7 +63,6 @@
       var r = Math.floor(Math.random() * ROWS);
       var c = Math.floor(Math.random() * COLS);
       if (grid[r][c] === -1) continue;
-      // Don't place mine on first click or adjacent
       if (Math.abs(r - excludeRow) <= 1 && Math.abs(c - excludeCol) <= 1) continue;
       grid[r][c] = -1;
       placed++;
@@ -85,7 +96,7 @@
     if (grid[r][c] === -1) {
       gameOver = true;
       revealAllMines();
-      checkWinLoss();
+      endGame(false);
       return;
     }
 
@@ -99,7 +110,7 @@
     }
 
     renderCell(r, c);
-    checkWinLoss();
+    checkWin();
   }
 
   function revealAllMines() {
@@ -183,32 +194,34 @@
             toggleFlag(row, col);
           });
 
-          // Long press for mobile flag
           var pressTimer;
           cell.addEventListener('touchstart', function(e) {
             pressTimer = setTimeout(function() {
               if (!gameOver && !firstClick) toggleFlag(row, col);
             }, 500);
-          });
+          }, { passive: true });
+
           cell.addEventListener('touchend', function(e) {
             clearTimeout(pressTimer);
           });
-		          cell.addEventListener('touchmove', function(e) {
-          clearTimeout(pressTimer);
-        });
-      })(r, c);
 
-      board.appendChild(cell);
+          cell.addEventListener('touchmove', function(e) {
+            clearTimeout(pressTimer);
+          });
+        })(r, c);
+
+        board.appendChild(cell);
+      }
     }
   }
 
   function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
+    stopTimer();
     secondsElapsed = 0;
-    updateTimerDisplay();
+    timerEl.textContent = '00:00';
     timerInterval = setInterval(function() {
       secondsElapsed++;
-      updateTimerDisplay();
+      timerEl.textContent = formatTime(secondsElapsed);
     }, 1000);
   }
 
@@ -219,79 +232,61 @@
     }
   }
 
-  function updateTimerDisplay() {
-    var mins = Math.floor(secondsElapsed / 60);
-    var secs = secondsElapsed % 60;
-    timerEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  }
-
-  function checkWinLoss() {
+  function checkWin() {
     if (gameOver) return;
     var totalSafeCells = ROWS * COLS - MINES;
     if (revealedCount === totalSafeCells) {
-      gameWon = true;
       gameOver = true;
-      stopTimer();
-      flagAllRemainingMines();
-      resultTitle.textContent = tr('minesweeper_win');
-      resultIcon.innerHTML = '&#127881;';
-      finalTimeEl.textContent = timerEl.textContent;
-      resultModal.classList.add('visible');
+      endGame(true);
+    }
+  }
+
+  function endGame(won) {
+    stopTimer();
+    if (won) {
+      for (var r = 0; r < ROWS; r++) {
+        for (var c = 0; c < COLS; c++) {
+          if (grid[r][c] === -1 && !flagged[r][c]) {
+            flagged[r][c] = true;
+            renderCell(r, c);
+          }
+        }
+      }
+      flagCount = MINES;
+      flagCountEl.textContent = flagCount;
+
       var bestKey = 'tablo-minesweeper-best';
       var best = parseInt(localStorage.getItem(bestKey) || '999999');
       if (secondsElapsed < best) localStorage.setItem(bestKey, secondsElapsed);
-    }
-  }
 
-  function flagAllRemainingMines() {
-    for (var r = 0; r < ROWS; r++) {
-      for (var c = 0; c < COLS; c++) {
-        if (grid[r][c] === -1 && !flagged[r][c]) {
-          flagged[r][c] = true;
-          renderCell(r, c);
-        }
-      }
+      resultIcon.innerHTML = '&#127881;';
+      resultTitle.textContent = tr('minesweeper_win');
+      resultMessage.textContent = tr('minesweeper_time') + ': ' + formatTime(secondsElapsed);
+    } else {
+      resultIcon.innerHTML = '&#128162;';
+      resultTitle.textContent = tr('minesweeper_loss');
+      resultMessage.textContent = tr('minesweeper_time') + ': ' + formatTime(secondsElapsed);
     }
-    flagCount = MINES;
-    flagCountEl.textContent = flagCount;
-  }
-
-  function revealAllMines() {
-    for (var r = 0; r < ROWS; r++) {
-      for (var c = 0; c < COLS; c++) {
-        if (grid[r][c] === -1) {
-          revealed[r][c] = true;
-          renderCell(r, c);
-        }
-      }
-    }
-  }
-
-  function tr(key) {
-    var lang = localStorage.getItem('tablo-language') || 'en';
-    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
-    if (t && t[key]) return t[key];
-    var en = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS['en'];
-    if (en && en[key]) return en[key];
-    return key;
+    resultModal.classList.add('visible');
+    resultModal.style.display = 'flex';
   }
 
   function resetGame() {
     gameOver = false;
-    gameWon = false;
     firstClick = true;
     flagCount = 0;
     revealedCount = 0;
     stopTimer();
     timerEl.textContent = '00:00';
     flagCountEl.textContent = '0';
-    initGrid();
     mineCountEl.textContent = MINES;
+    initGrid();
     renderBoard();
     resultModal.classList.remove('visible');
+    resultModal.style.display = 'none';
   }
 
-  function init() {
+  function initGame() {
     board = document.getElementById('board');
     mineCountEl = document.getElementById('mine-count');
     flagCountEl = document.getElementById('flag-count');
@@ -301,7 +296,7 @@
     resultModal = document.getElementById('result-modal');
     resultTitle = document.getElementById('result-title');
     resultIcon = document.getElementById('result-icon');
-    finalTimeEl = document.getElementById('final-time');
+    resultMessage = document.getElementById('result-message');
     toast = document.getElementById('toast');
 
     mineCountEl.textContent = MINES;
@@ -309,7 +304,7 @@
     if (restartBtn) {
       restartBtn.addEventListener('click', function() {
         resetGame();
-        showToast('Game restarted');
+        showToast(tr('toast_restarted'));
       });
     }
 
@@ -322,5 +317,5 @@
     resetGame();
   }
 
-  window.initGame = init;
+  window.initGame = initGame;
 })();
