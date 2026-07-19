@@ -1,45 +1,52 @@
 // ============================================
-// Tablo — Sudoku (Fixed puzzle generation)
+// Tablo — Sudoku (Full Implementation)
 // ============================================
 
 (function() {
   'use strict';
 
-  var BOARD_SIZE = 9;
-  var SUBGRID_SIZE = 3;
-
-  var board = [];
   var solution = [];
-  var initialBoard = [];
+  var puzzle = [];
+  var given = [];
   var notes = [];
-  var difficulty = 'medium';
-  var errors = 0;
-  var maxErrors = 3;
+  var selectedR = -1;
+  var selectedC = -1;
+  var notesMode = false;
+  var conflictsOn = false;
+  var hintsLeft = 3;
+  var difficulty = 'easy';
+  var history = [];
   var timerInterval = null;
   var secondsElapsed = 0;
-  var gameActive = false;
-  var useNotes = false;
-  var selectedCell = null;
+  var gameOver = false;
 
-  var boardEl = document.getElementById('board');
-  var diffEl = document.getElementById('diff-display');
-  var errorsEl = document.getElementById('errors');
+  var DIFF_MAP = {
+    easy: { remove: 41 },
+    medium: { remove: 49 },
+    hard: { remove: 55 }
+  };
+
+  var boardEl = document.getElementById('sudoku-board');
   var timerEl = document.getElementById('timer');
+  var bestEl = document.getElementById('best-time');
+  var hintsDispEl = document.getElementById('hints-display');
   var diffSelect = document.getElementById('difficulty-select');
   var newGameBtn = document.getElementById('btn-new-game');
+  var undoBtn = document.getElementById('btn-undo');
   var hintBtn = document.getElementById('btn-hint');
-  var eraseBtn = document.getElementById('btn-erase');
   var notesBtn = document.getElementById('btn-notes');
-  var nextBtn = document.getElementById('btn-next');
+  var conflictsBtn = document.getElementById('btn-conflicts');
   var retryBtn = document.getElementById('btn-retry');
-  var winnerModal = document.getElementById('winner-modal');
   var gameOverModal = document.getElementById('game-over-modal');
-  var winnerStats = document.getElementById('winner-stats');
+  var modalIcon = document.getElementById('modal-icon');
+  var modalTitle = document.getElementById('modal-title');
+  var modalMessage = document.getElementById('modal-message');
   var toast = document.getElementById('toast');
+  var numPad = document.getElementById('num-pad');
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
-    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+        var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
     return t ? (t[key] || key) : key;
   }
 
@@ -51,47 +58,73 @@
     showToast._t = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
   }
 
-  function initBoard() {
-    board = [];
-    initialBoard = [];
-    notes = [];
-    for (var r = 0; r < BOARD_SIZE; r++) {
-      board[r] = [];
-      initialBoard[r] = [];
-      notes[r] = [];
-      for (var c = 0; c < BOARD_SIZE; c++) {
-        board[r][c] = 0;
-        initialBoard[r][c] = 0;
-        notes[r][c] = [];
-      }
+  function formatTime(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function startTimer() {
+    stopTimer();
+    secondsElapsed = 0;
+    timerEl.textContent = '00:00';
+    timerInterval = setInterval(function() {
+      secondsElapsed++;
+      timerEl.textContent = formatTime(secondsElapsed);
+      checkCompletion();
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
     }
   }
 
-  function isValidPlacement(grid, row, col, num) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
-      if (grid[row][x] === num) return false;
-      if (grid[x][col] === num) return false;
+  function saveBestTime() {
+    var key = 'tablo-sudoku-best-' + difficulty;
+    var best = localStorage.getItem(key);
+    if (!best || secondsElapsed < parseInt(best)) {
+      localStorage.setItem(key, secondsElapsed.toString());
+      bestEl.textContent = formatTime(secondsElapsed);
     }
-    var startRow = Math.floor(row / SUBGRID_SIZE) * SUBGRID_SIZE;
-    var startCol = Math.floor(col / SUBGRID_SIZE) * SUBGRID_SIZE;
-    for (var i = 0; i < SUBGRID_SIZE; i++) {
-      for (var j = 0; j < SUBGRID_SIZE; j++) {
-        if (grid[startRow + i][startCol + j] === num) return false;
+  }
+
+  function loadBestTime() {
+    var key = 'tablo-sudoku-best-' + difficulty;
+    var best = localStorage.getItem(key);
+    bestEl.textContent = best ? formatTime(parseInt(best)) : '--:--';
+  }
+
+  function cloneGrid(g) {
+    return g.map(function(row) { return row.slice(); });
+  }
+
+  function isValid(grid, r, c, num) {
+    for (var i = 0; i < 9; i++) {
+      if (grid[r][i] === num && i !== c) return false;
+      if (grid[i][c] === num && i !== r) return false;
+    }
+    var br = Math.floor(r / 3) * 3;
+    var bc = Math.floor(c / 3) * 3;
+    for (var i = 0; i < 3; i++) {
+      for (var j = 0; j < 3; j++) {
+        if (grid[br+i][bc+j] === num && (br+i !== r || bc+j !== c)) return false;
       }
     }
     return true;
   }
 
-  function solveSudoku(grid) {
-    for (var r = 0; r < BOARD_SIZE; r++) {
-      for (var c = 0; c < BOARD_SIZE; c++) {
+  function fillGrid(grid) {
+    for (var r = 0; r < 9; r++) {
+      for (var c = 0; c < 9; c++) {
         if (grid[r][c] === 0) {
           var nums = [1,2,3,4,5,6,7,8,9].sort(function() { return Math.random() - 0.5; });
-          for (var i = 0; i < nums.length; i++) {
-            var num = nums[i];
-            if (isValidPlacement(grid, r, c, num)) {
-              grid[r][c] = num;
-              if (solveSudoku(grid)) return true;
+          for (var i = 0; i < 9; i++) {
+            if (isValid(grid, r, c, nums[i])) {
+              grid[r][c] = nums[i];
+              if (fillGrid(grid)) return true;
               grid[r][c] = 0;
             }
           }
@@ -103,65 +136,148 @@
   }
 
   function generatePuzzle(diff) {
-    initBoard();
-    solveSudoku(board);
-    solution = board.map(function(row) { return row.slice(); });
-    initialBoard = board.map(function(row) { return row.slice(); });
+    solution = Array(9).fill(0).map(function() { return Array(9).fill(0); });
+    fillGrid(solution);
 
-    var cellsToRemove = diff === 'easy' ? 30 : diff === 'medium' ? 45 : 55;
-    var removed = 0;
+    puzzle = cloneGrid(solution);
+    given = Array(9).fill(0).map(function() { return Array(9).fill(false); });
+
+    var remove = DIFF_MAP[diff].remove;
     var attempts = 0;
-    var maxAttempts = 200;
-
-    while (removed < cellsToRemove && attempts < maxAttempts) {
-      var r = Math.floor(Math.random() * BOARD_SIZE);
-      var c = Math.floor(Math.random() * BOARD_SIZE);
-      if (initialBoard[r][c] !== 0) {
-        initialBoard[r][c] = 0;
-        removed++;
+    while (remove > 0 && attempts < 1000) {
+      var r = Math.floor(Math.random() * 9);
+      var c = Math.floor(Math.random() * 9);
+      if (puzzle[r][c] !== 0) {
+        var backup = puzzle[r][c];
+        puzzle[r][c] = 0;
+        var gridCopy = cloneGrid(puzzle);
+        var solutions = countSolutions(gridCopy, 0);
+        if (solutions !== 1) {
+          puzzle[r][c] = backup;
+        } else {
+          given[r][c] = false;
+          remove--;
+        }
       }
       attempts++;
     }
 
-    // FIX #14: Reset board to match the unsolved puzzle
-    board = initialBoard.map(function(row) { return row.slice(); });
+    for (var r = 0; r < 9; r++) {
+      for (var c = 0; c < 9; c++) {
+        if (puzzle[r][c] !== 0) {
+          given[r][c] = true;
+        }
+      }
+    }
+  }
+
+  function countSolutions(grid, count) {
+    if (count > 1) return count;
+    for (var r = 0; r < 9; r++) {
+      for (var c = 0; c < 9; c++) {
+        if (grid[r][c] === 0) {
+          for (var n = 1; n <= 9; n++) {
+            if (isValid(grid, r, c, n)) {
+              grid[r][c] = n;
+              count = countSolutions(grid, count);
+              grid[r][c] = 0;
+              if (count > 1) return count;
+            }
+          }
+          return count;
+        }
+      }
+    }
+    return count + 1;
+  }
+
+  function initNotes() {
+    notes = Array(9).fill(0).map(function() {
+      return Array(9).fill(0).map(function() { return {}; });
+    });
+  }
+
+  function addNote(r, c, n) {
+    if (!notesMode) return;
+    if (puzzle[r][c] === 0) {
+      notes[r][c][n] = notes[r][c][n] ? false : true;
+    }
+  }
+
+  function clearNotes(r, c) {
+    notes[r][c] = {};
+  }
+
+  function hasNote(r, c, n) {
+    return notes[r][c][n] === true;
   }
 
   function renderBoard() {
     boardEl.innerHTML = '';
-    for (var r = 0; r < BOARD_SIZE; r++) {
-      for (var c = 0; c < BOARD_SIZE; c++) {
+    for (var r = 0; r < 9; r++) {
+      for (var c = 0; c < 9; c++) {
         var cell = document.createElement('div');
         cell.className = 'sudoku-cell';
-        if ((r + 1) % 3 === 0 && r !== 8) cell.classList.add('border-bottom');
-        if ((c + 1) % 3 === 0 && c !== 8) cell.classList.add('border-right');
-        if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) {
-          cell.classList.add('selected');
-        }
         cell.dataset.r = r;
         cell.dataset.c = c;
 
-        if (initialBoard[r][c] !== 0) {
-          cell.textContent = initialBoard[r][c];
-          cell.classList.add('initial');
-        } else if (board[r][c] !== 0) {
-          cell.textContent = board[r][c];
-          cell.classList.add('user-input');
-        } else if (notes[r][c].length > 0) {
-          cell.classList.add('has-notes');
-          var noteText = '';
-          for (var n = 1; n <= 9; n++) {
-            if (notes[r][c].indexOf(n) !== -1) {
-              noteText += '<span class="note-' + n + '">' + n + '</span>';
-            }
-          }
-          cell.innerHTML = '<div class="notes-grid">' + noteText + '</div>';
+        if (c === 2 || c === 5) cell.classList.add('box-sep-right');
+        if (r === 2 || r === 5) cell.classList.add('box-sep-bottom');
+
+        if (r === selectedR && c === selectedC) {
+          cell.classList.add('selected');
         }
 
+        if (selectedR >= 0) {
+          var sr = selectedR, sc = selectedC;
+          if (Math.floor(sr/3) === Math.floor(r/3) && Math.floor(sc/5) === Math.floor(c/3)) {
+            cell.classList.add('highlight-region');
+          }
+          if (r === sr || c === sc) {
+            cell.classList.add('highlight-region');
+          }
+          if (puzzle[sr][sc] !== 0 && puzzle[r][c] === puzzle[sr][sc] && !(r === sr && c === sc)) {
+            cell.classList.add('highlight-same');
+          }
+        }
+
+        if (conflictsOn && !given[r][c] && puzzle[r][c] !== 0) {
+          if (!isValidForCurrent(puzzle, r, c, puzzle[r][c], true)) {
+            cell.classList.add('conflict');
+          }
+        }
+
+        var valEl = document.createElement('div');
+        valEl.className = 'cell-value';
+
+        if (puzzle[r][c] !== 0) {
+          valEl.textContent = puzzle[r][c];
+          if (given[r][c]) {
+            cell.classList.add('given');
+          } else {
+            cell.classList.add('user-input');
+          }
+        } else if (notesMode) {
+          var noteGrid = document.createElement('div');
+          noteGrid.className = 'cell-notes';
+          for (var nr = 0; nr < 3; nr++) {
+            for (var nc = 0; nc < 3; nc++) {
+              var num = nr * 3 + nc + 1;
+              var noteEl = document.createElement('div');
+              noteEl.className = 'note';
+              noteEl.textContent = hasNote(r, c, num) ? num : '';
+              noteGrid.appendChild(noteEl);
+            }
+          }
+          cell.appendChild(noteGrid);
+        }
+
+        cell.appendChild(valEl);
+
         cell.addEventListener('click', function(e) {
-          var cr = parseInt(e.currentTarget.dataset.r);
-          var cc = parseInt(e.currentTarget.dataset.c);
-          selectCell(cr, cc);
+          var r2 = parseInt(this.dataset.r);
+          var c2 = parseInt(this.dataset.c);
+          selectCell(r2, c2);
         });
 
         boardEl.appendChild(cell);
@@ -169,212 +285,219 @@
     }
   }
 
+  function isValidForCurrent(grid, r, c, num, ignoreSelf) {
+    for (var i = 0; i < 9; i++) {
+      if (i !== c && grid[r][i] === num) return false;
+      if (i !== r && grid[i][c] === num) return false;
+    }
+    var br = Math.floor(r / 3) * 3;
+    var bc = Math.floor(c / 3) * 3;
+    for (var i = 0; i < 3; i++) {
+      for (var j = 0; j < 3; j++) {
+        var nr = br + i, nc = bc + j;
+        if ((ignoreSelf && nr === r && nc === c) || (nr === r && nc === c)) continue;
+        if (grid[nr][nc] === num) return false;
+      }
+    }
+    return true;
+  }
+
   function selectCell(r, c) {
-    selectedCell = [r, c];
+    if (gameOver) return;
+    selectedR = r;
+    selectedC = c;
     renderBoard();
+    highlightButtons();
   }
 
-  function placeNumber(num) {
-    if (!selectedCell || !gameActive) return;
-    var r = selectedCell[0], c = selectedCell[1];
-    if (initialBoard[r][c] !== 0) return;
-
-    if (board[r][c] === num) {
-      board[r][c] = 0;
+  function placeNumber(n) {
+    if (gameOver || selectedR < 0) return;
+    if (given[selectedR][selectedC]) {
+      showToast(tr('sudoku_cannot_change'));
+      return;
+    }
+    if (n === 0) {
+      saveState();
+      puzzle[selectedR][selectedC] = 0;
+      clearNotes(selectedR, selectedC);
     } else {
-      board[r][c] = num;
-      if (num !== solution[r][c]) {
-        errors++;
-        errorsEl.textContent = errors + '/' + maxErrors;
-        showToast(tr('sudoku_error'));
-        if (errors >= maxErrors) {
-          endGame(false);
+      if (notesMode) {
+        saveState();
+        addNote(selectedR, selectedC, n);
+      } else {
+        saveState();
+        puzzle[selectedR][selectedC] = n;
+        clearNotes(selectedR, selectedC);
+      }
+    }
+    renderBoard();
+    checkCompletion();
+  }
+
+  function saveState() {
+    var state = {
+      puzzle: cloneGrid(puzzle),
+      notes: JSON.parse(JSON.stringify(notes)),
+      selectedR: selectedR,
+      selectedC: selectedC
+    };
+    history.push(state);
+    if (history.length > 50) history.shift();
+  }
+
+  function undo() {
+    if (history.length === 0) {
+      showToast(tr('sudoku_nothing_to_undo'));
+      return;
+    }
+    var state = history.pop();
+    puzzle = state.puzzle;
+    notes = state.notes;
+    selectedR = state.selectedR;
+    selectedC = state.selectedC;
+    renderBoard();
+    highlightButtons();
+  }
+
+  function giveHint() {
+    if (hintsLeft <= 0) {
+      showToast(tr('sudoku_no_hints_left'));
+      return;
+    }
+    var emptyCells = [];
+    for (var r = 0; r < 9; r++) {
+      for (var c = 0; c < 9; c++) {
+        if (!given[r][c] && puzzle[r][c] === 0) {
+          emptyCells.push({ r: r, c: c });
         }
       }
     }
-    renderBoard();
-    checkWin();
-  }
-
-  function eraseCell() {
-    if (!selectedCell) return;
-    var r = selectedCell[0], c = selectedCell[1];
-    if (initialBoard[r][c] !== 0) return;
-    board[r][c] = 0;
-    notes[r][c] = [];
-    renderBoard();
-  }
-
-  function addNote(num) {
-    if (!selectedCell) return;
-    var r = selectedCell[0], c = selectedCell[1];
-    if (initialBoard[r][c] !== 0 || board[r][c] !== 0) return;
-
-    var idx = notes[r][c].indexOf(num);
-    if (idx !== -1) {
-      notes[r][c].splice(idx, 1);
-    } else {
-      notes[r][c].push(num);
-      notes[r][c].sort(function(a,b) { return a - b; });
+    if (emptyCells.length === 0) {
+      showToast(tr('sudoku_board_full'));
+      return;
     }
+    var choice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    saveState();
+    puzzle[choice.r][choice.c] = solution[choice.r][choice.c];
+    clearNotes(choice.r, choice.c);
+    hintsLeft--;
+    hintsDispEl.textContent = hintsLeft;
+    renderBoard();
+    selectCell(choice.r, choice.c);
+    checkCompletion();
+  }
+
+  function toggleNotesMode() {
+    notesMode = !notesMode;
+    notesBtn.classList.toggle('active', notesMode);
     renderBoard();
   }
 
-  function showHint() {
-    if (!selectedCell || !gameActive) return;
-    var r = selectedCell[0], c = selectedCell[1];
-    if (board[r][c] !== 0 || initialBoard[r][c] !== 0) return;
-
-    board[r][c] = solution[r][c];
+  function toggleConflicts() {
+    conflictsOn = !conflictsOn;
+    conflictsBtn.classList.toggle('active', conflictsOn);
     renderBoard();
-    checkWin();
   }
 
-  function checkWin() {
-    for (var r = 0; r < BOARD_SIZE; r++) {
-      for (var c = 0; c < BOARD_SIZE; c++) {
-        if (board[r][c] !== solution[r][c]) return;
+  function highlightButtons() {
+    notesBtn.classList.toggle('active', notesMode);
+    conflictsBtn.classList.toggle('active', conflictsOn);
+  }
+
+  function checkCompletion() {
+    for (var r = 0; r < 9; r++) {
+      for (var c = 0; c < 9; c++) {
+        if (puzzle[r][c] === 0) return;
+        if (!isValidForCurrent(puzzle, r, c, puzzle[r][c], true)) return;
       }
     }
-    endGame(true);
-  }
-
-  function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    secondsElapsed = 0;
-    updateTimer();
-    timerInterval = setInterval(function() {
-      secondsElapsed++;
-      updateTimer();
-    }, 1000);
-  }
-
-  function stopTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function updateTimer() {
-    var mins = Math.floor(secondsElapsed / 60);
-    var secs = secondsElapsed % 60;
-    timerEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  }
-
-  function endGame(won) {
+    gameOver = true;
     stopTimer();
-    gameActive = false;
-    if (won) {
-      winnerStats.textContent = tr('slider_time') + ': ' + timerEl.textContent;
-      var key = 'tablo-sudoku-best-' + difficulty;
-      var savedBest = localStorage.getItem(key);
-      if (!savedBest || secondsElapsed < parseInt(savedBest)) {
-        localStorage.setItem(key, secondsElapsed.toString());
-      }
-      winnerModal.classList.add('visible');
-    } else {
-      gameOverModal.classList.add('visible');
-    }
+    saveBestTime();
+    modalIcon.textContent = '\uD83C\uDF81';
+    modalTitle.textContent = tr('sudoku_completed');
+    modalMessage.textContent = tr('sudoku_congrats') + ' (' + formatTime(secondsElapsed) + ')';
+    gameOverModal.classList.add('visible');
+    gameOverModal.style.display = 'flex';
   }
 
-  function renderNumberPad() {
-    var pad = document.getElementById('number-pad');
-    pad.innerHTML = '';
-    for (var n = 1; n <= 9; n++) {
-      var btn = document.createElement('button');
-      btn.className = 'num-btn';
-      btn.textContent = n;
-      btn.addEventListener('click', function(e) {
-        if (useNotes) {
-          addNote(parseInt(e.currentTarget.textContent));
-        } else {
-          placeNumber(parseInt(e.currentTarget.textContent));
-        }
-      });
-      pad.appendChild(btn);
-    }
+  function handleNumInput(n) {
+    placeNumber(parseInt(n));
+  }
+
+  function setupKeyboard() {
+    document.addEventListener('keydown', function(e) {
+      if (gameOver) return;
+      if (e.key >= '1' && e.key <= '9') {
+        handleNumInput(e.key);
+      } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+        handleNumInput('0');
+      } else if (e.key === 'ArrowUp' && selectedR > 0) {
+        selectCell(selectedR - 1, selectedC);
+      } else if (e.key === 'ArrowDown' && selectedR < 8) {
+        selectCell(selectedR + 1, selectedC);
+      } else if (e.key === 'ArrowLeft' && selectedC > 0) {
+        selectCell(selectedR, selectedC - 1);
+      } else if (e.key === 'ArrowRight' && selectedC < 8) {
+        selectCell(selectedR, selectedC + 1);
+      } else if (e.key.toLowerCase() === 'n') {
+        toggleNotesMode();
+      } else if (e.key.toLowerCase() === 'h') {
+        giveHint();
+      } else if (e.key.toLowerCase() === 'z' && (e.ctrlKey || e.metaKey)) {
+        undo();
+      }
+    });
   }
 
   function newGame() {
-    difficulty = diffSelect.value || 'medium';
+    difficulty = diffSelect.value;
     generatePuzzle(difficulty);
-    errors = 0;
-    errorsEl.textContent = errors + '/' + maxErrors;
-    diffEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-    selectedCell = null;
-    gameActive = true;
-    winnerModal.classList.remove('visible');
+    initNotes();
+    selectedR = -1;
+    selectedC = -1;
+    history = [];
+    hintsLeft = 3;
+    hintsDispEl.textContent = hintsLeft;
+    gameOver = false;
     gameOverModal.classList.remove('visible');
-    renderBoard();
-    renderNumberPad();
+    gameOverModal.style.display = 'none';
     startTimer();
-  }
-
-  function toggleNotes() {
-    useNotes = !useNotes;
-    notesBtn.classList.toggle('active', useNotes);
-    showToast(useNotes ? tr('sudoku_notes_on') : tr('sudoku_notes_off'));
-  }
-
-  function handlePhysicalKey(e) {
-    if (!gameActive) return;
-    var key = e.key;
-    if (/^[1-9]$/.test(key)) {
-      if (useNotes) addNote(parseInt(key));
-      else placeNumber(parseInt(key));
-    } else if (key === 'Backspace' || key === 'Delete') {
-      eraseCell();
-    } else if (key === 'h' || key === 'H') {
-      showHint();
-    } else if (key === 'n' || key === 'N') {
-      toggleNotes();
-    } else if (key.startsWith('Arrow')) {
-      if (!selectedCell) { selectCell(0, 0); return; }
-      var r = selectedCell[0], c = selectedCell[1];
-      if (key === 'ArrowUp') r = Math.max(0, r - 1);
-      else if (key === 'ArrowDown') r = Math.min(8, r + 1);
-      else if (key === 'ArrowLeft') c = Math.max(0, c - 1);
-      else if (key === 'ArrowRight') c = Math.min(8, c + 1);
-      selectCell(r, c);
-    }
+    renderBoard();
+    highlightButtons();
   }
 
   function initGame() {
-    document.addEventListener('keydown', handlePhysicalKey);
+    diffSelect.value = 'easy';
 
-    window.addEventListener('tablo:languageChanged', function(e) {
-      diffEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    diffSelect.addEventListener('change', function() {
+      newGame();
+      showToast(tr('toast_restarted'));
     });
 
-    renderNumberPad();
-    if (diffSelect) {
-      diffSelect.addEventListener('change', function() {
-        newGame();
-        showToast(tr('sudoku_difficulty_changed'));
-      });
-    }
-    if (newGameBtn) {
-      newGameBtn.addEventListener('click', function() {
-        newGame();
-        showToast(tr('toast_restarted'));
-      });
-    }
-    if (hintBtn) {
-      hintBtn.addEventListener('click', showHint);
-    }
-    if (eraseBtn) {
-      eraseBtn.addEventListener('click', eraseCell);
-    }
-    if (notesBtn) {
-      notesBtn.addEventListener('click', toggleNotes);
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener('click', newGame);
-    }
-    if (retryBtn) {
-      retryBtn.addEventListener('click', newGame);
-    }
+    newGameBtn.addEventListener('click', function() {
+      newGame();
+      showToast(tr('toast_restarted'));
+    });
+
+    undoBtn.addEventListener('click', undo);
+
+    hintBtn.addEventListener('click', giveHint);
+
+    notesBtn.addEventListener('click', toggleNotesMode);
+
+    conflictsBtn.addEventListener('click', toggleConflicts);
+
+    retryBtn.addEventListener('click', newGame);
+
+    numPad.addEventListener('click', function(e) {
+      var btn = e.target.closest('.num-btn');
+      if (btn) {
+        handleNumInput(btn.dataset.n);
+      }
+    });
+
+    setupKeyboard();
     newGame();
   }
 
