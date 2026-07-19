@@ -6,7 +6,8 @@
   'use strict';
 
   var canvas, ctx;
-  var scoreEl, levelEl, restartBtn, playAgainBtn, gameOverModal, finalScoreEl, toast;
+  var scoreEl, levelEl, bestEl, restartBtn, playAgainBtn;
+  var gameOverModal, modalIcon, modalTitle, modalMessage, toast;
 
   var BUBBLE_RADIUS = 14;
   var COLS = 11;
@@ -27,6 +28,12 @@
 
   var COLORS = ['#2dd4bf', '#f59e0b', '#a78bfa', '#4ade80', '#f87171', '#60a5fa'];
 
+  function tr(key) {
+    var lang = localStorage.getItem('tablo-language') || 'en';
+    var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
+    return t ? (t[key] || key) : key;
+  }
+
   function showToast(msg) {
     if (!toast) return;
     toast.textContent = msg;
@@ -34,7 +41,7 @@
     clearTimeout(showToast._timer);
     showToast._timer = setTimeout(function() {
       toast.classList.remove('visible');
-    }, 2500);
+    }, 2000);
   }
 
   function randColor() {
@@ -109,8 +116,7 @@
   }
 
   function render() {
-    var bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-surface').trim() || '#16242f';
-    ctx.fillStyle = bgColor;
+    ctx.fillStyle = '#16242f';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawGrid();
     if (!shooting && !gameOver) drawAimer();
@@ -210,7 +216,6 @@
   }
 
   function checkGameOver() {
-    var lowestY = 0;
     for (var r = grid.length - 1; r >= 0; r--) {
       for (var c = 0; c < grid[r].length; c++) {
         if (grid[r][c]) {
@@ -249,13 +254,29 @@
     grid.unshift(newRow);
   }
 
-  function endGame() {
-    gameOver = true;
-    finalScoreEl.textContent = score;
-    gameOverModal.classList.add('visible');
+  function saveBest() {
     var bestKey = 'tablo-bubble-best';
     var best = parseInt(localStorage.getItem(bestKey) || '0');
-    if (score > best) localStorage.setItem(bestKey, score);
+    if (score > best) {
+      localStorage.setItem(bestKey, score.toString());
+      bestEl.textContent = score;
+    }
+  }
+
+  function loadBest() {
+    var best = parseInt(localStorage.getItem('tablo-bubble-best') || '0');
+    bestEl.textContent = best;
+  }
+
+  function endGame() {
+    gameOver = true;
+    if (animId) cancelAnimationFrame(animId);
+    saveBest();
+    modalIcon.innerHTML = '&#128542;';
+    modalTitle.textContent = tr('bubble_game_over');
+    modalMessage.textContent = tr('bubble_final_score') + ': ' + score;
+    gameOverModal.classList.add('visible');
+    gameOverModal.style.display = 'flex';
   }
 
   function shoot() {
@@ -332,25 +353,31 @@
     shooting = false;
     shotBubble = null;
     gameOverModal.classList.remove('visible');
-    cancelAnimationFrame(animId);
+    gameOverModal.style.display = 'none';
+    if (animId) cancelAnimationFrame(animId);
     animId = requestAnimationFrame(loop);
   }
 
-  function init() {
+  function initGame() {
     canvas = document.getElementById('bubble-canvas');
     ctx = canvas.getContext('2d');
     scoreEl = document.getElementById('score');
     levelEl = document.getElementById('level');
+    bestEl = document.getElementById('best');
     restartBtn = document.getElementById('btn-restart');
     playAgainBtn = document.getElementById('btn-play-again');
     gameOverModal = document.getElementById('game-over-modal');
-    finalScoreEl = document.getElementById('final-score');
+    modalIcon = document.getElementById('modal-icon');
+    modalTitle = document.getElementById('modal-title');
+    modalMessage = document.getElementById('modal-message');
     toast = document.getElementById('toast');
+
+    loadBest();
 
     if (restartBtn) {
       restartBtn.addEventListener('click', function() {
         startGame();
-        showToast('Game restarted');
+        showToast(tr('toast_restarted'));
       });
     }
 
@@ -398,5 +425,5 @@
     startGame();
   }
 
-  window.initGame = init;
+  window.initGame = initGame;
 })();
