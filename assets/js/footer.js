@@ -98,8 +98,7 @@
 
     function tryRender() {
       attempt++;
-      var hasTranslations = window.TABLO_TRANSLATIONS && typeof window.TABLO_TRANSED === 'object';
-      hasTranslations = window.TABLO_TRANSLATIONS && typeof window.TABLO_TRANSLATIONS === 'object';
+      var hasTranslations = window.TABLO_TRANSLATIONS && typeof window.TABLO_TRANSLATIONS === 'object';
       console.log('[Footer] Waiting for translations... attempt ' + attempt + ' / ' + maxAttempts + ' hasTranslations:', hasTranslations);
 
       if (hasTranslations) {
