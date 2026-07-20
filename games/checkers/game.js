@@ -5,8 +5,6 @@
 (function() {
   'use strict';
 
-  console.log('[Checkers] game.js LOADED');
-
   var BOARD_SIZE = 8;
   var RED = 1;
   var BLACK = 2;
@@ -25,7 +23,6 @@
   var blackWins = 0;
   var gameOver = false;
 
-  // Global element references
   var boardContainer, checkerboard, piecesOverlay;
   var turnIndicator, capturedCount, winsCount;
   var newGameBtn, modeBtn;
@@ -40,10 +37,7 @@
   }
 
   function showToast(msg) {
-    if (!toast) {
-      console.warn('[Checkers] Toast element not found!');
-      return;
-    }
+    if (!toast) return;
     toast.textContent = tr(msg);
     toast.classList.add('visible');
     clearTimeout(showToast._t);
@@ -53,7 +47,6 @@
   }
 
   function initBoard() {
-    console.log('[Checkers] initBoard() called');
     grid = [];
     for (var r = 0; r < BOARD_SIZE; r++) {
       grid[r] = [];
@@ -71,25 +64,14 @@
         }
       }
     }
-    console.log('[Checkers] Board initialized:', grid[0]);
   }
 
   function renderBoard() {
-    console.log('[Checkers] renderBoard() STARTED');
-    
-    if (!checkerboard || !piecesOverlay) {
-      console.error('[Checkers] CRITICAL ERROR: checkerboard or piecesOverlay is null!');
-      console.error('[Checkers] checkerboard:', checkerboard);
-      console.error('[Checkers] piecesOverlay:', piecesOverlay);
-      return;
-    }
+    if (!checkerboard || !piecesOverlay) return;
 
-    console.log('[Checkers] Clearing previous content...');
     checkerboard.innerHTML = '';
     piecesOverlay.innerHTML = '';
 
-    console.log('[Checkers] Building board cells...');
-    
     for (var r = 0; r < BOARD_SIZE; r++) {
       for (var c = 0; c < BOARD_SIZE; c++) {
         var cell = document.createElement('div');
@@ -97,10 +79,8 @@
         cell.dataset.row = r;
         cell.dataset.col = c;
 
-        var isHighlight = false;
         for (var m = 0; m < validMoves.length; m++) {
           if (validMoves[m].row === r && validMoves[m].col === c) {
-            isHighlight = true;
             cell.classList.add(validMoves[m].capture ? 'highlight-capture' : 'highlight-move');
             cell.addEventListener('click', onSquareClick);
             break;
@@ -109,13 +89,15 @@
 
         checkerboard.appendChild(cell);
 
-        // Create piece if exists
         if (grid[r][c] !== 0) {
-          console.log('[Checkers] Creating piece at', r, c, '=', grid[r][c]);
           var piece = document.createElement('div');
           piece.className = 'piece';
           piece.dataset.row = r;
           piece.dataset.col = c;
+
+          // CRITICAL FIX: Position the piece using percentage
+          piece.style.left = (c * 12.5) + '%';
+          piece.style.top = (r * 12.5) + '%';
 
           if (grid[r][c] === RED) {
             piece.classList.add('red');
@@ -131,24 +113,22 @@
             piece.classList.add('selected');
           }
 
+          // CRITICAL FIX: Create the .piece-inner div (the visible circle)
+          var pieceInner = document.createElement('div');
+          pieceInner.className = 'piece-inner';
+          piece.appendChild(pieceInner);
+
           piece.addEventListener('click', onPieceClick);
           piecesOverlay.appendChild(piece);
         }
       }
     }
-
-    console.log('[Checkers] renderBoard() COMPLETED - Total cells:', checkerboard.children.length);
   }
 
   function updateStats() {
-    console.log('[Checkers] updateStats() called');
-    
     if (turnIndicator) {
       turnIndicator.textContent = tr(currentPlayer === RED ? 'checkers_red' : 'checkers_black');
       turnIndicator.style.color = currentPlayer === RED ? '#f87171' : '#94a3b8';
-      console.log('[Checkers] Turn indicator updated to:', turnIndicator.textContent);
-    } else {
-      console.warn('[Checkers] turnIndicator element not found!');
     }
 
     var totalCaptured = redCaptured + blackCaptured;
@@ -226,8 +206,6 @@
   }
 
   function executeMove(fromRow, fromCol, toRow, toCol, captureInfo) {
-    console.log('[Checkers] executeMove:', fromRow, fromCol, '->', toRow, toCol);
-    
     var piece = grid[fromRow][fromCol];
     grid[toRow][toCol] = piece;
     grid[fromRow][fromCol] = 0;
@@ -344,7 +322,7 @@
 
     if (winnerIcon) winnerIcon.textContent = isStalemate ? '\u2696' : '\uD83C\uDF89';
     if (winnerTitle) {
-      winnerTitle.textContent = isStalemate ? tr('checkers_draw') : 
+      winnerTitle.textContent = isStalemate ? tr('checkers_draw') :
                                 tr(wonByRed ? 'checkers_red_wins' : 'checkers_black_wins');
     }
     if (winnerMessage) {
@@ -375,36 +353,22 @@
 
   function onPieceClick(e) {
     e.stopPropagation();
-    console.log('[Checkers] Piece clicked');
-    
-    if (gameOver) {
-      console.log('[Checkers] Blocked: game over');
-      return;
-    }
-    if (vsAI && currentPlayer === BLACK) {
-      console.log('[Checkers] Blocked: AI turn');
-      return;
-    }
+    if (gameOver) return;
+    if (vsAI && currentPlayer === BLACK) return;
 
     var piece = e.currentTarget;
     var row = parseInt(piece.dataset.row);
     var col = parseInt(piece.dataset.col);
     var pieceValue = grid[row][col];
 
-    console.log('[Checkers] Piece value:', pieceValue, 'Current player:', currentPlayer);
-
     var isRedPiece = pieceValue === RED || pieceValue === RED_KING;
     var isBlackPiece = pieceValue === BLACK || pieceValue === BLACK_KING;
     var isCurrentPlayerPiece = (currentPlayer === RED && isRedPiece) || (currentPlayer === BLACK && isBlackPiece);
 
-    if (!isCurrentPlayerPiece) {
-      console.log('[Checkers] Blocked: not current player\'s piece');
-      return;
-    }
+    if (!isCurrentPlayerPiece) return;
 
     if (mustJumpFrom && (mustJumpFrom.row !== row || mustJumpFrom.col !== col)) {
       showToast('checkers_must_jump');
-      console.log('[Checkers] Blocked: must jump from specific position');
       return;
     }
 
@@ -423,21 +387,15 @@
     }
 
     validMoves = moves;
-    console.log('[Checkers] Valid moves:', validMoves.length);
     renderBoard();
   }
 
   function onSquareClick(e) {
     e.stopPropagation();
-    if (gameOver || !selectedPiece || validMoves.length === 0) {
-      console.log('[Checkers] Blocked: gameOver=' + gameOver + ', selectedPiece=' + !!selectedPiece + ', validMoves=' + validMoves.length);
-      return;
-    }
+    if (gameOver || !selectedPiece || validMoves.length === 0) return;
 
     var row = parseInt(e.currentTarget.dataset.row);
     var col = parseInt(e.currentTarget.dataset.col);
-
-    console.log('[Checkers] Square clicked:', row, col);
 
     for (var m = 0; m < validMoves.length; m++) {
       if (validMoves[m].row === row && validMoves[m].col === col) {
@@ -448,7 +406,6 @@
   }
 
   function startNewGame() {
-    console.log('[Checkers] startNewGame() called');
     initBoard();
     currentPlayer = RED;
     selectedPiece = null;
@@ -459,7 +416,6 @@
     gameOver = false;
     updateStats();
     renderBoard();
-    console.log('[Checkers] New game started successfully!');
   }
 
   function toggleMode() {
@@ -471,8 +427,6 @@
   }
 
   function initGame() {
-    console.log('[Checkers] initGame() CALLED');
-
     boardContainer = document.getElementById('board-container');
     checkerboard = document.getElementById('checkerboard');
     piecesOverlay = document.getElementById('pieces-overlay');
@@ -488,24 +442,6 @@
     winnerButtons = document.getElementById('winner-buttons');
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
-
-    console.log('[Checkers] Element references:', {
-      boardContainer: !!boardContainer,
-      checkerboard: !!checkerboard,
-      piecesOverlay: !!piecesOverlay,
-      turnIndicator: !!turnIndicator,
-      capturedCount: !!capturedCount,
-      winsCount: !!winsCount,
-      newGameBtn: !!newGameBtn,
-      modeBtn: !!modeBtn,
-      winnerModal: !!winnerModal,
-      toast: !!toast
-    });
-
-    if (!checkerboard || !piecesOverlay) {
-      console.error('[Checkers] CRITICAL: Missing board elements!');
-      return;
-    }
 
     var savedWins = localStorage.getItem('tablo-checkers-wins');
     if (savedWins) {
