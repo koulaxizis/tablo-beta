@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hangman — Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  <div id="tablo-header"></div>
+
+  <svg style="display: none;" aria-hidden="true">
+    <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2"/><path d="M12 20v2"/>
+      <path d="M2 12h2"/><path d="M20 12h2"/>
+      <path d="M4.9 4.9l1.4 1.4"/><path d="M17.7 17.7l1.4 1.4"/>
+      <path d="M4.9 19.1l1.4-1.4"/><path d="M17.7 6.3l1.4-1.4"/>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l-.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06-.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+    </symbol>
+  </svg>
+
+  <div class="game-wrapper">
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="hangman_lives">Lives</span>
+        <span class="stat-value" id="lives-count">6</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="hangman_words">Words</span>
+        <span class="stat-value" id="words-count">0</span>
+      </div>
+    </div>
+
+    <div class="hm-container">
+      <div class="hm-drawing" id="hm-drawing">
+        <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg">
+          <!-- Base -->
+          <line x1="20" y1="230" x2="180" y2="230" stroke="#2dd4bf" stroke-width="4" id="part-0"/>
+          <!-- Pole -->
+          <line x1="50" y1="230" x2="50" y2="20" stroke="#2dd4bf" stroke-width="4" id="part-1"/>
+          <!-- Top -->
+          <line x1="50" y1="20" x2="120" y2="20" stroke="#2dd4bf" stroke-width="4" id="part-2"/>
+          <!-- Rope -->
+          <line x1="120" y1="20" x2="120" y2="50" stroke="#2dd4bf" stroke-width="3" id="part-3"/>
+          <!-- Head -->
+          <circle cx="120" cy="70" r="20" fill="none" stroke="#2dd4bf" stroke-width="3" id="part-4"/>
+          <!-- Body -->
+          <line x1="120" y1="90" x2="120" y2="150" stroke="#2dd4bf" stroke-width="3" id="part-5"/>
+          <!-- Left Arm -->
+          <line x1="120" y1="110" x2="90" y2="130" stroke="#2dd4bf" stroke-width="3" id="part-6"/>
+          <!-- Right Arm -->
+          <line x1="120" y1="110" x2="150" y2="130" stroke="#2dd4bf" stroke-width="3" id="part-7"/>
+          <!-- Left Leg -->
+          <line x1="120" y1="150" x2="100" y2="190" stroke="#2dd4bf" stroke-width="3" id="part-8"/>
+          <!-- Right Leg -->
+          <line x1="120" y1="150" x2="140" y2="190" stroke="#2dd4bf" stroke-width="3" id="part-9"/>
+        </svg>
+      </div>
+
+      <div class="hm-word" id="hm-word"></div>
+      <div class="hm-category" id="hm-category"></div>
+    </div>
+
+    <div class="hm-keyboard" id="hm-keyboard"></div>
+
+    <div class="game-controls">
+      <button class="game-btn" id="btn-new-word" data-i18n="hangman_new_word">New Word</button>
+      <button class="game-btn primary" id="btn-hint" data-i18n="hangman_hint">Hint (-1 Life)</button>
+    </div>
+
+    <p class="game-hint" data-i18n="hangman_hint_text">Guess the word by clicking letters. Wrong guesses draw the hangman!</p>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="winner-modal" style="display:none;">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon" id="winner-icon">&#127942;</div>
+      <h2 class="winner-title" id="winner-title"></h2>
+      <p class="winner-message" id="winner-message"></p>
+      <div class="winner-buttons" id="winner-buttons">
+        <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+  <script>
+    (function() {
+      var attempts = 0;
+      function loadGame() {
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() {
+          if (typeof window.initGame === 'function') initGame();
+        };
+        document.body.appendChild(s);
+      }
+      function check() {
+        if (window.TABLO_TRANSLATIONS) { loadGame(); }
+        else if (attempts < 50) { attempts++; setTimeout(check, 100); }
+        else { loadGame(); }
+      }
+      check();
+    })();
+  </script>
+</body>
+</html>

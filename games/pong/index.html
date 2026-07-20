@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong — Tablo</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0f1923">
+</head>
+<body>
+  <div id="tablo-header"></div>
+
+  <svg style="display: none;" aria-hidden="true">
+    <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2"/><path d="M12 20v2"/>
+      <path d="M2 12h2"/><path d="M20 12h2"/>
+      <path d="M4.9 4.9l1.4 1.4"/><path d="M17.7 17.7l1.4 1.4"/>
+      <path d="M4.9 19.1l1.4-1.4"/><path d="M17.7 6.3l1.4-1.4"/>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </symbol>
+    <symbol id="icon-pong" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="2,2"/>
+      <rect x="4" y="8" width="3" height="8" rx="1"/>
+      <rect x="17" y="8" width="3" height="8" rx="1"/>
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
+    </symbol>
+  </svg>
+
+  <div class="game-wrapper">
+    <div class="pong-stats">
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="pong_player1">Player 1</span>
+        <span class="stat-value" id="score-p1">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" data-i18n="pong_vs">VS</span>
+        <span class="stat-value" id="score-p2">0</span>
+      </div>
+    </div>
+
+    <div class="pong-container" id="pong-container">
+      <canvas id="pong-canvas"></canvas>
+      <div class="pong-overlay" id="pong-overlay">
+        <p class="pong-message" data-i18n="pong_start_message">Press Start to Play!</p>
+        <button class="game-btn primary" id="btn-start" data-i18n="pong_start">Start Game</button>
+      </div>
+    </div>
+
+    <div class="pong-controls">
+      <select id="mode-select" class="mode-select">
+        <option value="2p" data-i18n="pong_mode_2p">2 Player</option>
+        <option value="ai" data-i18n="pong_mode_ai">vs AI</option>
+      </select>
+      <button class="game-btn" id="btn-reset" data-i18n="pong_reset">Reset Score</button>
+    </div>
+
+    <div class="pong-keys">
+      <div class="key-group">
+        <span class="key-label" data-i18n="pong_p1_controls">Player 1:</span>
+        <kbd>W</kbd><kbd>S</kbd>
+      </div>
+      <div class="key-group">
+        <span class="key-label" data-i18n="pong_p2_controls">Player 2:</span>
+        <kbd>↑</kbd><kbd>↓</kbd>
+      </div>
+    </div>
+
+    <p class="game-hint" data-i18n="pong_hint">First to 5 wins! Use keyboard arrows to move paddles.</p>
+  </div>
+
+  <div id="tablo-footer"></div>
+
+  <div class="winner-modal" id="winner-modal" style="display:none;">
+    <div class="winner-overlay"></div>
+    <div class="winner-content">
+      <div class="winner-icon" id="winner-icon">&#127942;</div>
+      <h2 class="winner-title" id="winner-title"></h2>
+      <p class="winner-message" id="winner-message"></p>
+      <div class="winner-buttons" id="winner-buttons">
+        <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tablo-toast" id="toast"></div>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/header.js"></script>
+  <script src="../../assets/js/footer.js"></script>
+  <script>
+    (function() {
+      var attempts = 0;
+      function loadGame() {
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() {
+          if (typeof window.initGame === 'function') initGame();
+        };
+        document.body.appendChild(s);
+      }
+      function check() {
+        if (window.TABLO_TRANSLATIONS) { loadGame(); }
+        else if (attempts < 50) { attempts++; setTimeout(check, 100); }
+        else { loadGame(); }
+      }
+      check();
+    })();
+  </script>
+</body>
+</html>
