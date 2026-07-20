@@ -5,6 +5,8 @@
 (function() {
   'use strict';
 
+  console.log('[Mastermind] game.js loaded');
+
   var COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
   var SLOT_COUNT = 4;
   var MAX_ATTEMPTS = 10;
@@ -28,7 +30,7 @@
   var wins = 0;
   var bestAttempt = Infinity;
 
-  var boardEl, currentRowEl;
+  var boardEl, currentRowEl, colorPickerEl;
   var attemptCounterEl, bestAttemptEl, winsCountEl;
   var submitBtn, clearBtn, newGameBtn, difficultySelect;
   var winnerModal, winnerIcon, winnerTitle, winnerSecret, winnerMessage, playAgainBtn;
@@ -61,6 +63,7 @@
     for (var i = 0; i < SLOT_COUNT; i++) {
       secretCode.push(activeColors[Math.floor(Math.random() * activeColors.length)]);
     }
+    console.log('[Mastermind] Secret code:', secretCode);
   }
 
   function calculateFeedback(guess) {
@@ -87,6 +90,20 @@
     }
 
     return { exact: exact, partial: partial };
+  }
+
+  function updateColorPicker() {
+    if (!colorPickerEl) return;
+    var btns = colorPickerEl.querySelectorAll('.color-btn');
+    console.log('[Mastermind] Updating color picker, active colors:', activeColors.length);
+    btns.forEach(function(btn) {
+      var color = btn.dataset.color;
+      if (activeColors.indexOf(color) !== -1) {
+        btn.style.display = '';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
   }
 
   function renderHistory() {
@@ -129,6 +146,9 @@
 
       boardEl.appendChild(row);
     }
+
+    // Auto-scroll to bottom
+    boardEl.scrollTop = boardEl.scrollHeight;
   }
 
   function renderCurrentRow() {
@@ -169,7 +189,9 @@
         slot.classList.add('next');
       }
 
+      // Click on filled slot to clear it
       slot.addEventListener('click', function(idx) {
+        console.log('[Mastermind] Slot click:', idx, 'current value:', currentGuess[idx]);
         if (currentGuess[idx]) {
           currentGuess[idx] = null;
           renderCurrentRow();
@@ -184,8 +206,12 @@
   }
 
   function updateSubmitState() {
-    var allFilled = currentGuess.every(function(c) { return !!c; });
+    var allFilled = true;
+    for (var i = 0; i < SLOT_COUNT; i++) {
+      if (!currentGuess[i]) { allFilled = false; break; }
+    }
     if (submitBtn) submitBtn.disabled = !allFilled || !gameActive;
+    console.log('[Mastermind] Submit state:', allFilled && gameActive);
   }
 
   function updateStats() {
@@ -195,33 +221,50 @@
   }
 
   function selectColor(colorName) {
-    if (!gameActive) return;
+    if (!gameActive) {
+      console.log('[Mastermind] Color ignored: game not active');
+      return;
+    }
 
-    var emptyIdx = currentGuess.indexOf(null);
+    var emptyIdx = -1;
+    for (var i = 0; i < SLOT_COUNT; i++) {
+      if (!currentGuess[i]) { emptyIdx = i; break; }
+    }
+
     if (emptyIdx === -1) {
+      console.log('[Mastermind] All slots filled');
       showToast('mastermind_full');
       return;
     }
 
     currentGuess[emptyIdx] = colorName;
+    console.log('[Mastermind] Color placed:', colorName, 'at slot', emptyIdx, 'guess now:', currentGuess);
     renderCurrentRow();
     updateSubmitState();
   }
 
   function submitGuess() {
     if (!gameActive) return;
-    if (currentGuess.some(function(c) { return !c; })) {
+
+    var incomplete = false;
+    for (var i = 0; i < SLOT_COUNT; i++) {
+      if (!currentGuess[i]) { incomplete = true; break; }
+    }
+    if (incomplete) {
       showToast('mastermind_incomplete');
       return;
     }
 
     var feedback = calculateFeedback(currentGuess);
+    console.log('[Mastermind] Feedback: exact=' + feedback.exact + ' partial=' + feedback.partial);
+
     guessHistory.push({
       guess: currentGuess.slice(),
       feedback: feedback
     });
 
     if (feedback.exact === SLOT_COUNT) {
+      console.log('[Mastermind] WIN!');
       gameActive = false;
       if (currentAttempt < bestAttempt) {
         bestAttempt = currentAttempt;
@@ -237,9 +280,10 @@
     }
 
     currentAttempt++;
-    currentGuess = Array(SLOT_COUNT).fill(null);
+    currentGuess = [null, null, null, null];
 
     if (currentAttempt > MAX_ATTEMPTS) {
+      console.log('[Mastermind] LOSS - out of attempts');
       gameActive = false;
       renderHistory();
       renderCurrentRow();
@@ -252,6 +296,7 @@
     renderCurrentRow();
     updateSubmitState();
     updateStats();
+    console.log('[Mastermind] Next attempt:', currentAttempt);
   }
 
   function showWinner(won, attempts) {
@@ -283,15 +328,17 @@
 
   function clearCurrent() {
     if (!gameActive) return;
-    currentGuess = Array(SLOT_COUNT).fill(null);
+    currentGuess = [null, null, null, null];
     renderCurrentRow();
     updateSubmitState();
+    console.log('[Mastermind] Cleared current guess');
   }
 
   function startNewGame() {
+    console.log('[Mastermind] Starting new game, difficulty:', difficulty);
     activeColors = getDifficultyColors();
     generateSecretCode();
-    currentGuess = Array(SLOT_COUNT).fill(null);
+    currentGuess = [null, null, null, null];
     guessHistory = [];
     currentAttempt = 1;
     gameActive = true;
@@ -301,16 +348,19 @@
       winnerModal.style.display = 'none';
     }
 
+    updateColorPicker();
     renderHistory();
     renderCurrentRow();
     updateSubmitState();
     updateStats();
-    showToast('mastermind_new_game_started');
   }
 
   function initGame() {
+    console.log('[Mastermind] initGame() called');
+
     boardEl = document.getElementById('mm-board');
     currentRowEl = document.getElementById('mm-current-row');
+    colorPickerEl = document.getElementById('color-picker');
     attemptCounterEl = document.getElementById('attempt-counter');
     bestAttemptEl = document.getElementById('best-attempt');
     winsCountEl = document.getElementById('wins-count');
@@ -326,20 +376,44 @@
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
 
+    console.log('[Mastermind] Elements:', {
+      boardEl: !!boardEl,
+      currentRowEl: !!currentRowEl,
+      colorPickerEl: !!colorPickerEl,
+      submitBtn: !!submitBtn,
+      winnerModal: !!winnerModal,
+      toast: !!toast
+    });
+
+    if (!boardEl || !currentRowEl || !colorPickerEl) {
+      console.error('[Mastermind] CRITICAL: Missing core elements!');
+      return;
+    }
+
     var savedBest = localStorage.getItem('mastermind-best');
     if (savedBest) bestAttempt = parseInt(savedBest);
     var savedWins = localStorage.getItem('mastermind-wins');
     if (savedWins) wins = parseInt(savedWins);
 
-    var colorBtns = document.querySelectorAll('.color-btn');
+    var colorBtns = colorPickerEl.querySelectorAll('.color-btn');
+    console.log('[Mastermind] Color buttons found:', colorBtns.length);
     colorBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
+        console.log('[Mastermind] Color button clicked:', btn.dataset.color);
         selectColor(btn.dataset.color);
       });
     });
 
-    if (submitBtn) submitBtn.addEventListener('click', submitGuess);
-    if (clearBtn) clearBtn.addEventListener('click', clearCurrent);
+    if (submitBtn) submitBtn.addEventListener('click', function() {
+      console.log('[Mastermind] Submit clicked');
+      submitGuess();
+    });
+
+    if (clearBtn) clearBtn.addEventListener('click', function() {
+      console.log('[Mastermind] Clear clicked');
+      clearCurrent();
+    });
+
     if (newGameBtn) newGameBtn.addEventListener('click', function() {
       startNewGame();
       showToast('toast_restarted');
@@ -355,11 +429,13 @@
 
     if (difficultySelect) difficultySelect.addEventListener('change', function() {
       difficulty = this.value;
+      console.log('[Mastermind] Difficulty changed:', difficulty);
       startNewGame();
       showToast('toast_difficulty_changed');
     });
 
     startNewGame();
+    console.log('[Mastermind] Init complete');
   }
 
   window.initGame = initGame;
