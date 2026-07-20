@@ -66,30 +66,38 @@
     console.log('[Mastermind] Secret code:', secretCode);
   }
 
+  // POSITION-SPECIFIC FEEDBACK: returns array of 4 values
   function calculateFeedback(guess) {
-    var exact = 0;
-    var partial = 0;
+    var feedback = [];
     var codeCopy = secretCode.slice();
     var guessCopy = guess.slice();
 
+    // First pass: mark exact matches
     for (var i = 0; i < SLOT_COUNT; i++) {
       if (guess[i] === secretCode[i]) {
-        exact++;
+        feedback[i] = 'exact';
         codeCopy[i] = null;
         guessCopy[i] = null;
+      } else {
+        feedback[i] = 'pending';
       }
     }
 
+    // Second pass: mark partial matches
     for (var j = 0; j < SLOT_COUNT; j++) {
-      if (guessCopy[j] === null) continue;
-      var idx = codeCopy.indexOf(guessCopy[j]);
-      if (idx !== -1) {
-        partial++;
-        codeCopy[idx] = null;
+      if (feedback[j] === 'pending') {
+        var idx = codeCopy.indexOf(guess[j]);
+        if (idx !== -1) {
+          feedback[j] = 'partial';
+          codeCopy[idx] = null;
+        } else {
+          feedback[j] = 'none';
+        }
       }
     }
 
-    return { exact: exact, partial: partial };
+    console.log('[Mastermind] Feedback array:', feedback);
+    return feedback;
   }
 
   function updateColorPicker() {
@@ -130,24 +138,28 @@
       }
       row.appendChild(slots);
 
-      var feedback = document.createElement('div');
-      feedback.className = 'mm-feedback';
+      var feedbackDiv = document.createElement('div');
+      feedbackDiv.className = 'mm-feedback';
+      
+      // Position-specific feedback: each dot = corresponding slot
       for (var f = 0; f < SLOT_COUNT; f++) {
         var dot = document.createElement('div');
         dot.className = 'mm-dot';
-        if (f < h.feedback.exact) {
+        
+        if (h.feedback[f] === 'exact') {
           dot.classList.add('green');
-        } else if (f < h.feedback.exact + h.feedback.partial) {
+        } else if (h.feedback[f] === 'partial') {
           dot.classList.add('yellow');
         }
-        feedback.appendChild(dot);
+        // else: gray (default)
+        
+        feedbackDiv.appendChild(dot);
       }
-      row.appendChild(feedback);
+      row.appendChild(feedbackDiv);
 
       boardEl.appendChild(row);
     }
 
-    // Auto-scroll to bottom
     boardEl.scrollTop = boardEl.scrollHeight;
   }
 
@@ -171,9 +183,9 @@
     slots.className = 'mm-current-slots';
 
     var nextEmpty = -1;
-    for (var i = 0; i < SLOT_COUNT; i++) {
-      if (!currentGuess[i] && nextEmpty === -1) {
-        nextEmpty = i;
+    for (var k = 0; k < SLOT_COUNT; k++) {
+      if (!currentGuess[k] && nextEmpty === -1) {
+        nextEmpty = k;
       }
     }
 
@@ -189,7 +201,6 @@
         slot.classList.add('next');
       }
 
-      // Click on filled slot to clear it
       slot.addEventListener('click', function(idx) {
         console.log('[Mastermind] Slot click:', idx, 'current value:', currentGuess[idx]);
         if (currentGuess[idx]) {
@@ -207,8 +218,8 @@
 
   function updateSubmitState() {
     var allFilled = true;
-    for (var i = 0; i < SLOT_COUNT; i++) {
-      if (!currentGuess[i]) { allFilled = false; break; }
+    for (var m = 0; m < SLOT_COUNT; m++) {
+      if (!currentGuess[m]) { allFilled = false; break; }
     }
     if (submitBtn) submitBtn.disabled = !allFilled || !gameActive;
     console.log('[Mastermind] Submit state:', allFilled && gameActive);
@@ -227,8 +238,8 @@
     }
 
     var emptyIdx = -1;
-    for (var i = 0; i < SLOT_COUNT; i++) {
-      if (!currentGuess[i]) { emptyIdx = i; break; }
+    for (var n = 0; n < SLOT_COUNT; n++) {
+      if (!currentGuess[n]) { emptyIdx = n; break; }
     }
 
     if (emptyIdx === -1) {
@@ -247,8 +258,8 @@
     if (!gameActive) return;
 
     var incomplete = false;
-    for (var i = 0; i < SLOT_COUNT; i++) {
-      if (!currentGuess[i]) { incomplete = true; break; }
+    for (var o = 0; o < SLOT_COUNT; o++) {
+      if (!currentGuess[o]) { incomplete = true; break; }
     }
     if (incomplete) {
       showToast('mastermind_incomplete');
@@ -256,14 +267,19 @@
     }
 
     var feedback = calculateFeedback(currentGuess);
-    console.log('[Mastermind] Feedback: exact=' + feedback.exact + ' partial=' + feedback.partial);
+    console.log('[Mastermind] Position feedback:', feedback);
 
     guessHistory.push({
       guess: currentGuess.slice(),
       feedback: feedback
     });
 
-    if (feedback.exact === SLOT_COUNT) {
+    var exactCount = 0;
+    for (var p = 0; p < SLOT_COUNT; p++) {
+      if (feedback[p] === 'exact') exactCount++;
+    }
+
+    if (exactCount === SLOT_COUNT) {
       console.log('[Mastermind] WIN!');
       gameActive = false;
       if (currentAttempt < bestAttempt) {
@@ -312,10 +328,10 @@
 
     if (winnerSecret) {
       winnerSecret.innerHTML = '';
-      for (var i = 0; i < SLOT_COUNT; i++) {
+      for (var q = 0; q < SLOT_COUNT; q++) {
         var peg = document.createElement('div');
         peg.className = 'mm-slot filled';
-        peg.style.background = COLOR_HEX[secretCode[i]];
+        peg.style.background = COLOR_HEX[secretCode[q]];
         winnerSecret.appendChild(peg);
       }
     }
