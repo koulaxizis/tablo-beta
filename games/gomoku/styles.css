@@ -1,0 +1,177 @@
+/* ============================================
+   Tablo — Gomoku Styles
+   ============================================ */
+
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 20px;
+  gap: 16px;
+}
+
+.game-wrapper::before {
+  content: '';
+  display: block;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.game-stats {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2dd4bf;
+}
+
+.gomoku-board-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+#gomoku-canvas {
+  background: #d4a85a;
+  border: 2px solid #334155;
+  border-radius: 8px;
+  display: block;
+  cursor: pointer;
+  touch-action: none;
+  max-width: 100%;
+  height: auto;
+}
+
+.game-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mode-select {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-primary, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mode-select:hover { border-color: #2dd4bf; }
+
+.game-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: var(--font-primary, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.game-btn:hover { background: #243044; border-color: #2dd4bf; color: #2dd4bf; }
+.game-btn.primary { background: #2dd4bf; border-color: #2dd4bf; color: #0f1923; }
+.game-btn.primary:hover { background: #5eead4; }
+
+.game-hint {
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  margin: 8px auto;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.winner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.winner-modal.visible { display: flex; }
+
+.winner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(6px);
+}
+
+.winner-content {
+  position: relative;
+  background: #1e293b;
+  border: 2px solid #2dd4bf;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 16px 64px rgba(0,0,0,0.6);
+}
+.winner-icon { font-size: 48px; margin-bottom: 16px; }
+.winner-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; color: #e2e8f0; }
+.winner-message { font-size: 16px; color: #94a3b8; margin-bottom: 24px; }
+
+.tablo-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 10001;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+.tablo-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 768px) {
+  #gomoku-canvas { width: 360px; height: 360px; }
+}
+
+@media (max-width: 480px) {
+  #gomoku-canvas { width: 300px; height: 300px; }
+  .game-stats { gap: 16px; padding: 12px 16px; }
+  .game-controls { flex-direction: column; width: 100%; }
+  .mode-select, .game-btn { width: 100%; justify-content: center; }
+}
