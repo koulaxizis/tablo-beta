@@ -94,8 +94,6 @@
           piece.className = 'piece';
           piece.dataset.row = r;
           piece.dataset.col = c;
-
-          // CRITICAL FIX: Position the piece using percentage
           piece.style.left = (c * 12.5) + '%';
           piece.style.top = (r * 12.5) + '%';
 
@@ -113,7 +111,6 @@
             piece.classList.add('selected');
           }
 
-          // CRITICAL FIX: Create the .piece-inner div (the visible circle)
           var pieceInner = document.createElement('div');
           pieceInner.className = 'piece-inner';
           piece.appendChild(pieceInner);
@@ -367,26 +364,43 @@
 
     if (!isCurrentPlayerPiece) return;
 
-    if (mustJumpFrom && (mustJumpFrom.row !== row || mustJumpFrom.col !== col)) {
-      showToast('checkers_must_jump');
-      return;
-    }
+    // STRICT MODE: Check if ANY capture is available anywhere on the board
+    var allMoves = getAllValidMoves(currentPlayer);
+    var anyCaptureAvailable = hasCaptureMoves(allMoves);
 
-    selectedPiece = { row: row, col: col };
+    // Get all moves for THIS piece
     var moves = getValidMovesForPiece(row, col);
 
+    // If multi-jump continuation in progress, only allow this specific piece
     if (mustJumpFrom) {
+      if (mustJumpFrom.row !== row || mustJumpFrom.col !== col) {
+        showToast('checkers_must_jump');
+        return; // Can't select other pieces during multi-jump
+      }
+      // This piece is continuing jump, only show capture moves
       moves = moves.filter(function(m) { return m.capture; });
+      if (moves.length === 0) {
+        showToast('checkers_must_jump');
+        return;
+      }
     }
-
-    var allMoves = getAllValidMoves(currentPlayer);
-    var mustCapture = hasCaptureMoves(allMoves);
-
-    if (mustCapture) {
-      moves = moves.filter(function(m) { return m.capture; });
+    // STRICT RULE: If ANY piece can capture, only pieces with captures are selectable
+    else if (anyCaptureAvailable) {
+      // Filter to only capture moves for this piece
+      var captureMoves = moves.filter(function(m) { return m.capture; });
+      
+      if (captureMoves.length === 0) {
+        // This piece can't capture, but there ARE captures elsewhere
+        // Show hint and don't allow selection
+        showToast('checkers_must_capture');
+        return;
+      }
+      
+      moves = captureMoves;
     }
 
     validMoves = moves;
+    selectedPiece = { row: row, col: col };
     renderBoard();
   }
 
