@@ -5,6 +5,8 @@
 (function() {
   'use strict';
 
+  console.log('[Checkers] game.js loaded');
+
   var BOARD_SIZE = 8;
   var RED = 1;
   var BLACK = 2;
@@ -38,6 +40,15 @@
   var winnerButtons = document.getElementById('winner-buttons');
   var playAgainBtn = document.getElementById('btn-play-again');
   var toast = document.getElementById('toast');
+
+  console.log('[Checkers] Elements found:', {
+    boardContainer: !!boardContainer,
+    checkerboard: !!checkerboard,
+    piecesOverlay: !!piecesOverlay,
+    turnIndicator: !!turnIndicator,
+    newGameBtn: !!newGameBtn,
+    modeBtn: !!modeBtn
+  });
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -76,6 +87,11 @@
   }
 
   function renderBoard() {
+    if (!checkerboard || !piecesOverlay) {
+      console.error('[Checkers] Cannot render board - elements missing!');
+      return;
+    }
+
     checkerboard.innerHTML = '';
     piecesOverlay.innerHTML = '';
 
@@ -86,10 +102,8 @@
         cell.dataset.row = r;
         cell.dataset.col = c;
 
-        var isHighlight = false;
         for (var m = 0; m < validMoves.length; m++) {
           if (validMoves[m].row === r && validMoves[m].col === c) {
-            isHighlight = true;
             cell.classList.add(validMoves[m].capture ? 'highlight-capture' : 'highlight-move');
             cell.addEventListener('click', onSquareClick);
             break;
@@ -136,11 +150,8 @@
       capturedCount.textContent = totalCaptured;
     }
 
-    var wins = (vsAI && currentPlayer === RED) ? redWins :
-               (vsAI && currentPlayer === BLACK) ? blackWins :
-               redWins + blackWins;
     if (winsCount) {
-      winsCount.textContent = wins;
+      winsCount.textContent = redWins;
     }
   }
 
@@ -248,6 +259,7 @@
         selectedPiece = { row: toRow, col: toCol };
         validMoves = furtherCaptures.filter(function(m) { return m.capture; });
         renderBoard();
+        updateStats();
         return;
       }
     } else {
@@ -258,6 +270,7 @@
     selectedPiece = null;
     validMoves = [];
     renderBoard();
+    updateStats();
     checkWinCondition();
   }
 
@@ -328,30 +341,25 @@
     }
     if (winnerMessage) {
       winnerMessage.textContent = isStalemate ? tr('checkers_stalemate') :
-                                  tr('checkers_game_end') + ': ' + tr('checkers_' + (wonByRed ? 'red' : 'black') + '_wins');
-    }
-
-    if (playAgainBtn) {
-      playAgainBtn.onclick = function() {
-        if (winnerModal) winnerModal.classList.remove('visible');
-        startNewGame();
-      };
+                                  tr('checkers_game_end');
     }
 
     if (winnerButtons) {
       winnerButtons.innerHTML = '';
-      var playAgainBtn2 = document.createElement('button');
-      playAgainBtn2.className = 'game-btn primary';
-      playAgainBtn2.textContent = tr('btn_play_again');
-      playAgainBtn2.onclick = function() {
+      var btn = document.createElement('button');
+      btn.className = 'game-btn primary';
+      btn.textContent = tr('btn_play_again');
+      btn.onclick = function() {
         if (winnerModal) winnerModal.classList.remove('visible');
+        if (winnerModal) winnerModal.style.display = 'none';
         startNewGame();
       };
-      winnerButtons.appendChild(playAgainBtn2);
+      winnerButtons.appendChild(btn);
     }
 
     if (winnerModal) {
       winnerModal.classList.add('visible');
+      winnerModal.style.display = 'flex';
     }
   }
 
@@ -394,7 +402,7 @@
     renderBoard();
   }
 
-  function onSquareClick(e) {
+    function onSquareClick(e) {
     e.stopPropagation();
     if (gameOver || !selectedPiece || validMoves.length === 0) return;
 
@@ -420,7 +428,7 @@
     gameOver = false;
     updateStats();
     renderBoard();
-    showToast('checkers_new_game_started');
+    console.log('[Checkers] New game started');
   }
 
   function toggleMode() {
@@ -432,6 +440,35 @@
   }
 
   function initGame() {
+    console.log('[Checkers] initGame called');
+
+    boardContainer = document.getElementById('board-container');
+    checkerboard = document.getElementById('checkerboard');
+    piecesOverlay = document.getElementById('pieces-overlay');
+    turnIndicator = document.getElementById('turn-indicator');
+    capturedCount = document.getElementById('captured-count');
+    winsCount = document.getElementById('wins-count');
+    newGameBtn = document.getElementById('btn-new-game');
+    modeBtn = document.getElementById('btn-mode');
+    winnerModal = document.getElementById('winner-modal');
+    winnerIcon = document.getElementById('winner-icon');
+    winnerTitle = document.getElementById('winner-title');
+    winnerMessage = document.getElementById('winner-message');
+    winnerButtons = document.getElementById('winner-buttons');
+    playAgainBtn = document.getElementById('btn-play-again');
+    toast = document.getElementById('toast');
+
+    console.log('[Checkers] Elements in initGame:', {
+      boardContainer: !!boardContainer,
+      checkerboard: !!checkerboard,
+      piecesOverlay: !!piecesOverlay,
+      turnIndicator: !!turnIndicator,
+      newGameBtn: !!newGameBtn,
+      modeBtn: !!modeBtn,
+      winnerModal: !!winnerModal,
+      toast: !!toast
+    });
+
     var savedWins = localStorage.getItem('tablo-checkers-wins');
     if (savedWins) {
       redWins = parseInt(savedWins) || 0;
@@ -450,7 +487,10 @@
 
     if (playAgainBtn) {
       playAgainBtn.addEventListener('click', function() {
-        if (winnerModal) winnerModal.classList.remove('visible');
+        if (winnerModal) {
+          winnerModal.classList.remove('visible');
+          winnerModal.style.display = 'none';
+        }
         startNewGame();
       });
     }

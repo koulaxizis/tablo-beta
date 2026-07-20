@@ -171,6 +171,7 @@
 
     currentPlayer = player === 1 ? 2 : 1;
     updateUI();
+    drawBoard(); // <-- CRITICAL FIX: redraw board after every move
     return true;
   }
 
@@ -204,31 +205,17 @@
   }
 
   function handleClick(r, c) {
-    console.log('[Gomoku] handleClick called:', r, c); // DEBUG LOGGING
-    if (gameOver || aiThinking) {
-      console.log('[Gomoku] Blocked: gameOver=' + gameOver + ', aiThinking=' + aiThinking);
-      return;
-    }
-    if (board[r][c] !== 0) {
-      console.log('[Gomoku] Blocked: square already occupied');
-      return;
-    }
+    if (gameOver || aiThinking) return;
+    if (board[r][c] !== 0) return;
 
-    console.log('[Gomoku] Game mode:', gameMode, 'Current player:', currentPlayer);
-    
-    if (gameMode === 'ai' && currentPlayer === 2) {
-      console.log('[Gomoku] Blocked: AI turn');
-      return;
-    }
+    if (gameMode === 'ai' && currentPlayer === 2) return;
 
-    console.log('[Gomoku] Placing stone for player:', currentPlayer);
     history.push({ r: r, c: c, player: currentPlayer });
     placeStone(r, c, currentPlayer);
 
     if (!gameOver && gameMode === 'ai' && currentPlayer === 2) {
       aiThinking = true;
       updateUI();
-      console.log('[Gomoku] AI thinking...');
       setTimeout(aiMove, 500);
     }
   }
@@ -240,7 +227,6 @@
 
     var best = findBestMove(2);
     if (!best) {
-      // Fallback: center or nearby
       best = [7, 7];
       if (board[7][7] !== 0) {
         for (var r = 6; r <= 8 && !best; r++) {
@@ -251,7 +237,6 @@
       }
     }
 
-    console.log('[Gomoku] AI moved to:', best);
     history.push({ r: best[0], c: best[1], player: 2 });
     placeStone(best[0], best[1], 2);
   }
@@ -264,7 +249,6 @@
     for (var r = 0; r < SIZE; r++) {
       for (var c = 0; c < SIZE; c++) {
         if (board[r][c] !== 0) continue;
-        // Only consider cells near existing stones
         if (!hasNeighbor(r, c, 2)) continue;
 
         var myScore = evaluatePosition(r, c, player);
@@ -305,7 +289,6 @@
       var count = 1;
       var openEnds = 0;
 
-      // Forward
       var fr = r + dr, fc = c + dc;
       while (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && board[fr][fc] === player) {
         count++;
@@ -313,7 +296,6 @@
       }
       if (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && board[fr][fc] === 0) openEnds++;
 
-      // Backward
       var br = r - dr, bc = c - dc;
       while (br >= 0 && br < SIZE && bc >= 0 && bc < SIZE && board[br][bc] === player) {
         count++;
@@ -361,7 +343,6 @@
     currentPlayer = last.player;
     lastMove = history.length > 0 ? [history[history.length - 1].r, history[history.length - 1].c] : null;
 
-    // In AI mode, undo two moves (player + AI)
     if (gameMode === 'ai' && history.length > 0) {
       var prev = history.pop();
       board[prev.r][prev.c] = 0;
@@ -392,7 +373,6 @@
     modalTitle.textContent = tr('gomoku_win');
     modalMessage.textContent = winnerName + ' ' + tr('gomoku_wins') + '! (' + moveCount + ' ' + tr('gomoku_moves') + ')';
 
-    // Save best (fewest moves to win)
     var key = 'tablo-gomoku-best-' + gameMode;
     var best = parseInt(localStorage.getItem(key) || '999');
     if (moveCount < best) localStorage.setItem(key, moveCount.toString());
@@ -433,13 +413,6 @@
     modalMessage = document.getElementById('modal-message');
     toast = document.getElementById('toast');
 
-    console.log('[Gomoku] Elements initialized:', {
-      canvas: !!canvas,
-      ctx: !!ctx,
-      turnEl: !!turnEl,
-      modeSelect: !!modeSelect
-    });
-
     modeSelect.value = 'pvp';
 
     modeSelect.addEventListener('change', function() {
@@ -457,26 +430,19 @@
 
     retryBtn.addEventListener('click', newGame);
 
-    console.log('[Gomoku] Adding click listener to canvas');
     canvas.addEventListener('click', function(e) {
-      console.log('[Gomoku] Canvas click event fired!');
       var cell = getCellFromMouse(e.clientX, e.clientY);
-      console.log('[Gomoku] Cell from mouse:', cell);
       if (cell) handleClick(cell.r, cell.c);
-    }, { passive: false });
+    });
 
-    console.log('[Gomoku] Adding touch listener to canvas');
     canvas.addEventListener('touchend', function(e) {
       e.preventDefault();
-      console.log('[Gomoku] Touch event fired!');
       if (e.changedTouches.length === 0) return;
       var touch = e.changedTouches[0];
       var cell = getCellFromMouse(touch.clientX, touch.clientY);
-      console.log('[Gomoku] Touch cell:', cell);
       if (cell) handleClick(cell.r, cell.c);
     }, { passive: false });
 
-    console.log('[Gomoku] Starting new game');
     newGame();
   }
 

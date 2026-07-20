@@ -30,7 +30,7 @@
     </symbol>
     <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a1.65 1.65 0 00.33-1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
     </symbol>
   </svg>
 
@@ -66,7 +66,7 @@
 
   <div id="tablo-footer"></div>
 
-  <div class="winner-modal" id="winner-modal">
+  <div class="winner-modal" id="winner-modal" style="display:none;">
     <div class="winner-overlay"></div>
     <div class="winner-content">
       <div class="winner-icon" id="winner-icon">&#127942;</div>
@@ -85,17 +85,28 @@
   <script src="../../assets/js/footer.js"></script>
 
   <script>
-    var gameScript = document.createElement('script');
-    gameScript.src = 'game.js';
-    gameScript.onload = function() {
-      if (typeof window.applyTabloTranslations === 'function') {
-        window.applyTabloTranslations();
+    (function() {
+      var attempts = 0;
+      function loadGame() {
+        var s = document.createElement('script');
+        s.src = 'game.js';
+        s.onload = function() {
+          if (typeof initGame === 'function') initGame();
+        };
+        document.body.appendChild(s);
       }
-      if (typeof window.initGame === 'function') {
-        window.initGame();
+      function check() {
+        if (window.TABLO_TRANSLATIONS) {
+          loadGame();
+        } else if (attempts < 50) {
+          attempts++;
+          setTimeout(check, 100);
+        } else {
+          loadGame();
+        }
       }
-    };
-    document.body.appendChild(gameScript);
+      check();
+    })();
   </script>
 </body>
 </html>
