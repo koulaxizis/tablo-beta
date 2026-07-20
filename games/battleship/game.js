@@ -8,10 +8,9 @@
   console.log('[Battleship] game.js loaded');
 
   var GRID_SIZE = 10;
-  var TOTAL_SHIPS = 20; // Total cells occupied by all ships
+  var TOTAL_SHIPS = 20;
   
-  // Ship sizes (classic battleship)
-  var SHIP_SIZES = [5, 4, 4, 3, 3, 3, 2, 2]; // Carrier, Battleship x2, Cruiser x3, Destroyer x2
+  var SHIP_SIZES = [5, 4, 4, 3, 3, 3, 2, 2];
   
   var board = [];
   var shots = 0;
@@ -19,7 +18,7 @@
   var gameActive = false;
   var wins = 0;
   var autoFire = false;
-  var autoFireInterval = null;
+  var autoFireTimerId = null;
 
   var boardEl, statusEl, hitsEl, shotsEl, winsEl;
   var autoFireBtn, resetBtn, newGameBtn, winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
@@ -147,8 +146,9 @@
     updateStats();
     checkWinCondition();
   }
-    function autoFireLoop() {
-    if (!gameActive) {
+
+  function autoFireLoop() {
+    if (!gameActive || !autoFire) {
       stopAutoFire();
       return;
     }
@@ -170,28 +170,29 @@
     var shot = available[Math.floor(Math.random() * available.length)];
     fireShot(shot.row, shot.col);
 
-    if (autoFire) {
-      autoFireInterval = setTimeout(autoFireLoop, 300);
-    }
+    autoFireTimerId = setTimeout(autoFireLoop, 300);
   }
 
   function startAutoFire() {
-    if (!gameActive) return;
+    if (!gameActive || autoFire) return;
     autoFire = true;
     if (autoFireBtn) {
       autoFireBtn.textContent = tr('battleship_stop_fire');
       autoFireBtn.classList.add('active');
     }
-    autoFireInterval = setTimeout(autoFireLoop, 300);
+    console.log('[Battleship] Auto fire STARTED');
+    autoFireLoop();
   }
 
   function stopAutoFire() {
+    if (!autoFire) return;
     autoFire = false;
-    clearTimeout(autoFireInterval);
+    clearTimeout(autoFireTimerId);
     if (autoFireBtn) {
       autoFireBtn.textContent = tr('battleship_auto_fire');
       autoFireBtn.classList.remove('active');
     }
+    console.log('[Battleship] Auto fire STOPPED');
   }
 
   function checkWinCondition() {
@@ -284,6 +285,7 @@
     if (savedWins) wins = parseInt(savedWins);
 
     if (autoFireBtn) autoFireBtn.addEventListener('click', function() {
+      console.log('[Battleship] AutoFire button clicked, autoFire:', autoFire);
       if (autoFire) {
         stopAutoFire();
       } else {
@@ -295,10 +297,6 @@
       resetBoard();
       showToast('toast_restarted');
     });
-
-    if (playAgainBtn) {
-      // Already attached in showWinner
-    }
 
     startNewGame();
     console.log('[Battleship] Init complete');
