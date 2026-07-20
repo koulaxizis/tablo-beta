@@ -50,6 +50,7 @@
       </div>
     </div>
 
+    <!-- FIXED: Board container MUST have these EXACT IDs -->
     <div class="board-container" id="board-container">
       <div class="checkerboard" id="checkerboard"></div>
       <div class="pieces-overlay" id="pieces-overlay"></div>
@@ -66,6 +67,7 @@
 
   <div id="tablo-footer"></div>
 
+  <!-- FIXED: Modal structure with ALL required IDs -->
   <div class="winner-modal" id="winner-modal" style="display:none;">
     <div class="winner-overlay"></div>
     <div class="winner-content">
@@ -88,23 +90,38 @@
     (function() {
       var attempts = 0;
       function loadGame() {
+        console.log('[Checkers Index] Loading game.js...');
         var s = document.createElement('script');
         s.src = 'game.js';
         s.onload = function() {
-          if (typeof initGame === 'function') initGame();
+          console.log('[Checkers Index] game.js loaded, checking for initGame...');
+          if (typeof window.initGame === 'function') {
+            console.log('[Checkers Index] Calling initGame...');
+            window.initGame();
+          } else {
+            console.error('[Checkers Index] initGame NOT FOUND after script load!');
+          }
+        };
+        s.onerror = function() {
+          console.error('[Checkers Index] FAILED to load game.js!');
         };
         document.body.appendChild(s);
       }
+      
       function check() {
+        console.log('[Checkers Index] Checking translations...', !!window.TABLO_TRANSLATIONS);
         if (window.TABLO_TRANSLATIONS) {
           loadGame();
         } else if (attempts < 50) {
           attempts++;
           setTimeout(check, 100);
         } else {
+          console.warn('[Checkers Index] No translations, loading anyway...');
           loadGame();
         }
       }
+      
+      console.log('[Checkers Index] Starting initialization...');
       check();
     })();
   </script>
