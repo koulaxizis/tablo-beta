@@ -16,14 +16,10 @@
   <svg style="display: none;" aria-hidden="true">
     <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <circle cx="12" cy="12" r="4"/>
-      <path d="M12 2v2"/>
-      <path d="M12 20v2"/>
-      <path d="M2 12h2"/>
-      <path d="M20 12h2"/>
-      <path d="M4.9 4.9l1.4 1.4"/>
-      <path d="M17.7 17.7l1.4 1.4"/>
-      <path d="M4.9 19.1l1.4-1.4"/>
-      <path d="M17.7 6.3l1.4-1.4"/>
+      <path d="M12 2v2"/><path d="M12 20v2"/>
+      <path d="M2 12h2"/><path d="M20 12h2"/>
+      <path d="M4.9 4.9l1.4 1.4"/><path d="M17.7 17.7l1.4 1.4"/>
+      <path d="M4.9 19.1l1.4-1.4"/><path d="M17.7 6.3l1.4-1.4"/>
     </symbol>
     <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
@@ -50,29 +46,31 @@
       </div>
     </div>
 
-    <div class="mastermind-board" id="mastermind-board"></div>
+    <div class="mm-board" id="mm-board"></div>
+
+    <div class="mm-current-row" id="mm-current-row"></div>
 
     <div class="color-picker" id="color-picker">
-      <button class="color-btn" data-color="red" style="background: #ef4444;"></button>
-      <button class="color-btn" data-color="blue" style="background: #3b82f6;"></button>
-      <button class="color-btn" data-color="green" style="background: #22c55e;"></button>
-      <button class="color-btn" data-color="yellow" style="background: #eab308;"></button>
-      <button class="color-btn" data-color="purple" style="background: #a855f7;"></button>
-      <button class="color-btn" data-color="orange" style="background: #f97316;"></button>
+      <button class="color-btn" data-color="red" style="background:#ef4444;" aria-label="Red"></button>
+      <button class="color-btn" data-color="blue" style="background:#3b82f6;" aria-label="Blue"></button>
+      <button class="color-btn" data-color="green" style="background:#22c55e;" aria-label="Green"></button>
+      <button class="color-btn" data-color="yellow" style="background:#eab308;" aria-label="Yellow"></button>
+      <button class="color-btn" data-color="purple" style="background:#a855f7;" aria-label="Purple"></button>
+      <button class="color-btn" data-color="orange" style="background:#f97316;" aria-label="Orange"></button>
     </div>
 
     <div class="game-controls">
       <select id="difficulty-select" class="mode-select">
-        <option value="easy" data-i18n="mastermind_easy">Easy</option>
-        <option value="normal" selected data-i18n="mastermind_normal">Normal</option>
-        <option value="hard" data-i18n="mastermind_hard">Hard</option>
+        <option value="easy" data-i18n="mastermind_easy">Easy (4 colors)</option>
+        <option value="normal" selected data-i18n="mastermind_normal">Normal (5 colors)</option>
+        <option value="hard" data-i18n="mastermind_hard">Hard (6 colors)</option>
       </select>
-      <button class="game-btn primary" id="btn-submit" data-i18n="mastermind_submit">Submit Guess</button>
+      <button class="game-btn primary" id="btn-submit" data-i18n="mastermind_submit" disabled>Submit Guess</button>
       <button class="game-btn" id="btn-clear" data-i18n="mastermind_clear">Clear</button>
       <button class="game-btn" id="btn-new-game" data-i18n="mastermind_new_game">New Game</button>
     </div>
 
-    <p class="game-hint" data-i18n="mastermind_hint">Select colors, fill slots, submit to get feedback!</p>
+    <p class="game-hint" data-i18n="mastermind_hint">Pick a color to fill the next slot. Fill all 4 and submit!</p>
   </div>
 
   <div id="tablo-footer"></div>
@@ -82,6 +80,7 @@
     <div class="winner-content">
       <div class="winner-icon" id="winner-icon">&#127942;</div>
       <h2 class="winner-title" id="winner-title"></h2>
+      <div class="winner-secret" id="winner-secret"></div>
       <p class="winner-message" id="winner-message"></p>
       <div class="winner-buttons" id="winner-buttons">
         <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
@@ -94,7 +93,6 @@
   <script src="../../assets/js/config.js"></script>
   <script src="../../assets/js/header.js"></script>
   <script src="../../assets/js/footer.js"></script>
-
   <script>
     (function() {
       var attempts = 0;
@@ -107,14 +105,9 @@
         document.body.appendChild(s);
       }
       function check() {
-        if (window.TABLO_TRANSLATIONS) {
-          loadGame();
-        } else if (attempts < 50) {
-          attempts++;
-          setTimeout(check, 100);
-        } else {
-          loadGame();
-        }
+        if (window.TABLO_TRANSLATIONS) { loadGame(); }
+        else if (attempts < 50) { attempts++; setTimeout(check, 100); }
+        else { loadGame(); }
       }
       check();
     })();

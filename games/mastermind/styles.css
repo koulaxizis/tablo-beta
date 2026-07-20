@@ -7,7 +7,7 @@
   flex-direction: column;
   align-items: center;
   padding: 0 20px 20px;
-  gap: 20px;
+  gap: 16px;
 }
 
 .game-wrapper::before {
@@ -52,116 +52,160 @@
   color: #2dd4bf;
 }
 
-.mastermind-board {
+/* Board: past guesses */
+.mm-board {
   background: #1e293b;
   border: 2px solid #334155;
   border-radius: 12px;
-  padding: 20px;
-  max-width: 400px;
+  padding: 16px;
   width: 100%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 360px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-.guess-row {
+.mm-board:empty::after {
+  content: 'No guesses yet';
+  display: block;
+  text-align: center;
+  color: #475569;
+  font-size: 13px;
+  padding: 20px;
+}
+
+.mm-past-row {
   display: flex;
-  gap: 12px;
   align-items: center;
-  padding: 12px 0;
+  gap: 12px;
+  padding: 8px 0;
   border-bottom: 1px solid #334155;
 }
 
-.guess-row:last-child {
+.mm-past-row:last-child {
   border-bottom: none;
 }
 
-.guess-row.current {
-  background: rgba(45, 212, 211, 0.1);
-  margin: 0 -12px;
-  padding: 12px;
-  margin-left: -12px;
-  margin-right: -12px;
+.mm-row-num {
+  font-size: 11px;
+  color: #64748b;
+  min-width: 24px;
+  text-align: right;
 }
 
-.slots {
+.mm-slots {
   display: flex;
   gap: 8px;
 }
 
-.slot {
+.mm-slot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #334155;
+  background: #0f1923;
+  flex-shrink: 0;
+}
+
+.mm-slot.filled {
+  border-color: transparent;
+}
+
+.mm-feedback {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  max-width: 40px;
+  margin-left: auto;
+}
+
+.mm-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #334155;
+}
+
+.mm-dot.green { background: #22c55e; }
+.mm-dot.yellow { background: #eab308; }
+
+/* Current row (active input) */
+.mm-current-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(45, 212, 211, 0.08);
+  border: 2px dashed #2dd4bf;
+  border-radius: 12px;
+  padding: 12px 16px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.mm-current-row.hidden {
+  display: none;
+}
+
+.mm-current-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2dd4bf;
+  min-width: 24px;
+  text-align: right;
+}
+
+.mm-current-slots {
+  display: flex;
+  gap: 8px;
+}
+
+.mm-input-slot {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid #334155;
+  background: #0f1923;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mm-input-slot:hover:not(.filled) {
+  border-color: #2dd4bf;
+  transform: scale(1.1);
+}
+
+.mm-input-slot.filled {
+  border-color: transparent;
+  cursor: pointer;
+}
+
+.mm-input-slot.next {
+  border-color: #2dd4bf;
+  animation: mm-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mm-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 211, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(45, 212, 211, 0); }
+}
+
+/* Color picker */
+.color-picker {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 360px;
+}
+
+.color-btn {
   width: 48px;
   height: 48px;
   border: 3px solid #334155;
   border-radius: 50%;
   cursor: pointer;
-  background: #0f1923;
   transition: all 0.2s ease;
-}
-
-.slot:hover:not(.filled) {
-  border-color: #2dd4bf;
-  transform: scale(1.1);
-}
-
-.slot.filled {
-  border-color: transparent;
-}
-
-.feedback-dots {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-  margin-left: auto;
-}
-
-.feedback-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #334155;
-}
-
-.feedback-dot.correct {
-  background: #22c55e;
-}
-
-.feedback-dot.partial {
-  background: #eab308;
-}
-
-.secret-display {
-  display: flex;
-  gap: 8px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.secret-display.revealed {
-  opacity: 1;
-}
-
-.secret-peg {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
-
-.color-picker {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 400px;
-}
-
-.color-btn {
-  width: 56px;
-  height: 56px;
-  border: 3px solid #334155;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0;
 }
 
 .color-btn:hover {
@@ -169,12 +213,11 @@
   border-color: #2dd4bf;
 }
 
-.color-btn.selected {
-  border-color: #fff;
-  box-shadow: 0 0 0 4px #2dd4bf;
-  transform: scale(1.2);
+.color-btn:active {
+  transform: scale(0.95);
 }
 
+/* Controls */
 .game-controls {
   display: flex;
   gap: 8px;
@@ -194,9 +237,7 @@
   cursor: pointer;
 }
 
-.mode-select:hover {
-  border-color: #2dd4bf;
-}
+.mode-select:hover { border-color: #2dd4bf; }
 
 .game-btn {
   background: #1e293b;
@@ -237,10 +278,11 @@
   color: #64748b;
   text-align: center;
   margin: 8px auto;
-  max-width: 400px;
+  max-width: 360px;
   line-height: 1.5;
 }
 
+/* Modal */
 .winner-modal {
   position: fixed;
   inset: 0;
@@ -250,9 +292,7 @@
   justify-content: center;
 }
 
-.winner-modal.visible {
-  display: flex;
-}
+.winner-modal.visible { display: flex; }
 
 .winner-overlay {
   position: absolute;
@@ -272,22 +312,20 @@
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6);
 }
 
-.winner-icon {
-  font-size: 48px;
+.winner-icon { font-size: 48px; margin-bottom: 16px; }
+.winner-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; color: #e2e8f0; }
+.winner-message { font-size: 16px; color: #94a3b8; margin-bottom: 24px; }
+
+.winner-secret {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
   margin-bottom: 16px;
 }
 
-.winner-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: #e2e8f0;
-}
-
-.winner-message {
-  font-size: 16px;
-  color: #94a3b8;
-  margin-bottom: 24px;
+.winner-secret .mm-slot {
+  width: 40px;
+  height: 40px;
 }
 
 .winner-buttons {
@@ -296,6 +334,7 @@
   justify-content: center;
 }
 
+/* Toast */
 .tablo-toast {
   position: fixed;
   bottom: 80px;
@@ -320,27 +359,10 @@
 }
 
 @media (max-width: 480px) {
-  .slot {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .color-btn {
-    width: 48px;
-    height: 48px;
-  }
-  
-  .game-stats {
-    gap: 16px;
-    padding: 12px 16px;
-  }
-  
-  .game-controls {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .mode-select, .game-btn {
-    width: 100%;
-  }
+  .mm-slot { width: 30px; height: 30px; }
+  .mm-input-slot { width: 38px; height: 38px; }
+  .color-btn { width: 42px; height: 42px; }
+  .game-stats { gap: 16px; padding: 12px 16px; }
+  .game-controls { flex-direction: column; width: 100%; }
+  .mode-select, .game-btn { width: 100%; }
 }
