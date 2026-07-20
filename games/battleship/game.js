@@ -9,9 +9,9 @@
 
   var GRID_SIZE = 10;
   var TOTAL_SHIPS = 20;
-  
+
   var SHIP_SIZES = [5, 4, 4, 3, 3, 3, 2, 2];
-  
+
   var board = [];
   var shots = 0;
   var hits = 0;
@@ -21,7 +21,7 @@
   var autoFireTimerId = null;
 
   var boardEl, statusEl, hitsEl, shotsEl, winsEl;
-  var autoFireBtn, resetBtn, newGameBtn, winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
+  var autoFireBtn, resetBtn, winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
   var toast;
 
   function tr(key) {
@@ -54,12 +54,12 @@
     for (var s = 0; s < SHIP_SIZES.length; s++) {
       var shipSize = SHIP_SIZES[s];
       var placed = false;
-      
+
       while (!placed) {
         var horizontal = Math.random() < 0.5;
         var row = Math.floor(Math.random() * GRID_SIZE);
         var col = Math.floor(Math.random() * GRID_SIZE);
-        
+
         if (horizontal) {
           if (col + shipSize <= GRID_SIZE && canPlaceShip(row, col, shipSize, true)) {
             for (var c = 0; c < shipSize; c++) {
@@ -92,7 +92,7 @@
     return true;
   }
 
-  function renderBoard() {
+  function buildBoardDOM() {
     if (!boardEl) return;
     boardEl.innerHTML = '';
 
@@ -102,19 +102,25 @@
         cell.className = 'bs-cell';
         cell.dataset.row = r;
         cell.dataset.col = c;
-
-        if (board[r][c].hit) {
-          cell.classList.add('hit');
-        } else if (board[r][c].miss) {
-          cell.classList.add('miss');
-        }
+        cell.id = 'bs-cell-' + r + '-' + c;
 
         cell.addEventListener('click', function(row, col) {
-          fireShot(row, col);
+          onCellClick(row, col);
         }.bind(null, r, c));
 
         boardEl.appendChild(cell);
       }
+    }
+  }
+
+  function updateCellDOM(row, col) {
+    var cell = document.getElementById('bs-cell-' + row + '-' + col);
+    if (!cell) return;
+
+    if (board[row][col].hit) {
+      cell.classList.add('hit');
+    } else if (board[row][col].miss) {
+      cell.classList.add('miss');
     }
   }
 
@@ -125,8 +131,7 @@
   }
 
   function fireShot(row, col) {
-    if (!gameActive || autoFire) return;
-    
+    if (!gameActive) return;
     if (board[row][col].hit || board[row][col].miss) return;
 
     shots++;
@@ -134,17 +139,22 @@
     if (board[row][col].ship) {
       board[row][col].hit = true;
       hits++;
-      statusEl.innerHTML = '<span style="color:#ef4444">' + tr('battleship_hit') + '</span>';
-      showToast('battleship_hit_sound');
+      if (statusEl) statusEl.innerHTML = '<span style="color:#ef4444">' + tr('battleship_hit') + '</span>';
     } else {
       board[row][col].miss = true;
-      statusEl.innerHTML = '<span style="color:#64748b">' + tr('battleship_miss') + '</span>';
-      showToast('battleship_miss_sound');
+      if (statusEl) statusEl.innerHTML = '<span style="color:#64748b">' + tr('battleship_miss') + '</span>';
     }
 
-    renderBoard();
+    // Only update the single cell that changed
+    updateCellDOM(row, col);
     updateStats();
     checkWinCondition();
+  }
+
+  function onCellClick(row, col) {
+    // Don't allow manual clicks while auto-firing
+    if (autoFire) return;
+    fireShot(row, col);
   }
 
   function autoFireLoop() {
@@ -170,7 +180,9 @@
     var shot = available[Math.floor(Math.random() * available.length)];
     fireShot(shot.row, shot.col);
 
-    autoFireTimerId = setTimeout(autoFireLoop, 300);
+    if (autoFire && gameActive) {
+      autoFireTimerId = setTimeout(autoFireLoop, 300);
+    }
   }
 
   function startAutoFire() {
@@ -185,9 +197,9 @@
   }
 
   function stopAutoFire() {
-    if (!autoFire) return;
     autoFire = false;
     clearTimeout(autoFireTimerId);
+    autoFireTimerId = null;
     if (autoFireBtn) {
       autoFireBtn.textContent = tr('battleship_auto_fire');
       autoFireBtn.classList.remove('active');
@@ -244,8 +256,8 @@
     }
 
     if (statusEl) statusEl.innerHTML = '<span>' + tr('battleship_turn') + '</span>';
-    
-    renderBoard();
+
+    buildBoardDOM();
     updateStats();
     showToast('battleship_new_game_started');
   }
