@@ -15,7 +15,9 @@
     'simon-says', 'number-slider', 'lights-out', 'whack-a-mole',
     'snake', '2048', 'wordle', 'spot-the-difference',
     'hexagon-puzzle', 'chess', 'sudoku',
-    'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble-shooter'
+    'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble-shooter',
+    'gomoku', 'checkers', 'mastermind', 'battleship',
+    'rock-paper-scissors', 'hangman', 'snakes-and-ladders', 'pong', 'backgammon'
   ];
 
   console.log('[Header] Script loaded');
@@ -68,6 +70,15 @@
     if (path.indexOf('/mahjong/') !== -1) return 'mahjong';
     if (path.indexOf('/puzzle/') !== -1) return 'puzzle';
     if (path.indexOf('/bubble-shooter/') !== -1) return 'bubble';
+    if (path.indexOf('/gomoku/') !== -1) return 'gomoku';
+    if (path.indexOf('/checkers/') !== -1) return 'checkers';
+    if (path.indexOf('/mastermind/') !== -1) return 'mastermind';
+    if (path.indexOf('/battleship/') !== -1) return 'battleship';
+    if (path.indexOf('/rock-paper-scissors/') !== -1) return 'rps';
+    if (path.indexOf('/hangman/') !== -1) return 'hangman';
+    if (path.indexOf('/snakes-and-ladders/') !== -1) return 'snakes';
+    if (path.indexOf('/pong/') !== -1) return 'pong';
+    if (path.indexOf('/backgammon/') !== -1) return 'backgammon';
     console.log('[Header] No game detected');
     return null;
   }
@@ -80,7 +91,7 @@
     }
     var sys = navigator.language || navigator.userLanguage || 'en';
     var shortSys = sys.split('-')[0];
-    var langs = ['en', 'el', 'es', 'it', 'fr', 'de'];
+    var langs = ['en', 'el'];
     if (langs.indexOf(shortSys) !== -1) {
       console.log('[Header] Using system lang:', shortSys);
       return shortSys;
@@ -178,14 +189,10 @@
       '<select id="lang-select" class="lang-select" aria-label="' + tr('aria_language') + '">' +
       '<option value="en" ' + (currentLang === 'en' ? 'selected' : '') + '>EN</option>' +
       '<option value="el" ' + (currentLang === 'el' ? 'selected' : '') + '>EL</option>' +
-      '<option value="es" ' + (currentLang === 'es' ? 'selected' : '') + '>ES</option>' +
-      '<option value="it" ' + (currentLang === 'it' ? 'selected' : '') + '>IT</option>' +
-      '<option value="fr" ' + (currentLang === 'fr' ? 'selected' : '') + '>FR</option>' +
-      '<option value="de" ' + (currentLang === 'de' ? 'selected' : '') + '>DE</option>' +
       '</select>' +
       '<button id="theme-btn" class="header-btn" aria-label="' + tr('aria_theme_toggle') + '" title="' + tr('aria_theme_toggle') + '">' +
       themeIconSvg(currentTheme) + '</button>' +
-      '<button id="settings-btn" class="header-btn" aria-label="' + tr('aria_settings') + '" title="' + tr('tooltip_settings') + '">' +
+      '<button id="settings-btn" class="header-btn" aria-label="' + tr('aria_settings') + '" title="' + tr('aria_settings') + '">' +
       '<svg class="header-icon-svg" viewBox="0 0 24 24"><use href="#icon-settings"/></svg></button>' +
       '</div></div></div>';
 
@@ -275,7 +282,16 @@
       currentGame === 'minesweeper' ? 'rules_minesweeper' :
       currentGame === 'mahjong' ? 'rules_mahjong' :
       currentGame === 'puzzle' ? 'rules_puzzle' :
-      currentGame === 'bubble' ? 'rules_bubble' : 'rules_home';
+      currentGame === 'bubble' ? 'rules_bubble' :
+      currentGame === 'gomoku' ? 'rules_gomoku' :
+      currentGame === 'checkers' ? 'rules_checkers' :
+      currentGame === 'mastermind' ? 'rules_mastermind' :
+      currentGame === 'battleship' ? 'rules_battleship' :
+      currentGame === 'rps' ? 'rules_rps' :
+      currentGame === 'hangman' ? 'rules_hangman' :
+      currentGame === 'snakes' ? 'rules_snakes' :
+      currentGame === 'pong' ? 'rules_pong' :
+      currentGame === 'backgammon' ? 'rules_backgammon' : 'rules_home';
 
     var installSection = '';
     if ('serviceWorker' in navigator && BEFORE_INSTALL_PROMPT) {
@@ -429,7 +445,12 @@
       hex: 'share_text_hex', chess: 'share_text_chess',
       sudoku: 'share_text_sudoku', tetris: 'share_text_tetris',
       minesweeper: 'share_text_minesweeper', mahjong: 'share_text_mahjong',
-      puzzle: 'share_text_puzzle', bubble: 'share_text_bubble'
+      puzzle: 'share_text_puzzle', bubble: 'share_text_bubble',
+      gomoku: 'share_text_gomoku', checkers: 'share_text_checkers',
+      mastermind: 'share_text_mastermind', battleship: 'share_text_battleship',
+      rps: 'share_text_rps', hangman: 'share_text_hangman',
+      snakes: 'share_text_snakes', pong: 'share_text_pong',
+      backgammon: 'share_text_backgammon'
     };
     var key = keys[game] || 'share_text_home';
     return (t && t[key]) || 'Playing mini board games on Tablo!';
@@ -452,7 +473,7 @@
   function exportStats() {
     console.log('[Header] Exporting stats...');
     var stats = {};
-    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku', 'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble'];
+    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku', 'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble', 'gomoku', 'checkers', 'mastermind', 'battleship', 'rps', 'hangman', 'snakes', 'pong', 'backgammon'];
     games.forEach(function(game) {
       var best = localStorage.getItem('tablo-' + game + '-best');
       var wins = localStorage.getItem('tablo-' + game + '-wins');
@@ -502,7 +523,7 @@
     console.log('[Header] TABLO_CONFIG:', window.TABLO_CONFIG);
     console.log('[Header] Current language:', getDefaultLang());
     console.log('[Header] Current theme:', getDefaultTheme());
-    
+
     var currentLang = getDefaultLang();
     loadTranslations(currentLang, function() {
       console.log('[Header] Load translations callback fired');
@@ -513,18 +534,18 @@
         window.applyTabloTranslations();
       }
     });
-    
+
     window.addEventListener('beforeinstallprompt', function(e) {
       console.log('[Header] beforeinstallprompt event fired');
       e.preventDefault();
       BEFORE_INSTALL_PROMPT = e;
     });
-    
+
     window.addEventListener('appinstalled', function() {
       console.log('[Header] appinstalled event fired');
       showToast(tr('install_prompt'));
     });
-    
+
     console.log('[Header] Init completed');
   }
 
