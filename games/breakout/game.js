@@ -11,14 +11,12 @@
   var canvasWidth = 720;
   var canvasHeight = 500;
 
-  // Game state
-  var gameState = 'idle'; // idle, playing, paused, won, lost
+  var gameState = 'idle';
   var score = 0;
   var lives = 3;
   var level = 1;
   var animationId = null;
 
-  // Paddle
   var paddle = {
     x: 0,
     y: 0,
@@ -28,7 +26,6 @@
     dx: 0
   };
 
-  // Ball
   var ball = {
     x: 0,
     y: 0,
@@ -38,7 +35,6 @@
     dy: 0
   };
 
-  // Bricks
   var bricks = [];
   var brickRows = 5;
   var brickCols = 10;
@@ -48,23 +44,13 @@
   var brickOffsetTop = 50;
   var brickOffsetLeft = 35;
 
-  // Colors per row
-  var brickColors = [
-    '#ef4444',
-    '#f59e0b',
-    '#2dd4bf',
-    '#3b82f6',
-    '#a855f7'
-  ];
-
+  var brickColors = ['#ef4444', '#f59e0b', '#2dd4bf', '#3b82f6', '#a855f7'];
   var brickPoints = [50, 40, 30, 20, 10];
 
-  // Input
   var mouseX = 0;
   var leftPressed = false;
   var rightPressed = false;
 
-  // Elements
   var scoreEl, livesEl, levelEl;
   var newGameBtn, pauseBtn, startBtn;
   var startOverlay;
@@ -107,14 +93,12 @@
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
 
-    // Mouse control
     canvas.addEventListener('mousemove', function(e) {
       var rect = canvas.getBoundingClientRect();
       var scaleX = canvas.width / rect.width;
       mouseX = (e.clientX - rect.left) * scaleX;
     });
 
-    // Touch control
     canvas.addEventListener('touchmove', function(e) {
       e.preventDefault();
       var rect = canvas.getBoundingClientRect();
@@ -122,7 +106,6 @@
       mouseX = (e.touches[0].clientX - rect.left) * scaleX;
     }, { passive: false });
 
-    // Keyboard control
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft' || e.key === 'a') leftPressed = true;
       if (e.key === 'ArrowRight' || e.key === 'd') rightPressed = true;
@@ -158,8 +141,19 @@
     resetBall();
     resetPaddle();
     updateStats();
-    if (startOverlay) startOverlay.style.display = 'flex';
-    if (animationId) cancelAnimationFrame(animationId);
+    if (startOverlay) {
+      startOverlay.style.display = 'flex';
+      var titleEl = startOverlay.querySelector('.start-title');
+      var textEl = startOverlay.querySelector('.start-text');
+      var btnEl = startOverlay.querySelector('#btn-start');
+      if (titleEl) titleEl.textContent = tr('breakout_ready');
+      if (textEl) textEl.textContent = tr('breakout_instructions');
+      if (btnEl) btnEl.textContent = tr('breakout_start');
+    }
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
     draw();
   }
 
@@ -223,13 +217,11 @@
       paddle.x += paddle.speed;
     }
 
-    // Mouse follows
     if (mouseX > 0 && !leftPressed && !rightPressed) {
       var target = mouseX - paddle.width / 2;
       paddle.x += (target - paddle.x) * 0.25;
     }
 
-    // Clamp
     if (paddle.x < 0) paddle.x = 0;
     if (paddle.x + paddle.width > canvasWidth) paddle.x = canvasWidth - paddle.width;
   }
@@ -238,7 +230,6 @@
     ball.x += ball.dx;
     ball.y += ball.dy;
 
-    // Wall collisions
     if (ball.x + ball.radius > canvasWidth) {
       ball.x = canvasWidth - ball.radius;
       ball.dx = -ball.dx;
@@ -261,7 +252,6 @@
 
       ball.y = paddle.y - ball.radius;
 
-      // Angle based on where ball hits paddle
       var hitPos = (ball.x - paddle.x) / paddle.width;
       var angle = (hitPos - 0.5) * Math.PI * 0.6;
       ball.dx = ball.speed * Math.sin(angle);
@@ -286,10 +276,7 @@
             score += b.points;
             updateStats();
 
-            // Determine bounce direction
             var ballPrevX = ball.x - ball.dx;
-            var ballPrevY = ball.y - ball.dy;
-
             var hitFromSide = (ballPrevX + ball.radius <= b.x) || (ballPrevX - ball.radius >= b.x + brickWidth);
 
             if (hitFromSide) {
@@ -318,9 +305,12 @@
         resetPaddle();
         gameState = 'idle';
         if (startOverlay) {
-          startOverlay.querySelector('.start-title').textContent = tr('breakout_try_again');
-          startOverlay.querySelector('.start-text').textContent = tr('breakout_lives_remaining') + ' ' + lives;
-          startOverlay.querySelector('#btn-start').textContent = tr('breakout_continue');
+          var titleEl = startOverlay.querySelector('.start-title');
+          var textEl = startOverlay.querySelector('.start-text');
+          var btnEl = startOverlay.querySelector('#btn-start');
+          if (titleEl) titleEl.textContent = tr('breakout_try_again');
+          if (textEl) textEl.textContent = tr('breakout_lives_remaining') + ' ' + lives;
+          if (btnEl) btnEl.textContent = tr('breakout_continue');
           startOverlay.style.display = 'flex';
         }
         if (animationId) {
@@ -353,9 +343,12 @@
         resetPaddle();
         gameState = 'idle';
         if (startOverlay) {
-          startOverlay.querySelector('.start-title').textContent = tr('breakout_level') + ' ' + level;
-          startOverlay.querySelector('.start-text').textContent = tr('breakout_get_ready');
-          startOverlay.querySelector('#btn-start').textContent = tr('breakout_start');
+          var titleEl = startOverlay.querySelector('.start-title');
+          var textEl = startOverlay.querySelector('.start-text');
+          var btnEl = startOverlay.querySelector('#btn-start');
+          if (titleEl) titleEl.textContent = tr('breakout_level') + ' ' + level;
+          if (textEl) textEl.textContent = tr('breakout_get_ready');
+          if (btnEl) btnEl.textContent = tr('breakout_start');
           startOverlay.style.display = 'flex';
         }
         if (animationId) {
@@ -380,11 +373,9 @@
           ctx.fillStyle = b.color;
           ctx.fillRect(b.x, b.y, brickWidth, brickHeight);
 
-          // Highlight
           ctx.fillStyle = 'rgba(255,255,255,0.2)';
           ctx.fillRect(b.x, b.y, brickWidth, 4);
 
-          // Shadow
           ctx.fillStyle = 'rgba(0,0,0,0.2)';
           ctx.fillRect(b.x, b.y + brickHeight - 4, brickWidth, 4);
         }
@@ -393,13 +384,10 @@
   }
 
   function drawPaddle() {
-    // Glow
     ctx.shadowColor = '#2dd4bf';
     ctx.shadowBlur = 12;
     ctx.fillStyle = '#2dd4bf';
-    ctx.beginPath();
-    ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 7);
-    ctx.fill();
+    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
     ctx.shadowBlur = 0;
   }
 
@@ -414,7 +402,6 @@
   }
 
   function draw() {
-    // Background
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 

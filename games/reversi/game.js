@@ -37,7 +37,7 @@
 
   function showToast(msg) {
     if (!toast) return;
-    toast.textContent = tr(msg);
+    toast.textContent = msg;
     toast.classList.add('visible');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(function() {
@@ -54,7 +54,6 @@
       }
     }
 
-    // Initial setup
     var mid = BOARD_SIZE / 2;
     board[mid - 1][mid - 1] = WHITE;
     board[mid][mid] = WHITE;
@@ -168,7 +167,7 @@
     updateUI();
     highlightValidMoves();
 
-    if (vsComputer && currentPlayer === WHITE) {
+    if (vsComputer && currentPlayer === WHITE && gameActive) {
       computerPlaying = true;
       setTimeout(makeComputerMove, 700);
     }
@@ -185,8 +184,8 @@
     var validMoves = getValidMoves(WHITE);
 
     if (validMoves.length === 0) {
-      switchTurn();
       computerPlaying = false;
+      switchTurn();
       return;
     }
 
@@ -294,27 +293,27 @@
           cell.classList.add(piece === BLACK ? 'piece-black' : 'piece-white');
         }
 
-        cell.addEventListener('click', function(e) {
-          if (!gameActive || computerPlaying) return;
-          var row = parseInt(e.target.dataset.row);
-          var col = parseInt(e.target.dataset.col);
+        (function(row, col) {
+          cell.addEventListener('click', function(e) {
+            if (!gameActive || computerPlaying) return;
 
-          if (currentPlayer === BLACK && vsComputer) {
-            showToast(tr('reversi_wait_computer'));
-            return;
-          }
-
-          if (isValidMove(row, col, currentPlayer)) {
-            makeMove(row, col, currentPlayer);
-            updateUI();
-
-            if (!switchTurn()) {
+            if (vsComputer && currentPlayer === WHITE) {
+              showToast(tr('reversi_wait_computer'));
               return;
             }
-          } else {
-            showToast(tr('reversi_invalid_move'));
-          }
-        });
+
+            if (isValidMove(row, col, currentPlayer)) {
+              makeMove(row, col, currentPlayer);
+              updateUI();
+
+              if (!switchTurn()) {
+                return;
+              }
+            } else {
+              showToast(tr('reversi_invalid_move'));
+            }
+          });
+        })(r, c);
 
         container.appendChild(cell);
       }
@@ -356,7 +355,6 @@
 
   function endGame() {
     gameActive = false;
-    gameActive = false;
     var scores = countPieces();
 
     if (winnerIcon) {
@@ -383,9 +381,7 @@
       winnerMessage.textContent = tr('reversi_final_score') + ' ' + scores.black + ' - ' + scores.white;
     }
 
-    if (winnerModal) {
-      winnerModal.classList.add('visible');
-    }
+    if (winnerModal) winnerModal.classList.add('visible');
   }
 
   function startNewGame() {

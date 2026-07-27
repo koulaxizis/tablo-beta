@@ -40,12 +40,27 @@
 
   function generateSolution(size) {
     var sol = [];
-    var density = 0.4;
+    var density = 0.45;
 
     for (var i = 0; i < size; i++) {
       sol[i] = [];
       for (var j = 0; j < size; j++) {
         sol[i][j] = Math.random() < density ? 1 : 0;
+      }
+    }
+
+    // Ensure no empty rows or columns (valid nonogram)
+    for (var i = 0; i < size; i++) {
+      var rowHas = sol[i].some(function(v) { return v === 1; });
+      if (!rowHas) {
+        sol[i][Math.floor(Math.random() * size)] = 1;
+      }
+      var colHas = false;
+      for (var r = 0; r < size; r++) {
+        if (sol[r][i] === 1) { colHas = true; break; }
+      }
+      if (!colHas) {
+        sol[Math.floor(Math.random() * size)][i] = 1;
       }
     }
 
@@ -101,7 +116,7 @@
     startTimer();
     startNewGame();
 
-    sizeSelect.addEventListener('change', function(e) {
+    if (sizeSelect) sizeSelect.addEventListener('change', function(e) {
       gridSize = parseInt(e.target.value);
       startNewGame();
     });
@@ -123,15 +138,15 @@
   }
 
   function startNewGame() {
-    generateSolution(gridSize);
+    solution = generateSolution(gridSize);
     rowClues = calculateClues(solution, gridSize, true);
     colClues = calculateClues(solution, gridSize, false);
-    
+
     playerGrid = [];
     for (var i = 0; i < gridSize; i++) {
       playerGrid[i] = [];
       for (var j = 0; j < gridSize; j++) {
-        playerGrid[i][j] = 0; // 0 = empty, 1 = filled, 2 = marked X
+        playerGrid[i][j] = 0;
       }
     }
 
@@ -144,13 +159,12 @@
   }
 
   function closeWinnerAndNewGame() {
-    if (winnerModal) {
-      winnerModal.classList.remove('visible');
-    }
+    if (winnerModal) winnerModal.classList.remove('visible');
     startNewGame();
   }
 
   function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(function() {
       if (gameActive) {
         seconds++;
@@ -184,19 +198,17 @@
     var wrapper = document.createElement('div');
     wrapper.className = 'nonogram-grid-wrapper';
 
-    // Create corner
+    // Corner
     var corner = document.createElement('div');
     corner.className = 'nonogram-corner';
     wrapper.appendChild(corner);
 
-    // Create column clues
+    // Column clues
     var colCluesContainer = document.createElement('div');
     colCluesContainer.className = 'nonogram-col-clues';
     for (var j = 0; j < gridSize; j++) {
       var colClueEl = document.createElement('div');
       colClueEl.className = 'clue-cell col-clue';
-      colClueEl.id = 'col-clue-' + j;
-      
       for (var k = 0; k < colClues[j].length; k++) {
         var span = document.createElement('span');
         span.textContent = colClues[j][k];
@@ -206,15 +218,13 @@
     }
     wrapper.appendChild(colCluesContainer);
 
-    // Create row clues + grid
+    // Main container (row clues + grid)
     var mainContainer = document.createElement('div');
     mainContainer.className = 'nonogram-main';
 
     for (var i = 0; i < gridSize; i++) {
       var rowClueEl = document.createElement('div');
       rowClueEl.className = 'clue-cell row-clue';
-      rowClueEl.id = 'row-clue-' + i;
-      
       for (var k = 0; k < rowClues[i].length; k++) {
         var span = document.createElement('span');
         span.textContent = rowClues[i][k];
@@ -226,6 +236,7 @@
     var gridContainer = document.createElement('div');
     gridContainer.className = 'nonogram-cell-grid';
     gridContainer.id = 'grid-container';
+    gridContainer.style.gridTemplateColumns = 'repeat(' + gridSize + ', auto)';
 
     for (var i = 0; i < gridSize; i++) {
       for (var j = 0; j < gridSize; j++) {
@@ -240,9 +251,11 @@
           cell.classList.add('marked');
         }
 
-        cell.addEventListener('click', function(e) {
-          handleCellLeftClick(e.target);
-        });
+        (function(r, c) {
+          cell.addEventListener('click', function(e) {
+            handleCellLeftClick(r, c);
+          });
+        })(i, j);
 
         gridContainer.appendChild(cell);
       }
@@ -253,21 +266,17 @@
     containerEl.appendChild(wrapper);
   }
 
-  function handleCellLeftClick(cellEl) {
+  function handleCellLeftClick(row, col) {
     if (!gameActive) return;
 
-    var row = parseInt(cellEl.dataset.row);
-    var col = parseInt(cellEl.dataset.col);
-
-    if (playerGrid[row][col] === 2) {
-      playerGrid[row][col] = 0;
-    } else if (playerGrid[row][col] === 1) {
+    if (playerGrid[row][col] === 1) {
       playerGrid[row][col] = 0;
     } else {
       playerGrid[row][col] = 1;
     }
 
-    renderBoard();
+    updateCells();
+    checkWin();
   }
 
   function handleCellRightClick(cellEl) {
@@ -282,7 +291,21 @@
       playerGrid[row][col] = 2;
     }
 
-    renderBoard();
+    updateCells();
+  }
+
+  function updateCells() {
+    var cells = document.querySelectorAll('.cell');
+    cells.forEach(function(cell) {
+      var r = parseInt(cell.dataset.row);
+      var c = parseInt(cell.dataset.col);
+      cell.classList.remove('filled', 'marked');
+      if (playerGrid[r][c] === 1) {
+        cell.classList.add('filled');
+      } else if (playerGrid[r][c] === 2) {
+        cell.classList.add('marked');
+      }
+    });
   }
 
   function checkPuzzle() {
@@ -303,7 +326,7 @@
     updateStats();
 
     if (mistakes === 0) {
-      showToast(tr('nonogram_perfect'));
+      showToast('nonogram_perfect');
     } else {
       showToast(tr('nonogram_errors_found') + ' ' + mistakes);
     }
@@ -317,8 +340,8 @@
         playerGrid[i][j] = 0;
       }
     }
-    renderBoard();
-    showToast(tr('nonogram_grid_cleared'));
+    updateCells();
+    showToast('nonogram_grid_cleared');
   }
 
   function checkWin() {
@@ -337,23 +360,18 @@
 
     if (isComplete) {
       gameActive = false;
-      clearInterval(timerInterval);
+      if (timerInterval) clearInterval(timerInterval);
       showWinner();
     }
   }
 
   function showWinner() {
     if (winnerIcon) winnerIcon.textContent = '\u{1F389}';
-    if (winnerTitle) {
-      winnerTitle.textContent = tr('nonogram_solved');
-    }
+    if (winnerTitle) winnerTitle.textContent = tr('nonogram_solved');
     if (winnerMessage) {
       winnerMessage.textContent = tr('nonogram_win_message') + ' ' + timeEl.textContent;
     }
-
-    if (winnerModal) {
-      winnerModal.classList.add('visible');
-    }
+    if (winnerModal) winnerModal.classList.add('visible');
   }
 
   window.initGame = initGame;
