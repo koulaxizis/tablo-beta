@@ -269,7 +269,7 @@
   "game_backgammon_name": "Backgammon",
   "game_backgammon_desc": "Classic dice and checker board game.",
   "hangman_no_hints_left": "Not enough lives for a hint!",
-    "game_mancala_name": "Mancala",
+  "game_mancala_name": "Mancala",
   "game_mancala_desc": "Ancient strategy game. Distribute stones and capture your opponent's.",
   "mancala_p1_score": "Player 1",
   "mancala_p2_score": "Player 2",
@@ -289,5 +289,4 @@
   "mancala_draw": "Draw!",
   "mancala_final_score": "Final score:",
   "rules_mancala": "Each player has 6 pits. Click a pit to distribute stones counter-clockwise. Land on your empty pit with opponent's stones on opposite to capture them. Land in your store for an extra turn. Winner has most stones in their store."
-}
 }

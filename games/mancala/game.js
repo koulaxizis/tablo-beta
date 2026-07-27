@@ -18,11 +18,14 @@
   var gameActive = false;
   var p1Wins = 0;
   var p2Wins = 0;
+  var vsComputer = false;
+  var computerPlaying = false;
+  var isAnimating = false;
 
   var p1StoreEl, p2StoreEl, p1ScoreEl, p2ScoreEl, turnEl;
   var newGameBtn, passBtn, winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
+  var modeSelect;
   var toast;
-  var isAnimating = false;
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -41,27 +44,27 @@
   }
 
   function initBoard() {
-    // 6 pits per player, each starts with 4 stones
     board = [4, 4, 4, 4, 4, 4,  // Player 1's pits
              4, 4, 4, 4, 4, 4,  // Player 2's pits
              0, 0];             // Stores (P1, P2)
     currentPlayer = 1;
     gameActive = true;
     isAnimating = false;
+    computerPlaying = false;
     renderBoard();
     updateStats();
     highlightActiveSide();
   }
 
   function getPitIndex(pitNum, player) {
-    if (player === 1) return pitNum; // 0-5
-    return 6 + pitNum; // 6-11
+    if (player === 1) return pitNum;
+    return 6 + pitNum;
   }
 
   function getPlayerForPit(pitIndex) {
     if (pitIndex >= 0 && pitIndex <= 5) return 1;
     if (pitIndex >= 6 && pitIndex <= 11) return 2;
-    return 0; // Store
+    return 0;
   }
 
   function distributeStones(startPitIndex) {
@@ -84,7 +87,6 @@
 
       currentIndex++;
 
-      // Skip opponent's store
       if (currentPlayer === 1 && currentIndex === 13) {
         currentIndex = 0;
       }
@@ -92,7 +94,6 @@
         currentIndex = 6;
       }
 
-      // Wrap around
       if (currentIndex > 13) currentIndex = 0;
       if (currentIndex < 0) currentIndex = 13;
 
@@ -101,7 +102,6 @@
       renderPitCount(currentIndex, board[currentIndex]);
 
       if (totalDistributed === stones) {
-        // Last stone landed - check for capture or extra turn
         handleLastStone(currentIndex);
       } else {
         setTimeout(distributeOne, 150);
@@ -114,17 +114,15 @@
   function handleLastStone(landedIndex) {
     var landedPlayer = getPlayerForPit(landedIndex);
 
-    // Capture rule: land on own empty pit with opponent's stones on opposite
     if (landedPlayer === currentPlayer && board[landedIndex] === 1) {
       var oppositeIndex;
       if (currentPlayer === 1 && landedIndex >= 0 && landedIndex <= 5) {
-        oppositeIndex = 11 - landedIndex; // Opposite pit for P1
+        oppositeIndex = 11 - landedIndex;
       } else if (currentPlayer === 2 && landedIndex >= 6 && landedIndex <= 11) {
-        oppositeIndex = 17 - landedIndex; // Opposite pit for P2 (6->5, 7->4, etc.)
+        oppositeIndex = 17 - landedIndex;
       }
 
       if (oppositeIndex !== undefined && board[oppositeIndex] > 0) {
-        // Capture!
         var captured = board[oppositeIndex] + board[landedIndex];
         board[oppositeIndex] = 0;
         board[landedIndex] = 0;
@@ -139,30 +137,54 @@
     renderBoard();
     updateStats();
 
-    // Extra turn if landed in own store
     if (landedIndex === (currentPlayer === 1 ? 12 : 13)) {
       showToast(tr('mancala_extra_turn'));
       isAnimating = false;
       return;
     }
 
-    // Switch turn
     switchTurn();
+    isAnimating = false;
   }
 
   function switchTurn() {
     currentPlayer = currentPlayer === 1 ? 2 : 1;
     highlightActiveSide();
     updateStats();
+
+    if (vsComputer && currentPlayer === 2 && gameActive) {
+      setTimeout(makeComputerMove, 600);
+    }
+  }
+
+  function makeComputerMove() {
+    if (!vsComputer || currentPlayer !== 2 || !gameActive) return;
+    
+    computerPlaying = true;
+    
+    var availablePits = [];
+    for (var i = 6; i <= 11; i++) {
+      if (board[i] > 0) availablePits.push(i);
+    }
+
+    if (availablePits.length === 0) {
+      computerPlaying = false;
+      return;
+    }
+
+    var chosenPit = availablePits[Math.floor(Math.random() * availablePits.length)];
+    
+    setTimeout(function() {
+      handlePitClick(chosenPit);
+      computerPlaying = false;
+    }, 800);
   }
 
   function checkGameOver() {
-    // Check if one player has no stones left
     var p1HasStones = board.slice(0, 6).some(function(count) { return count > 0; });
     var p2HasStones = board.slice(6, 12).some(function(count) { return count > 0; });
 
     if (!p1HasStones || !p2HasStones) {
-      // Game over - collect remaining stones
       var p1Remaining = board.slice(0, 6).reduce(function(a, b) { return a + b; }, 0);
       var p2Remaining = board.slice(6, 12).reduce(function(a, b) { return a + b; }, 0);
 
@@ -175,8 +197,8 @@
 
       renderBoard();
       updateStats();
+      isAnimating = false;
 
-      // Determine winner
       setTimeout(function() {
         var winner = board[12] > board[13] ? 1 : (board[13] > board[12] ? 2 : 0);
         showWinner(winner);
@@ -184,7 +206,8 @@
       return;
     }
 
-    // No game over, check if current player can move
+    isAnimating = false;
+
     var canMove = false;
     for (var j = 0; j < 6; j++) {
       var pitIdx = getPitIndex(j, currentPlayer);
@@ -195,14 +218,13 @@
     }
 
     if (!canMove) {
-      // Current player has no moves, switch
       showToast(tr('mancala_no_moves'));
       switchTurn();
     }
   }
 
   function handlePitClick(pitIndex) {
-    if (!gameActive || isAnimating) return;
+    if (!gameActive || isAnimating || computerPlaying) return;
 
     var pitPlayer = getPlayerForPit(pitIndex);
     if (pitPlayer !== currentPlayer) {
@@ -219,10 +241,11 @@
   }
 
   function renderPitCount(pitIndex, count) {
-    var el = document.querySelector('.mancala-pit[data-pit="' + (pitIndex % 6) + '"][data-player="' + getPlayerForPit(pitIndex) + '"] .pit-count');
-    if (el) {
-      el.textContent = count;
-    }
+    var el = document.querySelector('.bottom-row .mancala-pit[data-pit="' + (pitIndex) + '"] .pit-count');
+    if (el) el.textContent = count;
+    
+    var el2 = document.querySelector('.top-row .mancala-pit[data-pit="' + (pitIndex - 6) + '"] .pit-count');
+    if (el2 && pitIndex >= 6) el2.textContent = count;
   }
 
   function renderStoreCount() {
@@ -231,13 +254,10 @@
   }
 
   function renderBoard() {
-    // Update all pit counts
     for (var i = 0; i < 6; i++) {
-      // P1 pits (bottom row)
       var p1Pit = document.querySelector('.bottom-row .mancala-pit[data-pit="' + i + '"] .pit-count');
       if (p1Pit) p1Pit.textContent = board[i];
 
-      // P2 pits (top row)
       var p2Pit = document.querySelector('.top-row .mancala-pit[data-pit="' + i + '"] .pit-count');
       if (p2Pit) p2Pit.textContent = board[6 + i];
     }
@@ -254,7 +274,7 @@
       var pitIdx = parseInt(pit.dataset.pit);
       var actualIdx = getPlayerForPit(getPitIndex(pitIdx, pitPlayer));
 
-      if (pitPlayer !== currentPlayer) {
+      if (pitPlayer !== currentPlayer || isAnimating || computerPlaying) {
         pit.classList.add('disabled');
       } else if (board[actualIdx] === 0) {
         pit.classList.add('disabled');
@@ -277,9 +297,8 @@
     if (p2ScoreEl) p2ScoreEl.textContent = board[13];
     if (turnEl) turnEl.textContent = currentPlayer;
 
-    // Update pass button
     if (passBtn) {
-      passBtn.disabled = gameActive; // Pass is mainly for debugging/forcing turn change
+      passBtn.disabled = gameActive;
     }
   }
 
@@ -297,7 +316,6 @@
     if (winnerMessage) {
       winnerMessage.textContent = tr('mancala_final_score') + ' ' + board[12] + ' - ' + board[13];
 
-      // Update wins
       if (winner === 1) {
         p1Wins++;
         localStorage.setItem('mancala-p1-wins', p1Wins.toString());
@@ -323,10 +341,9 @@
     }
   }
 
-  function passTurn() {
-    if (!gameActive || isAnimating) return;
-    switchTurn();
-    showToast(tr('mancala_turn_passed'));
+  function setMode(mode) {
+    vsComputer = (mode === 'ai');
+    console.log('[Mancala] Mode set to:', vsComputer ? 'vs Computer' : '2 Players');
   }
 
   function initGame() {
@@ -340,6 +357,7 @@
 
     newGameBtn = document.getElementById('btn-new-game');
     passBtn = document.getElementById('btn-pass');
+    modeSelect = document.getElementById('mode-select');
     winnerModal = document.getElementById('winner-modal');
     winnerIcon = document.getElementById('winner-icon');
     winnerTitle = document.getElementById('winner-title');
@@ -347,7 +365,6 @@
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
 
-    // Add click listeners to all pits
     document.querySelectorAll('.mancala-pit').forEach(function(pit) {
       pit.addEventListener('click', function() {
         var pitIdx = parseInt(this.dataset.player) === 1 ? parseInt(this.dataset.pit) : 6 + parseInt(this.dataset.pit);
@@ -356,9 +373,10 @@
     });
 
     if (newGameBtn) newGameBtn.addEventListener('click', initBoard);
-    if (passBtn) passBtn.addEventListener('click', passTurn);
+    if (modeSelect) modeSelect.addEventListener('change', function(e) {
+      setMode(e.target.value);
+    });
 
-    // Load saved wins
     p1Wins = parseInt(localStorage.getItem('mancala-p1-wins') || '0');
     p2Wins = parseInt(localStorage.getItem('mancala-p2-wins') || '0');
 

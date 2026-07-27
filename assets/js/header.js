@@ -17,7 +17,7 @@
     'hexagon-puzzle', 'chess', 'sudoku',
     'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble-shooter',
     'gomoku', 'checkers', 'mastermind', 'battleship',
-    'rock-paper-scissors', 'hangman', 'snakes-and-ladders', 'pong', 'backgammon'
+    'rock-paper-scissors', 'hangman', 'snakes-and-ladders', 'pong', 'backgammon', 'mancala'
   ];
 
   console.log('[Header] Script loaded');
@@ -79,6 +79,7 @@
     if (path.indexOf('/snakes-and-ladders/') !== -1) return 'snakes';
     if (path.indexOf('/pong/') !== -1) return 'pong';
     if (path.indexOf('/backgammon/') !== -1) return 'backgammon';
+    if (path.indexOf('/mancala/') !== -1) return 'mancala';
     console.log('[Header] No game detected');
     return null;
   }
@@ -291,7 +292,8 @@
       currentGame === 'hangman' ? 'rules_hangman' :
       currentGame === 'snakes' ? 'rules_snakes' :
       currentGame === 'pong' ? 'rules_pong' :
-      currentGame === 'backgammon' ? 'rules_backgammon' : 'rules_home';
+      currentGame === 'backgammon' ? 'rules_backgammon' :
+      currentGame === 'mancala' ? 'rules_mancala' : 'rules_home';
 
     var installSection = '';
     if ('serviceWorker' in navigator && BEFORE_INSTALL_PROMPT) {
@@ -450,7 +452,7 @@
       mastermind: 'share_text_mastermind', battleship: 'share_text_battleship',
       rps: 'share_text_rps', hangman: 'share_text_hangman',
       snakes: 'share_text_snakes', pong: 'share_text_pong',
-      backgammon: 'share_text_backgammon'
+      backgammon: 'share_text_backgammon', mancala: 'share_text_mancala'
     };
     var key = keys[game] || 'share_text_home';
     return (t && t[key]) || 'Playing mini board games on Tablo!';
@@ -473,7 +475,7 @@
   function exportStats() {
     console.log('[Header] Exporting stats...');
     var stats = {};
-    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku', 'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble', 'gomoku', 'checkers', 'mastermind', 'battleship', 'rps', 'hangman', 'snakes', 'pong', 'backgammon'];
+    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku', 'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble', 'gomoku', 'checkers', 'mastermind', 'battleship', 'rps', 'hangman', 'snakes', 'pong', 'backgammon', 'mancala'];
     games.forEach(function(game) {
       var best = localStorage.getItem('tablo-' + game + '-best');
       var wins = localStorage.getItem('tablo-' + game + '-wins');

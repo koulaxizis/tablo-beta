@@ -122,6 +122,11 @@ const PRECACHE_URLS = [
   './games/bubble-shooter/index.html',
   './games/bubble-shooter/game.js',
   './games/bubble-shooter/styles.css'
+  
+  // Mancala
+'./games/mancala/index.html',
+'./games/mancala/game.js',
+'./games/mancala/styles.css',
 ];
 
 self.addEventListener('install', function(event) {

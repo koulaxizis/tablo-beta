@@ -117,7 +117,7 @@
 .top-row {
   grid-column: 2;
   grid-row: 1;
-  flex-direction: row-reverse; /* Player 2's pits go right to left */
+  flex-direction: row-reverse;
 }
 
 .bottom-row {
@@ -163,7 +163,6 @@
   z-index: 2;
 }
 
-/* Animation for distributing stones */
 @keyframes stone-move {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.3); opacity: 0.8; }
@@ -174,7 +173,6 @@
   animation: stone-move 0.15s ease infinite;
 }
 
-/* Highlight current turn's side */
 .bottom-row.active {
   box-shadow: inset 0 0 20px rgba(45, 212, 211, 0.1);
 }
@@ -183,7 +181,20 @@
   box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.1);
 }
 
-/* Win modal styling */
+.mode-select {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-primary, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mode-select:hover { border-color: #2dd4bf; }
+
 .winner-modal {
   position: fixed;
   inset: 0;

@@ -28,103 +28,117 @@
       <circle cx="12" cy="12" r="3"/>
       <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06-.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
     </symbol>
-  </svg>
+          <symbol id="icon-mancala" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <ellipse cx="12" cy="12" rx="10" ry="8"/>
+        <ellipse cx="6" cy="12" rx="3" ry="2.5"/>
+        <ellipse cx="18" cy="12" rx="3" ry="2.5"/>
+        <circle cx="4" cy="10" r="1.5"/>
+        <circle cx="8" cy="10" r="1.5"/>
+        <circle cx="12" cy="10" r="1.5"/>
+        <circle cx="16" cy="10" r="1.5"/>
+        <circle cx="20" cy="10" r="1.5"/>
+        <circle cx="4" cy="14" r="1.5"/>
+        <circle cx="8" cy="14" r="1.5"/>
+        <circle cx="12" cy="14" r="1.5"/>
+        <circle cx="16" cy="14" r="1.5"/>
+        <circle cx="20" cy="14" r="1.5"/>
+      </symbol>
+    </svg>
 
-  <div class="game-wrapper">
-    <div class="game-stats">
-      <div class="stat-item">
-        <span class="stat-label" data-i18n="mancala_p1_score">Player 1</span>
-        <span class="stat-value" id="p1-score">0</span>
+    <div class="game-wrapper">
+      <div class="game-stats">
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="mancala_p1_score">Player 1</span>
+          <span class="stat-value" id="p1-score">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="mancala_turn">Turn</span>
+          <span class="stat-value" id="turn-display">1</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="mancala_p2_score">Player 2</span>
+          <span class="stat-value" id="p2-score">0</span>
+        </div>
       </div>
-      <div class="stat-item">
-        <span class="stat-label" data-i18n="mancala_turn">Turn</span>
-        <span class="stat-value" id="turn-display">1</span>
+
+      <div class="mancala-board" id="mancala-board">
+        <div class="mancala-row top-row" id="top-row">
+          <div class="mancala-pit" data-pit="5" data-player="2"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="4" data-player="2"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="3" data-player="2"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="2" data-player="2"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="1" data-player="2"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="0" data-player="2"><span class="pit-count">4</span></div>
+        </div>
+
+        <div class="mancala-store store-right" id="store-p2">
+          <span class="store-count" id="p2-store">0</span>
+          <span class="store-label" data-i18n="mancala_store">Store</span>
+        </div>
+
+        <div class="mancala-row bottom-row" id="bottom-row">
+          <div class="mancala-pit" data-pit="0" data-player="1"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="1" data-player="1"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="2" data-player="1"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="3" data-player="1"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="4" data-player="1"><span class="pit-count">4</span></div>
+          <div class="mancala-pit" data-pit="5" data-player="1"><span class="pit-count">4</span></div>
+        </div>
+
+        <div class="mancala-store store-left" id="store-p1">
+          <span class="store-count" id="p1-store">0</span>
+          <span class="store-label" data-i18n="mancala_store">Store</span>
+        </div>
       </div>
-      <div class="stat-item">
-        <span class="stat-label" data-i18n="mancala_p2_score">Player 2</span>
-        <span class="stat-value" id="p2-score">0</span>
+
+      <p class="game-hint" data-i18n="mancala_hint">Click a pit on your side to distribute stones counter-clockwise. Capture opposite stones if landing on empty!</p>
+
+      <div class="game-controls">
+        <select id="mode-select" class="mode-select">
+          <option value="2p" data-i18n="connect4_vs_human">2 Player</option>
+          <option value="ai" data-i18n="connect4_vs_ai">vs Computer</option>
+        </select>
+        <button class="game-btn primary" id="btn-new-game" data-i18n="mancala_new_game">New Game</button>
       </div>
     </div>
 
-    <div class="mancala-board" id="mancala-board">
-      <!-- Top row (Player 2's pits, right to left) -->
-      <div class="mancala-row top-row" id="top-row">
-        <div class="mancala-pit" data-pit="5" data-player="2"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="4" data-player="2"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="3" data-player="2"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="2" data-player="2"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="1" data-player="2"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="0" data-player="2"><span class="pit-count">4</span></div>
-      </div>
+    <div id="tablo-footer"></div>
 
-      <!-- Right Mancala (Player 2's store) -->
-      <div class="mancala-store store-right" id="store-p2">
-        <span class="store-count" id="p2-store">0</span>
-        <span class="store-label" data-i18n="mancala_store">Store</span>
-      </div>
-
-      <!-- Bottom row (Player 1's pits, left to right) -->
-      <div class="mancala-row bottom-row" id="bottom-row">
-        <div class="mancala-pit" data-pit="0" data-player="1"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="1" data-player="1"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="2" data-player="1"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="3" data-player="1"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="4" data-player="1"><span class="pit-count">4</span></div>
-        <div class="mancala-pit" data-pit="5" data-player="1"><span class="pit-count">4</span></div>
-      </div>
-
-      <!-- Left Mancala (Player 1's store) -->
-      <div class="mancala-store store-left" id="store-p1">
-        <span class="store-count" id="p1-store">0</span>
-        <span class="store-label" data-i18n="mancala_store">Store</span>
+    <div class="winner-modal" id="winner-modal" style="display:none;">
+      <div class="winner-overlay"></div>
+      <div class="winner-content">
+        <div class="winner-icon" id="winner-icon">&#127942;</div>
+        <h2 class="winner-title" id="winner-title"></h2>
+        <p class="winner-message" id="winner-message"></p>
+        <div class="winner-buttons" id="winner-buttons">
+          <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
+        </div>
       </div>
     </div>
 
-    <p class="game-hint" data-i18n="mancala_hint">Click a pit on your side to distribute stones counter-clockwise. Capture opposite stones if landing on empty!</p>
+    <div class="tablo-toast" id="toast"></div>
 
-    <div class="game-controls">
-      <button class="game-btn primary" id="btn-new-game" data-i18n="mancala_new_game">New Game</button>
-      <button class="game-btn" id="btn-pass" data-i18n="mancala_pass">Pass Turn</button>
-    </div>
-  </div>
-
-  <div id="tablo-footer"></div>
-
-  <div class="winner-modal" id="winner-modal" style="display:none;">
-    <div class="winner-overlay"></div>
-    <div class="winner-content">
-      <div class="winner-icon" id="winner-icon">&#127942;</div>
-      <h2 class="winner-title" id="winner-title"></h2>
-      <p class="winner-message" id="winner-message"></p>
-      <div class="winner-buttons" id="winner-buttons">
-        <button class="game-btn primary" id="btn-play-again" data-i18n="btn_play_again">Play Again</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="tablo-toast" id="toast"></div>
-
-  <script src="../../assets/js/config.js"></script>
-  <script src="../../assets/js/header.js"></script>
-  <script src="../../assets/js/footer.js"></script>
-  <script>
-    (function() {
-      var attempts = 0;
-      function loadGame() {
-        var s = document.createElement('script');
-        s.src = 'game.js';
-        s.onload = function() {
-          if (typeof window.initGame === 'function') initGame();
-        };
-        document.body.appendChild(s);
-      }
-      function check() {
-        if (window.TABLO_TRANSLATIONS) { loadGame(); }
-        else if (attempts < 50) { attempts++; setTimeout(check, 100); }
-        else { loadGame(); }
-      }
-      check();
-    })();
-  </script>
-</body>
-</html>
+    <script src="../../assets/js/config.js"></script>
+    <script src="../../assets/js/header.js"></script>
+    <script src="../../assets/js/footer.js"></script>
+    <script>
+      (function() {
+        var attempts = 0;
+        function loadGame() {
+          var s = document.createElement('script');
+          s.src = 'game.js';
+          s.onload = function() {
+            if (typeof window.initGame === 'function') initGame();
+          };
+          document.body.appendChild(s);
+        }
+        function check() {
+          if (window.TABLO_TRANSLATIONS) { loadGame(); }
+          else if (attempts < 50) { attempts++; setTimeout(check, 100); }
+          else { loadGame(); }
+        }
+        check();
+      })();
+    </script>
+  </body>
+  </html>
