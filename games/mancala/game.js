@@ -44,9 +44,9 @@
   }
 
   function initBoard() {
-    board = [4, 4, 4, 4, 4, 4,  // Player 1's pits
-             4, 4, 4, 4, 4, 4,  // Player 2's pits
-             0, 0];             // Stores (P1, P2)
+    board = [4, 4, 4, 4, 4, 4,
+             4, 4, 4, 4, 4, 4,
+             0, 0];
     currentPlayer = 1;
     gameActive = true;
     isAnimating = false;
@@ -159,9 +159,11 @@
 
   function makeComputerMove() {
     if (!vsComputer || currentPlayer !== 2 || !gameActive) return;
-    
+
     computerPlaying = true;
-    
+    highlightActiveSide();
+    disableNonPlayablePits();
+
     var availablePits = [];
     for (var i = 6; i <= 11; i++) {
       if (board[i] > 0) availablePits.push(i);
@@ -173,10 +175,10 @@
     }
 
     var chosenPit = availablePits[Math.floor(Math.random() * availablePits.length)];
-    
+
     setTimeout(function() {
-      handlePitClick(chosenPit);
       computerPlaying = false;
+      distributeStones(chosenPit);
     }, 800);
   }
 
@@ -241,11 +243,13 @@
   }
 
   function renderPitCount(pitIndex, count) {
-    var el = document.querySelector('.bottom-row .mancala-pit[data-pit="' + (pitIndex) + '"] .pit-count');
-    if (el) el.textContent = count;
-    
-    var el2 = document.querySelector('.top-row .mancala-pit[data-pit="' + (pitIndex - 6) + '"] .pit-count');
-    if (el2 && pitIndex >= 6) el2.textContent = count;
+    if (pitIndex >= 0 && pitIndex <= 5) {
+      var el = document.querySelector('.bottom-row .mancala-pit[data-pit="' + pitIndex + '"] .pit-count');
+      if (el) el.textContent = count;
+    } else if (pitIndex >= 6 && pitIndex <= 11) {
+      var el2 = document.querySelector('.top-row .mancala-pit[data-pit="' + (pitIndex - 6) + '"] .pit-count');
+      if (el2) el2.textContent = count;
+    }
   }
 
   function renderStoreCount() {
@@ -274,7 +278,9 @@
       var pitIdx = parseInt(pit.dataset.pit);
       var actualIdx = getPlayerForPit(getPitIndex(pitIdx, pitPlayer));
 
-      if (pitPlayer !== currentPlayer || isAnimating || computerPlaying) {
+      if (isAnimating || computerPlaying) {
+        pit.classList.add('disabled');
+      } else if (pitPlayer !== currentPlayer) {
         pit.classList.add('disabled');
       } else if (board[actualIdx] === 0) {
         pit.classList.add('disabled');
@@ -288,8 +294,18 @@
     var bottomRow = document.getElementById('bottom-row');
     var topRow = document.getElementById('top-row');
 
-    if (bottomRow) bottomRow.classList.toggle('active', currentPlayer === 1);
-    if (topRow) topRow.classList.toggle('active', currentPlayer === 2);
+    if (bottomRow) {
+      bottomRow.classList.remove('active');
+      if (currentPlayer === 1 && !isAnimating && !computerPlaying) {
+        bottomRow.classList.add('active');
+      }
+    }
+    if (topRow) {
+      topRow.classList.remove('active');
+      if (currentPlayer === 2 && !isAnimating && !computerPlaying) {
+        topRow.classList.add('active');
+      }
+    }
   }
 
   function updateStats() {
