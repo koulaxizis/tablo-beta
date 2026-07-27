@@ -58,18 +58,18 @@
 
 .mancala-board {
   display: grid;
-  grid-template-columns: 80px 1fr 80px;
+  grid-template-columns: 70px 1fr 70px;
   grid-template-rows: 1fr 1fr;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
   max-width: 700px;
   background: #1e293b;
   border: 4px solid #334155;
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .store-left {
@@ -83,7 +83,7 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
-  min-height: 180px;
+  min-height: 160px;
 }
 
 .store-right {
@@ -97,7 +97,7 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
-  min-height: 180px;
+  min-height: 160px;
 }
 
 .store-count {
@@ -319,15 +319,14 @@
 @media (max-width: 600px) {
   .mancala-board {
     max-width: 100%;
-    gap: 4px;
-    padding: 10px;
-    /* ΔΙΟΡΘΩΣΗ: Μικρότερα stores για mobile */
-    grid-template-columns: 50px 1fr 50px;
+    gap: 2px;
+    padding: 8px;
+    grid-template-columns: 40px 1fr 40px;
   }
 
   .store-left,
   .store-right {
-    min-height: 120px;
+    min-height: 100px;
     padding: 6px;
   }
 
