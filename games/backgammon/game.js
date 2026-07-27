@@ -359,19 +359,9 @@
       if (animate) die.classList.add('rolling');
       die.textContent = v;
 
-      // Mark used dice
-      var usedCount = (dice[0] === dice[1]) ? 4 - movesLeft.length : 0;
-      for (var j = 0; j < (2 - movesLeft.length); j++) {
-        if (i < j) {
-          die.classList.add('used');
-        }
-      }
-
-      // Simpler: mark used based on movesLeft count
-      if (dice[0] === dice[1]) {
-        if (i >= movesLeft.length) die.classList.add('used');
-      } else {
-        if (!movesLeft.includes(v)) die.classList.add('used');
+      // Mark as used if index >= available moves count
+      if (i >= movesLeft.length) {
+        die.classList.add('used');
       }
 
       diceAreaEl.appendChild(die);

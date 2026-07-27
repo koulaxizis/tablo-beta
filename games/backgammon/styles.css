@@ -67,6 +67,15 @@
   position: relative;
 }
 
+/* Quadrant positioning */
+#quadrant-tl { grid-column: 1; grid-row: 1; }
+#bg-bar-top { grid-column: 2; grid-row: 1; }
+#quadrant-tr { grid-column: 3; grid-row: 1; }
+
+#quadrant-bl { grid-column: 1; grid-row: 3; }
+#bg-bar-bottom { grid-column: 2; grid-row: 3; }
+#quadrant-br { grid-column: 3; grid-row: 3; }
+
 .bg-quadrant {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
