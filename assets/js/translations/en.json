@@ -267,5 +267,6 @@
   "bg_undone": "Move undone!",
   "bg_new_game_started": "New game started!",
   "game_backgammon_name": "Backgammon",
-  "game_backgammon_desc": "Classic dice and checker board game."
+  "game_backgammon_desc": "Classic dice and checker board game.",
+  "hangman_no_hints_left": "Not enough lives for a hint!"
 }

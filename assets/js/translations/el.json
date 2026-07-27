@@ -267,5 +267,6 @@
   "bg_undone": "Η κίνηση αναιρέθηκε!",
   "bg_new_game_started": "Νέο παιχνίδι ξεκίνησε!",
   "game_backgammon_name": "Τάβλι",
-  "game_backgammon_desc": "Κλασικό επιτραπέζιο με ζάρια και πούλια."
+  "game_backgammon_desc": "Κλασικό επιτραπέζιο με ζάρια και πούλια.",
+  "hangman_no_hints_left": "Δεν απομένουν αρκετές ζωές για hint!"
 }

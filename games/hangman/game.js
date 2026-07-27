@@ -53,6 +53,7 @@
   var newWordBtn, hintBtn, playAgainBtn;
   var winnerModal, winnerIcon, winnerTitle, winnerMessage, winnerButtons;
   var toast;
+  var _keydownHandler = null;
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -83,7 +84,6 @@
     gameActive = true;
     pickRandomWord();
 
-    // Reset drawing parts
     drawingParts.forEach(function(part) {
       part.classList.remove('drawn');
     });
@@ -200,7 +200,6 @@
   }
 
   function revealWord() {
-    // Reveal all letters in word display
     var letters = document.querySelectorAll('.hm-letter');
     letters.forEach(function(el, idx) {
       el.textContent = currentWord[idx];
@@ -210,8 +209,11 @@
 
   function useHint() {
     if (!gameActive) return;
+    if (wrongGuesses >= MAX_LIVES - 1) {
+      showToast('hangman_no_hints_left');
+      return;
+    }
 
-    // Find unguessed letter in word
     var unguessed = [];
     for (var i = 0; i < currentWord.length; i++) {
       if (!guessedLetters.includes(currentWord[i])) {
@@ -222,14 +224,19 @@
     if (unguessed.length === 0) return;
 
     var hintLetter = unguessed[Math.floor(Math.random() * unguessed.length)];
-    wrongGuesses--; // Pay 1 life cost
+    wrongGuesses++;
+    drawPart(wrongGuesses);
     guessedLetters.push(hintLetter);
 
-    drawPart(wrongGuesses); // Remove one drawing part
     renderWord();
     renderKeyboard();
     updateStats();
-    showToast('hangman_hint_used');
+
+    if (wrongGuesses >= MAX_LIVES) {
+      gameActive = false;
+      revealWord();
+      showWinner(false);
+    }
   }
 
   function updateStats() {
@@ -264,6 +271,22 @@
     }
   }
 
+  function attachKeydownListener() {
+    if (_keydownHandler) {
+      document.removeEventListener('keydown', _keydownHandler);
+    }
+    _keydownHandler = function(e) {
+      if (!gameActive) return;
+      if (winnerModal && winnerModal.style.display !== 'none') return;
+
+      var key = e.key.toUpperCase();
+      if (key.length === 1 && key >= 'A' && key <= 'Z') {
+        guessLetter(key);
+      }
+    };
+    document.addEventListener('keydown', _keydownHandler);
+  }
+
   function initGame() {
     console.log('[Hangman] initGame() called');
 
@@ -295,6 +318,8 @@
 
     if (newWordBtn) newWordBtn.addEventListener('click', resetGame);
     if (hintBtn) hintBtn.addEventListener('click', useHint);
+
+    attachKeydownListener();
 
     resetGame();
     console.log('[Hangman] Init complete');

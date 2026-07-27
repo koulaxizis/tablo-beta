@@ -3,7 +3,7 @@
 // ============================================
 
 window.TABLO_CONFIG = {
-  version: '0.4.0',
+  version: '0.6',
   channel: 'beta',
   baseHref: '/tablo-beta/'
 };
