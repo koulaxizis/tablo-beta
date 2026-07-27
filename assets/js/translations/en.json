@@ -288,5 +288,98 @@
   "mancala_wins_excl": "wins!",
   "mancala_draw": "Draw!",
   "mancala_final_score": "Final score:",
-  "rules_mancala": "Each player has 6 pits. Click a pit to distribute stones counter-clockwise. Land on your empty pit with opponent's stones on opposite to capture them. Land in your store for an extra turn. Winner has most stones in their store."
+  "rules_mancala": "Each player has 6 pits. Click a pit to distribute stones counter-clockwise. Land on your empty pit with opponent's stones on opposite to capture them. Land in your store for an extra turn. Winner has most stones in their store.",
+  // ============================================
+// Solitaire
+// ============================================
+"solitaire_score": "Score",
+"solitaire_moves": "Moves",
+"solitaire_time": "Time",
+"solitaire_hint": "Click a card to select it, then click a destination. Click stock to draw cards!",
+"solitaire_new_game": "New Game",
+"solitaire_undo": "Undo",
+"solitaire_card_selected": "Card selected",
+"solitaire_no_valid_move": "No valid move",
+"solitaire_only_king_on_empty": "Only Kings can go on empty columns",
+"solitaire_invalid_move": "Invalid move",
+"solitaire_wrong_suit_or_rank": "Wrong suit or rank",
+"solitaire_you_win": "You Win!",
+"solitaire_win_message": "Final score:",
+"solitaire_points": "points",
+"solitaire_moves_word": "moves",
+
+// Index card
+"game_solitaire_name": "Solitaire",
+"game_solitaire_desc": "Classic Klondike card game.",
+
+// ============================================
+// Nonogram
+// ============================================
+"nonogram_size": "Size",
+"nonogram_time": "Time",
+"nonogram_mistakes": "Mistakes",
+"nonogram_hint": "Left-click to fill a cell, right-click to mark X. Solve the puzzle!",
+"nonogram_new_game": "New Puzzle",
+"nonogram_check": "Check",
+"nonogram_clear": "Clear",
+"nonogram_difficulty": "Change Difficulty",
+"nonogram_perfect": "Perfect! No mistakes!",
+"nonogram_errors_found": "Errors found:",
+"nonogram_grid_cleared": "Grid cleared!",
+"nonogram_solved": "Puzzle Solved!",
+"nonogram_win_message": "Completed in",
+
+// Index card
+"game_nonogram_name": "Nonogram",
+"game_nonogram_desc": "Logic puzzle revealing hidden pictures.",
+
+// ============================================
+// Breakout
+// ============================================
+"breakout_score": "Score",
+"breakout_lives": "Lives",
+"breakout_level": "Level",
+"breakout_ready": "Ready?",
+"breakout_instructions": "Move the paddle with mouse, touch, or arrow keys. Don't let the ball fall!",
+"breakout_start": "Start",
+"breakout_hint": "Move the paddle with mouse, touch, or arrow keys. Destroy all bricks to advance!",
+"breakout_new_game": "New Game",
+"breakout_pause": "Pause",
+"breakout_resume": "Resume",
+"breakout_try_again": "Try Again!",
+"breakout_lives_remaining": "Lives remaining:",
+"breakout_continue": "Continue",
+"breakout_get_ready": "Get ready for the next level!",
+"breakout_paused": "Paused",
+"breakout_you_win": "You Win!",
+"breakout_win_message": "Final score:",
+"breakout_points": "points",
+"breakout_game_over": "Game Over",
+"breakout_final_score": "Final score:",
+
+// Index card
+"game_breakout_name": "Breakout",
+"game_breakout_desc": "Destroy bricks with a bouncing ball.",
+
+// ============================================
+// Reversi
+// ============================================
+"reversi_black": "Black",
+"reversi_turn": "Turn",
+"reversi_white": "White",
+"reversi_hint": "Click a highlighted cell to place your disc. Flip opponent's pieces in a line!",
+"reversi_2player": "2 Player",
+"reversi_vs_ai": "vs Computer",
+"reversi_new_game": "New Game",
+"reversi_pass": "No moves — pass:",
+"reversi_wait_computer": "Computer is thinking...",
+"reversi_invalid_move": "Invalid move",
+"reversi_black_wins": "Black Wins!",
+"reversi_white_wins": "White Wins!",
+"reversi_draw": "It's a Draw!",
+"reversi_final_score": "Final score:",
+
+// Index card
+"game_reversi_name": "Reversi",
+"game_reversi_desc": "Strategy game. Flip opponent discs."
 }
