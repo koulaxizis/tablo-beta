@@ -7,12 +7,6 @@
 
   console.log('[Mancala] game.js loaded');
 
-  // Game state
-  // Pits 0-5: Player 1's pits (bottom row, left to right)
-  // Pits 6-11: Player 2's pits (top row, right to left in display)
-  // Store P1: index 12
-  // Store P2: index 13
-
   var board = [];
   var currentPlayer = 1;
   var gameActive = false;
@@ -70,38 +64,34 @@
   function distributeStones(startPitIndex) {
     if (isAnimating) return;
     isAnimating = true;
+    disableNonPlayablePits();
 
     var stones = board[startPitIndex];
     board[startPitIndex] = 0;
     renderPitCount(startPitIndex, 0);
 
     var currentIndex = startPitIndex;
-    var totalDistributed = 0;
+    var remaining = stones;
 
     function distributeOne() {
-      if (totalDistributed >= stones) {
+      if (remaining <= 0) {
         isAnimating = false;
-        checkGameOver();
+        handleLastStone(currentIndex);
         return;
       }
 
       currentIndex++;
 
-      if (currentPlayer === 1 && currentIndex === 13) {
-        currentIndex = 0;
-      }
-      if (currentPlayer === 2 && currentIndex === 12) {
-        currentIndex = 6;
-      }
-
+      if (currentPlayer === 1 && currentIndex === 13) currentIndex = 0;
+      if (currentPlayer === 2 && currentIndex === 12) currentIndex = 6;
       if (currentIndex > 13) currentIndex = 0;
-      if (currentIndex < 0) currentIndex = 13;
 
       board[currentIndex]++;
-      totalDistributed++;
+      remaining--;
       renderPitCount(currentIndex, board[currentIndex]);
 
-      if (totalDistributed === stones) {
+      if (remaining === 0) {
+        isAnimating = false;
         handleLastStone(currentIndex);
       } else {
         setTimeout(distributeOne, 150);
@@ -114,6 +104,7 @@
   function handleLastStone(landedIndex) {
     var landedPlayer = getPlayerForPit(landedIndex);
 
+    // Capture rule
     if (landedPlayer === currentPlayer && board[landedIndex] === 1) {
       var oppositeIndex;
       if (currentPlayer === 1 && landedIndex >= 0 && landedIndex <= 5) {
@@ -134,23 +125,66 @@
       }
     }
 
-    renderBoard();
-    updateStats();
+    // Check game over
+    var p1HasStones = board.slice(0, 6).some(function(c) { return c > 0; });
+    var p2HasStones = board.slice(6, 12).some(function(c) { return c > 0; });
 
-    if (landedIndex === (currentPlayer === 1 ? 12 : 13)) {
-      showToast(tr('mancala_extra_turn'));
-      isAnimating = false;
+    if (!p1HasStones || !p2HasStones) {
+      var p1Remaining = board.slice(0, 6).reduce(function(a, b) { return a + b; }, 0);
+      var p2Remaining = board.slice(6, 12).reduce(function(a, b) { return a + b; }, 0);
+      board[12] += p1Remaining;
+      board[13] += p2Remaining;
+      for (var i = 0; i < 12; i++) board[i] = 0;
+
+      renderBoard();
+      updateStats();
+
+      setTimeout(function() {
+        var winner = board[12] > board[13] ? 1 : (board[13] > board[12] ? 2 : 0);
+        showWinner(winner);
+      }, 500);
       return;
     }
 
+    // Extra turn if landed in own store
+    if (landedIndex === (currentPlayer === 1 ? 12 : 13)) {
+      showToast(tr('mancala_extra_turn'));
+      renderBoard();
+      highlightActiveSide();
+      return;
+    }
+
+    // Switch turn
     switchTurn();
-    isAnimating = false;
   }
 
   function switchTurn() {
     currentPlayer = currentPlayer === 1 ? 2 : 1;
     highlightActiveSide();
     updateStats();
+    renderBoard();
+
+    // Check if new player can move
+    var canMove = false;
+    for (var j = 0; j < 6; j++) {
+      var pitIdx = getPitIndex(j, currentPlayer);
+      if (board[pitIdx] > 0) { canMove = true; break; }
+    }
+
+    if (!canMove) {
+      showToast(tr('mancala_no_moves'));
+      var prevPlayer = currentPlayer === 1 ? 2 : 1;
+      setTimeout(function() {
+        currentPlayer = prevPlayer;
+        highlightActiveSide();
+        updateStats();
+        renderBoard();
+        if (vsComputer && currentPlayer === 2 && gameActive) {
+          setTimeout(makeComputerMove, 600);
+        }
+      }, 1000);
+      return;
+    }
 
     if (vsComputer && currentPlayer === 2 && gameActive) {
       setTimeout(makeComputerMove, 600);
@@ -180,49 +214,6 @@
       computerPlaying = false;
       distributeStones(chosenPit);
     }, 800);
-  }
-
-  function checkGameOver() {
-    var p1HasStones = board.slice(0, 6).some(function(count) { return count > 0; });
-    var p2HasStones = board.slice(6, 12).some(function(count) { return count > 0; });
-
-    if (!p1HasStones || !p2HasStones) {
-      var p1Remaining = board.slice(0, 6).reduce(function(a, b) { return a + b; }, 0);
-      var p2Remaining = board.slice(6, 12).reduce(function(a, b) { return a + b; }, 0);
-
-      board[12] += p1Remaining;
-      board[13] += p2Remaining;
-
-      for (var i = 0; i < 12; i++) {
-        board[i] = 0;
-      }
-
-      renderBoard();
-      updateStats();
-      isAnimating = false;
-
-      setTimeout(function() {
-        var winner = board[12] > board[13] ? 1 : (board[13] > board[12] ? 2 : 0);
-        showWinner(winner);
-      }, 500);
-      return;
-    }
-
-    isAnimating = false;
-
-    var canMove = false;
-    for (var j = 0; j < 6; j++) {
-      var pitIdx = getPitIndex(j, currentPlayer);
-      if (board[pitIdx] > 0) {
-        canMove = true;
-        break;
-      }
-    }
-
-    if (!canMove) {
-      showToast(tr('mancala_no_moves'));
-      switchTurn();
-    }
   }
 
   function handlePitClick(pitIndex) {
@@ -312,10 +303,7 @@
     if (p1ScoreEl) p1ScoreEl.textContent = board[12];
     if (p2ScoreEl) p2ScoreEl.textContent = board[13];
     if (turnEl) turnEl.textContent = currentPlayer;
-
-    if (passBtn) {
-      passBtn.disabled = gameActive;
-    }
+    if (passBtn) passBtn.disabled = gameActive;
   }
 
   function showWinner(winner) {
@@ -331,7 +319,6 @@
     }
     if (winnerMessage) {
       winnerMessage.textContent = tr('mancala_final_score') + ' ' + board[12] + ' - ' + board[13];
-
       if (winner === 1) {
         p1Wins++;
         localStorage.setItem('mancala-p1-wins', p1Wins.toString());

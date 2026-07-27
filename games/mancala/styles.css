@@ -2,6 +2,10 @@
    Tablo — Mancala Styles
    ============================================ */
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 .game-wrapper {
   display: flex;
   flex-direction: column;
@@ -65,6 +69,7 @@
   padding: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   position: relative;
+  overflow: hidden;
 }
 
 .store-left {
@@ -78,8 +83,7 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
-  height: 100%;
-  min-height: 200px;
+  min-height: 180px;
 }
 
 .store-right {
@@ -93,8 +97,7 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
-  height: 100%;
-  min-height: 200px;
+  min-height: 180px;
 }
 
 .store-count {
@@ -117,7 +120,7 @@
   justify-content: center;
   align-items: center;
   padding: 8px;
-  height: 100%;
+  min-width: 0;
 }
 
 .top-row {
@@ -181,11 +184,13 @@
 }
 
 .bottom-row.active {
-  box-shadow: inset 0 0 20px rgba(45, 212, 211, 0.1);
+  box-shadow: inset 0 0 20px rgba(45, 212, 211, 0.15);
+  border-radius: 12px;
 }
 
 .top-row.active {
-  box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.1);
+  box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.15);
+  border-radius: 12px;
 }
 
 .mode-select {
@@ -314,30 +319,30 @@
   .mancala-board {
     max-width: 100%;
     gap: 4px;
-    padding: 12px;
+    padding: 10px;
   }
 
   .store-left,
   .store-right {
-    width: 50px;
-    min-height: 160px;
+    min-height: 140px;
+    padding: 8px;
   }
 
   .mancala-pit {
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
   }
 
   .pit-count {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .store-count {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .store-label {
-    font-size: 8px;
+    font-size: 7px;
   }
 
   .game-stats {
