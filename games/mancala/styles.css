@@ -315,17 +315,20 @@
   line-height: 1.5;
 }
 
+/* Mobile responsive fixes */
 @media (max-width: 600px) {
   .mancala-board {
     max-width: 100%;
     gap: 4px;
     padding: 10px;
+    /* ΔΙΟΡΘΩΣΗ: Μικρότερα stores για mobile */
+    grid-template-columns: 50px 1fr 50px;
   }
 
   .store-left,
   .store-right {
-    min-height: 140px;
-    padding: 8px;
+    min-height: 120px;
+    padding: 6px;
   }
 
   .mancala-pit {

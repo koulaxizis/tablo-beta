@@ -17,7 +17,7 @@
   var isAnimating = false;
 
   var p1StoreEl, p2StoreEl, p1ScoreEl, p2ScoreEl, turnEl;
-  var newGameBtn, passBtn, winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
+  var newGameBtn, winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
   var modeSelect;
   var toast;
 
@@ -267,7 +267,9 @@
       pit.classList.remove('selectable', 'disabled');
       var pitPlayer = parseInt(pit.dataset.player);
       var pitIdx = parseInt(pit.dataset.pit);
-      var actualIdx = getPlayerForPit(getPitIndex(pitIdx, pitPlayer));
+      
+      // ΔΙΟΡΘΩΣΗ: ΑφαίρεσηPlayersForPit() - το actualIdx τώρα είναι σωστό board index
+      var actualIdx = getPitIndex(pitIdx, pitPlayer);
 
       if (isAnimating || computerPlaying) {
         pit.classList.add('disabled');
@@ -303,7 +305,6 @@
     if (p1ScoreEl) p1ScoreEl.textContent = board[12];
     if (p2ScoreEl) p2ScoreEl.textContent = board[13];
     if (turnEl) turnEl.textContent = currentPlayer;
-    if (passBtn) passBtn.disabled = gameActive;
   }
 
   function showWinner(winner) {
@@ -332,7 +333,6 @@
       playAgainBtn.onclick = function() {
         if (winnerModal) {
           winnerModal.classList.remove('visible');
-          winnerModal.style.display = 'none';
         }
         initBoard();
       };
@@ -340,7 +340,6 @@
 
     if (winnerModal) {
       winnerModal.classList.add('visible');
-      winnerModal.style.display = 'flex';
     }
   }
 
@@ -359,7 +358,6 @@
     turnEl = document.getElementById('turn-display');
 
     newGameBtn = document.getElementById('btn-new-game');
-    passBtn = document.getElementById('btn-pass');
     modeSelect = document.getElementById('mode-select');
     winnerModal = document.getElementById('winner-modal');
     winnerIcon = document.getElementById('winner-icon');
