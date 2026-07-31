@@ -80,8 +80,9 @@ html, body {
   position: relative;
   width: 100%;
   max-width: 600px;
+  min-height: 400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 16px;
   background: #0f172a;
   border-radius: 12px;
   border: 2px solid #334155;
@@ -94,6 +95,7 @@ html, body {
   display: block;
   touch-action: none;
   border-radius: 8px;
+  cursor: pointer;
 }
 
 .game-hint {
@@ -204,10 +206,10 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Mobile responsive */
 @media (max-width: 600px) {
   .flow-container {
-    padding: 12px;
+    padding: 10px;
+    min-height: 300px;
   }
 
   .game-stats {
@@ -216,13 +218,8 @@ html, body {
     max-width: 100%;
   }
 
-  .stat-label {
-    font-size: 10px;
-  }
-
-  .stat-value {
-    font-size: 14px;
-  }
+  .stat-label { font-size: 10px; }
+  .stat-value { font-size: 14px; }
 
   .game-hint {
     font-size: 11px;

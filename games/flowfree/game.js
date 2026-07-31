@@ -7,39 +7,46 @@
 
   console.log('[FlowFree] game.js loaded');
 
+  // ---- State ----
   var gridSize = 6;
   var cellSize = 50;
   var canvas, ctx;
+  var containerEl;
+
+  // grid[y][x] = color string or null
   var grid = [];
+  // endpoints: [{color, start:{x,y}, end:{x,y}}]
   var endpoints = [];
+  // paths: { color: [{x,y}, ...] }
   var paths = {};
+  // Which color is currently being dragged
+  var dragColor = null;
+  var dragFromEndpoint = false;
+  var lastCell = null;
+  var isDragging = false;
+
   var moves = 0;
   var level = 1;
-  var hintsUsed = 0;
-  var gameActive = true;
-  var dragging = false;
-  var currentColor = null;
-  var startPos = null;
-  var history = [];
 
-  var containerEl, movesEl, levelEl, hintsEl, sizeSelect;
-  var newGameBtn, undoBtn, hintBtn, clearBtn;
-  var winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn, nextLevelBtn;
+  // Stats DOM
+  var movesEl, levelEl, pipesEl, sizeSelect;
+  var newGameBtn, clearBtn;
+  var winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
   var toast;
 
-  var COLORS = {
-    red:    '#ef4444',
-    orange: '#f59e0b',
-    teal:   '#2dd4bf',
-    blue:   '#3b82f6',
-    purple: '#a855f7',
-    pink:   '#ec4899',
-    yellow: '#eab308',
-    green:  '#22c55e'
-  };
+  // ---- Colors ----
+  var COLOR_LIST = [
+    '#ef4444', // red
+    '#f59e0b', // orange
+    '#2dd4bf', // teal
+    '#3b82f6', // blue
+    '#a855f7', // purple
+    '#ec4899', // pink
+    '#eab308', // yellow
+    '#22c55e'  // green
+  ];
 
-  var COLOR_KEYS = Object.keys(COLORS);
-
+  // ---- Utils ----
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
@@ -56,33 +63,80 @@
     }, 2000);
   }
 
-  function generateLevel(size, difficulty) {
-    var numPairs = Math.min(3 + Math.floor(difficulty / 2), COLOR_KEYS.length);
+  function sameCell(a, b) {
+    return a && b && a.x === b.x && a.y === b.y;
+  }
+
+  function isAdjacent(a, b) {
+    if (!a || !b) return false;
+    var dx = Math.abs(a.x - b.x);
+    var dy = Math.abs(a.y - b.y);
+    return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
+  }
+
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function findEndpoint(color, cell) {
+    for (var i = 0; i < endpoints.length; i++) {
+      var ep = endpoints[i];
+      if (ep.color === color) {
+        if (sameCell(ep.start, cell)) return 'start';
+        if (sameCell(ep.end, cell)) return 'end';
+      }
+    }
+    return null;
+  }
+
+  function getOtherEnd(color, cell) {
+    for (var i = 0; i < endpoints.length; i++) {
+      var ep = endpoints[i];
+      if (ep.color === color) {
+        if (sameCell(ep.start, cell)) return ep.end;
+        if (sameCell(ep.end, cell)) return ep.start;
+      }
+    }
+    return null;
+  }
+
+  // ---- Level Generation ----
+  function generateLevel(size) {
+    var numPairs = Math.min(
+      Math.max(3, Math.floor(size / 2)),
+      COLOR_LIST.length
+    );
+
+    // Create empty grid
+    var g = [];
+    for (var i = 0; i < size; i++) {
+      g[i] = [];
+      for (var j = 0; j < size; j++) {
+        g[i][j] = null;
+      }
+    }
+
     var pairs = [];
-    var used = [];
+    var occupied = [];
 
     for (var p = 0; p < numPairs; p++) {
       var pos1, pos2;
-      var attempts = 0;
+      var tries = 0;
 
       do {
-        pos1 = {
-          x: Math.floor(Math.random() * size),
-          y: Math.floor(Math.random() * size)
-        };
-        pos2 = {
-          x: Math.floor(Math.random() * size),
-          y: Math.floor(Math.random() * size)
-        };
-        attempts++;
-      } while ((pos1.x === pos2.x && pos1.y === pos2.y) || 
-               isOccupied(pos1, used) || 
-               isOccupied(pos2, used) ||
-               attempts < 100);
+        pos1 = randomCell(size);
+        pos2 = randomCell(size);
+        tries++;
+      } while (
+        (sameCell(pos1, pos2) ||
+        isInList(pos1, occupied) ||
+        isInList(pos2, occupied)) &&
+        tries < 200
+      );
 
-      used.push(pos1, pos2);
+      occupied.push(pos1, pos2);
       pairs.push({
-        color: COLORS[COLOR_KEYS[p]],
+        color: COLOR_LIST[p],
         start: pos1,
         end: pos2
       });
@@ -91,13 +145,50 @@
     return pairs;
   }
 
-  function isOccupied(pos, used) {
-    for (var i = 0; i < used.length; i++) {
-      if (used[i].x === pos.x && used[i].y === pos.y) return true;
+  function randomCell(size) {
+    return {
+      x: Math.floor(Math.random() * size),
+      y: Math.floor(Math.random() * size)
+    };
+  }
+
+  function isInList(cell, list) {
+    for (var i = 0; i < list.length; i++) {
+      if (sameCell(cell, list[i])) return true;
     }
     return false;
   }
 
+  // ---- Canvas Sizing ----
+  function resizeCanvas() {
+    if (!canvas || !containerEl) return;
+
+    var containerWidth = containerEl.clientWidth;
+    if (containerWidth === 0) {
+      // Container not laid out yet, retry
+      setTimeout(resizeCanvas, 50);
+      return;
+    }
+
+    var maxWidth = containerWidth - 32; // padding
+    var maxHeight = window.innerHeight * 0.6;
+    var maxDim = Math.min(maxWidth, maxHeight, 550);
+
+    cellSize = Math.floor(maxDim / gridSize);
+    if (cellSize < 20) cellSize = 20;
+
+    var pixelSize = cellSize * gridSize;
+    canvas.width = pixelSize;
+    canvas.height = pixelSize;
+    canvas.style.width = pixelSize + 'px';
+    canvas.style.height = pixelSize + 'px';
+
+    console.log('[FlowFree] Canvas sized:', pixelSize, 'cellSize:', cellSize);
+
+    draw();
+  }
+
+  // ---- Game Init ----
   function initGame() {
     console.log('[FlowFree] initGame() called');
 
@@ -106,70 +197,89 @@
     containerEl = document.getElementById('flow-container');
     movesEl = document.getElementById('moves');
     levelEl = document.getElementById('level');
-    hintsEl = document.getElementById('hints');
+    pipesEl = document.getElementById('pipes');
     sizeSelect = document.getElementById('size-select');
     newGameBtn = document.getElementById('btn-new-game');
-    undoBtn = document.getElementById('btn-undo');
-    hintBtn = document.getElementById('btn-hint');
     clearBtn = document.getElementById('btn-clear');
     winnerModal = document.getElementById('winner-modal');
     winnerIcon = document.getElementById('winner-icon');
     winnerTitle = document.getElementById('winner-title');
     winnerMessage = document.getElementById('winner-message');
     playAgainBtn = document.getElementById('btn-play-again');
-    nextLevelBtn = document.getElementById('btn-next-level');
     toast = document.getElementById('toast');
 
-    sizeSelect.value = '6';
-    startNewGame();
+    // Mouse events
+    canvas.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      var cell = getCellFromPointer(e);
+      startDrag(cell);
+    });
 
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mouseleave', handleMouseUp);
+    canvas.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      var cell = getCellFromPointer(e);
+      continueDrag(cell);
+    });
 
-    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-    canvas.addEventListener('touchend', handleMouseUp);
+    document.addEventListener('mouseup', function() {
+      if (isDragging) endDrag();
+    });
 
+    // Touch events
+    canvas.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      var cell = getCellFromPointer(e);
+      startDrag(cell);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+      if (!isDragging) return;
+      var cell = getCellFromPointer(e);
+      continueDrag(cell);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', function() {
+      if (isDragging) endDrag();
+    });
+
+    // Buttons
     if (sizeSelect) sizeSelect.addEventListener('change', function(e) {
       gridSize = parseInt(e.target.value);
       startNewGame();
     });
 
     if (newGameBtn) newGameBtn.addEventListener('click', startNewGame);
-    if (undoBtn) undoBtn.addEventListener('click', undoMove);
-    if (hintBtn) hintBtn.addEventListener('click', useHint);
-    if (clearBtn) clearBtn.addEventListener('click', clearPaths);
-    if (playAgainBtn) playAgainBtn.addEventListener('click', closeWinnerAndNewGame);
-    if (nextLevelBtn) nextLevelBtn.addEventListener('click', nextLevel);
+    if (clearBtn) clearBtn.addEventListener('click', clearAllPaths);
+    if (playAgainBtn) playAgainBtn.addEventListener('click', function() {
+      if (winnerModal) winnerModal.classList.remove('visible');
+      startNewGame();
+    });
 
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    // Resize
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeCanvas._t);
+      resizeCanvas._t = setTimeout(resizeCanvas, 150);
+    });
+
+    // Start first game with delay to ensure layout
+    startNewGame();
+    setTimeout(function() {
+      resizeCanvas();
+      console.log('[FlowFree] Delayed resize done');
+    }, 200);
 
     console.log('[FlowFree] Init complete');
   }
 
-  function resizeCanvas() {
-    var maxSize = Math.min(containerEl.clientWidth - 40, 600);
-    cellSize = Math.floor(maxSize / gridSize);
-    canvas.width = cellSize * gridSize;
-    canvas.height = cellSize * gridSize;
-    draw();
-  }
-
   function startNewGame() {
     gridSize = parseInt(sizeSelect.value);
-    level = 1;
     moves = 0;
-    hintsUsed = 0;
-    gameActive = true;
-    history = [];
-    paths = {};
+    isDragging = false;
+    dragColor = null;
+    lastCell = null;
 
-    endpoints = generateLevel(gridSize, level);
     grid = [];
-
     for (var i = 0; i < gridSize; i++) {
       grid[i] = [];
       for (var j = 0; j < gridSize; j++) {
@@ -177,11 +287,16 @@
       }
     }
 
+    endpoints = generateLevel(gridSize);
+    paths = {};
+
+    // Place endpoints on grid
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       grid[ep.start.y][ep.start.x] = ep.color;
       grid[ep.end.y][ep.end.x] = ep.color;
-      paths[ep.color] = [ep.start, ep.end];
+      // Each path starts with just the start endpoint
+      paths[ep.color] = [clone(ep.start)];
     }
 
     updateStats();
@@ -189,256 +304,293 @@
     draw();
   }
 
-  function closeWinnerAndNewGame() {
-    if (winnerModal) winnerModal.classList.remove('visible');
-    startNewGame();
-  }
-
-  function nextLevel() {
-    if (winnerModal) winnerModal.classList.remove('visible');
-    level++;
-    startNewGame();
-  }
-
-  function updateStats() {
-    if (movesEl) movesEl.textContent = moves;
-    if (levelEl) levelEl.textContent = level;
-    if (hintsEl) hintsEl.textContent = hintsUsed;
-  }
-
-  function getCellFromEvent(e) {
-    var rect = canvas.getBoundingClientRect();
-    var scaleX = canvas.width / rect.width;
-    var scaleY = canvas.height / rect.height;
-    
-    var clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    var clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    
-    var x = Math.floor((clientX - rect.left) * scaleX / cellSize);
-    var y = Math.floor((clientY - rect.top) * scaleY / cellSize);
-    
-    return { x: x, y: y };
-  }
-
-  function handleMouseDown(e) {
-    if (!gameActive) return;
-    var cell = getCellFromEvent(e);
-    startDrag(cell);
-  }
-
-  function handleTouchStart(e) {
-    if (!gameActive) return;
-    e.preventDefault();
-    var cell = getCellFromEvent(e);
-    startDrag(cell);
-  }
-
-  function handleMouseMove(e) {
-    if (!dragging) return;
-    var cell = getCellFromEvent(e);
-    continueDrag(cell);
-  }
-
-  function handleTouchMove(e) {
-    if (!dragging) return;
-    e.preventDefault();
-    var cell = getCellFromEvent(e);
-    continueDrag(cell);
-  }
-
-  function handleMouseUp() {
-    if (dragging) {
-      endDrag();
-    }
-  }
-
-  function startDrag(cell) {
-    if (cell.x < 0 || cell.x >= gridSize || cell.y < 0 || cell.y >= gridSize) return;
-
-    var cellColor = grid[cell.y][cell.x];
-    if (!cellColor) return;
-
-    dragging = true;
-    currentColor = cellColor;
-    startPos = cell;
-  }
-
-  function continueDrag(cell) {
-    if (!dragging || !gameActive) return;
-    if (cell.x < 0 || cell.x >= gridSize || cell.y < 0 || cell.y >= gridSize) return;
-
-    if (cell.x === startPos.x && cell.y === startPos.y) return;
-
-    if (grid[cell.y][cell.x] === null || grid[cell.y][cell.x] === currentColor) {
-      addToPath(currentColor, cell);
-      moves++;
-      updateStats();
-      startPos = cell;
-      draw();
-      checkWin();
-    }
-  }
-
-  function endDrag() {
-    dragging = false;
-    currentColor = null;
-    startPos = null;
-  }
-
-  function addToPath(color, cell) {
-    if (!paths[color]) paths[color] = [];
-
-    var last = paths[color][paths[color].length - 1];
-    if (last && last.x === cell.x && last.y === cell.y) return;
-
-    history.push({
-      color: color,
-      action: 'add',
-      cell: cell,
-      pathIndex: paths[color].length
-    });
-
-    paths[color].push(cell);
-    grid[cell.y][cell.x] = color;
-  }
-
-  function removeFromPath(color, cell) {
-    if (!paths[color]) return;
-
-    var idx = -1;
-    for (var i = 0; i < paths[color].length; i++) {
-      if (paths[color][i].x === cell.x && paths[color][i].y === cell.y) {
-        idx = i;
-        break;
+  function clearAllPaths() {
+    // Reset grid
+    for (var i = 0; i < gridSize; i++) {
+      for (var j = 0; j < gridSize; j++) {
+        grid[i][j] = null;
       }
     }
 
-    if (idx > -1 && idx < paths[color].length - 1) {
-      history.push({
-        color: color,
-        action: 'remove',
-        cell: cell,
-        pathIndex: idx
-      });
-
-      paths[color].splice(idx, 1);
-      grid[cell.y][cell.x] = null;
-      
-      if (isEndpoint(color, cell)) {
-        grid[cell.y][cell.x] = color;
-      }
-    }
-  }
-
-  function isEndpoint(color, cell) {
+    // Reset paths to just start endpoints
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
-      if (ep.color === color) {
-        if (ep.start.x === cell.x && ep.start.y === cell.y) return true;
-        if (ep.end.x === cell.x && ep.end.y === cell.y) return true;
-      }
-    }
-    return false;
-  }
-
-  function undoMove() {
-    if (history.length === 0 || !gameActive) return;
-
-    var last = history.pop();
-    moves = Math.max(0, moves - 1);
-    updateStats();
-
-    if (last.action === 'add') {
-      grid[last.cell.y][last.cell.x] = isEndpoint(last.color, last.cell) ? last.color : null;
-      if (paths[last.color]) {
-        paths[last.color].pop();
-      }
-    } else if (last.action === 'remove') {
-      grid[last.cell.y][last.cell.x] = last.color;
-      if (paths[last.color]) {
-        paths[last.color].splice(last.pathIndex, 0, last.cell);
-      }
+      grid[ep.start.y][ep.start.x] = ep.color;
+      grid[ep.end.y][ep.end.x] = ep.color;
+      paths[ep.color] = [clone(ep.start)];
     }
 
-    draw();
-  }
-
-  function clearPaths() {
-    if (!gameActive) return;
-
-    for (var p = 0; p < endpoints.length; p++) {
-      var ep = endpoints[p];
-      for (var i = 0; i < gridSize; i++) {
-        for (var j = 0; j < gridSize; j++) {
-          if (grid[i][j] === ep.color && !isEndpoint(ep.color, {x: j, y: i})) {
-            grid[i][j] = null;
-          }
-        }
-      }
-      paths[ep.color] = [ep.start, ep.end];
-    }
-
-    history = [];
     moves = 0;
     updateStats();
     draw();
   }
 
-  function useHint() {
-    if (!gameActive) return;
+  function updateStats() {
+    if (movesEl) movesEl.textContent = moves;
+
+    var connected = 0;
+    var total = endpoints.length;
 
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       var path = paths[ep.color];
-      var last = path[path.length - 1];
+      if (path && path.length >= 2) {
+        var last = path[path.length - 1];
+        if (sameCell(last, ep.end)) {
+          connected++;
+        }
+      }
+    }
 
-      var neighbors = [
-        {x: last.x+1, y: last.y},
-        {x: last.x-1, y: last.y},
-        {x: last.x, y: last.y+1},
-        {x: last.x, y: last.y-1}
-      ];
+    if (pipesEl) pipesEl.textContent = connected + '/' + total;
+  }
 
-      for (var n = 0; n < neighbors.length; n++) {
-        var nb = neighbors[n];
-        if (nb.x >= 0 && nb.x < gridSize && nb.y >= 0 && nb.y < gridSize) {
-          if (grid[nb.y][nb.x] === null || (nb.x === ep.end.x && nb.y === ep.end.y)) {
-            addToPath(ep.color, nb);
-            hintsUsed++;
-            updateStats();
-            draw();
-            showToast('flow_hint_used', false);
-            checkWin();
-            return;
+  // ---- Pointer to Grid Cell ----
+  function getCellFromPointer(e) {
+    var rect = canvas.getBoundingClientRect();
+    var clientX = e.clientX;
+    var clientY = e.clientY;
+
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
+
+    var x = Math.floor((clientX - rect.left) / cellSize);
+    var y = Math.floor((clientY - rect.top) / cellSize);
+
+    // Clamp
+    if (x < 0) x = 0;
+    if (x >= gridSize) x = gridSize - 1;
+    if (y < 0) y = 0;
+    if (y >= gridSize) y = gridSize - 1;
+
+    return { x: x, y: y };
+  }
+
+  // ---- Drag Logic ----
+  function startDrag(cell) {
+    var cellColor = grid[cell.y][cell.x];
+    if (!cellColor) return;
+
+    // Check if this cell is an endpoint
+    var epType = findEndpoint(cellColor, cell);
+
+    if (epType) {
+      // Starting from an endpoint — reset this color's path
+      dragColor = cellColor;
+      dragFromEndpoint = true;
+
+      // Clear this color's path from grid (except endpoints)
+      clearColorFromGrid(cellColor);
+
+      // If starting from 'end' endpoint, reverse the path
+      if (epType === 'end') {
+        paths[cellColor] = [clone(cell)];
+        grid[cell.y][cell.x] = cellColor;
+      } else {
+        paths[cellColor] = [clone(cell)];
+        grid[cell.y][cell.x] = cellColor;
+      }
+
+      isDragging = true;
+      lastCell = clone(cell);
+      moves++;
+      draw();
+      updateStats();
+    } else {
+      // Starting from middle of an existing path
+      // Trim the path to this cell
+      dragColor = cellColor;
+      dragFromEndpoint = false;
+
+      var path = paths[cellColor];
+      if (path) {
+        var idx = -1;
+        for (var i = 0; i < path.length; i++) {
+          if (sameCell(path[i], cell)) {
+            idx = i;
+            break;
+          }
+        }
+
+        if (idx >= 0) {
+          // Remove all cells after this one from grid
+          for (var j = idx + 1; j < path.length; j++) {
+            var c = path[j];
+            if (!findEndpoint(cellColor, c)) {
+              grid[c.y][c.x] = null;
+            }
+          }
+          // Trim path
+          paths[cellColor] = path.slice(0, idx + 1);
+        }
+      }
+
+      isDragging = true;
+      lastCell = clone(cell);
+      moves++;
+      draw();
+      updateStats();
+    }
+  }
+
+  function continueDrag(cell) {
+    if (!isDragging || !dragColor) return;
+
+    // Same cell, ignore
+    if (sameCell(cell, lastCell)) return;
+
+    var path = paths[dragColor];
+
+    // Check if going back on path (backtracking)
+    if (path.length >= 2) {
+      var prev = path[path.length - 2];
+      if (sameCell(cell, prev)) {
+        // Backtrack: remove last cell
+        var removed = path.pop();
+        if (!findEndpoint(dragColor, removed)) {
+          grid[removed.y][removed.x] = null;
+        }
+        lastCell = clone(cell);
+        draw();
+        updateStats();
+        return;
+      }
+    }
+
+    // Must be adjacent
+    if (!isAdjacent(lastCell, cell)) {
+      // Not adjacent, ignore
+      return;
+    }
+
+    // Check if cell is already in this color's path
+    for (var i = 0; i < path.length; i++) {
+      if (sameCell(path[i], cell)) {
+        // Already in path, ignore
+        return;
+      }
+    }
+
+    // Check if cell is occupied by another color's endpoint
+    var otherEndpoint = false;
+    for (var p = 0; p < endpoints.length; p++) {
+      var ep = endpoints[p];
+      if (ep.color !== dragColor) {
+        if (sameCell(ep.start, cell) || sameCell(ep.end, cell)) {
+          otherEndpoint = true;
+          break;
+        }
+      }
+    }
+
+    if (otherEndpoint) return;
+
+    // Check if cell is occupied by another color's path
+    if (grid[cell.y][cell.x] !== null && grid[cell.y][cell.x] !== dragColor) {
+      // Clear the other color's path from this cell onward
+      var otherColor = grid[cell.y][cell.x];
+      var otherPath = paths[otherColor];
+      if (otherPath) {
+        var otherIdx = -1;
+        for (var k = 0; k < otherPath.length; k++) {
+          if (sameCell(otherPath[k], cell)) {
+            otherIdx = k;
+            break;
+          }
+        }
+        if (otherIdx >= 0) {
+          for (var m = otherIdx; m < otherPath.length; m++) {
+            var oc = otherPath[m];
+            if (!findEndpoint(otherColor, oc)) {
+              grid[oc.y][oc.x] = null;
+            }
+          }
+          paths[otherColor] = otherPath.slice(0, otherIdx);
+        }
+      }
+    }
+
+    // Add cell to path
+    paths[dragColor].push(clone(cell));
+    grid[cell.y][cell.x] = dragColor;
+    lastCell = clone(cell);
+    moves++;
+
+    draw();
+    updateStats();
+
+    // Check if reached the other endpoint
+    var otherEnd = getOtherEnd(dragColor, cell);
+    if (otherEnd && sameCell(cell, otherEnd)) {
+      // Connected!
+      checkWin();
+    }
+  }
+
+  function endDrag() {
+    isDragging = false;
+    dragColor = null;
+    dragFromEndpoint = false;
+    lastCell = null;
+    updateStats();
+  }
+
+  function clearColorFromGrid(color) {
+    for (var i = 0; i < gridSize; i++) {
+      for (var j = 0; j < gridSize; j++) {
+        if (grid[i][j] === color) {
+          // Don't clear other colors' endpoints
+          var isMyEndpoint = false;
+          for (var p = 0; p < endpoints.length; p++) {
+            if (endpoints[p].color === color) {
+              if (sameCell(endpoints[p].start, {x: j, y: i}) ||
+                  sameCell(endpoints[p].end, {x: j, y: i})) {
+                isMyEndpoint = true;
+                break;
+              }
+            }
+          }
+          if (!isMyEndpoint) {
+            grid[i][j] = null;
           }
         }
       }
     }
-
-    showToast('flow_no_hint_available');
   }
 
+  // ---- Win Check ----
   function checkWin() {
+    // All pairs must be connected
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       var path = paths[ep.color];
+      if (!path || path.length < 2) return;
 
-      var connected = false;
-      for (var i = 0; i < path.length - 1; i++) {
-        if (path[i].x === ep.end.x && path[i].y === ep.end.y) {
-          connected = true;
-          break;
-        }
-        if (path[i+1].x === ep.end.x && path[i+1].y === ep.end.y) {
-          connected = true;
-          break;
-        }
+      var lastPoint = path[path.length - 1];
+      if (!sameCell(lastPoint, ep.end) && !sameCell(lastPoint, ep.start)) {
+        return;
       }
 
-      if (!connected) return;
+      // Make sure both endpoints are in path
+      var hasStart = false;
+      var hasEnd = false;
+      for (var i = 0; i < path.length; i++) {
+        if (sameCell(path[i], ep.start)) hasStart = true;
+        if (sameCell(path[i], ep.end)) hasEnd = true;
+      }
+      if (!hasStart || !hasEnd) return;
     }
 
-    gameActive = false;
+    // All cells must be filled
+    for (var i = 0; i < gridSize; i++) {
+      for (var j = 0; j < gridSize; j++) {
+        if (grid[i][j] === null) return;
+      }
+    }
+
+    // Win!
     showWinner();
   }
 
@@ -451,56 +603,97 @@
     if (winnerModal) winnerModal.classList.add('visible');
   }
 
+  // ---- Drawing ----
   function draw() {
-    if (!ctx) return;
+    if (!ctx || !canvas) return;
+    if (canvas.width === 0 || canvas.height === 0) return;
 
+    // Background
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    for (var i = 0; i < gridSize; i++) {
-      for (var j = 0; j < gridSize; j++) {
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(i * cellSize, j * cellSize, cellSize, cellSize);
+    // Grid lines
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= gridSize; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * cellSize, 0);
+      ctx.lineTo(i * cellSize, canvas.height);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, i * cellSize);
+      ctx.lineTo(canvas.width, i * cellSize);
+      ctx.stroke();
+    }
+
+    // Draw all paths
+    for (var p = 0; p < endpoints.length; p++) {
+      var ep = endpoints[p];
+      var path = paths[ep.color];
+      if (path && path.length >= 2) {
+        drawPathLine(ep.color, path);
       }
     }
 
+    // Draw endpoints on top
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
-      drawPath(ep.color, paths[ep.color]);
-      drawEndpoint(ep.start.x, ep.start.y, ep.color);
-      drawEndpoint(ep.end.x, ep.end.y, ep.color);
+      drawDot(ep.start.x, ep.start.y, ep.color);
+      drawDot(ep.end.x, ep.end.y, ep.color);
+    }
+
+    // Draw pipe fill for connected cells
+    for (var i = 0; i < gridSize; i++) {
+      for (var j = 0; j < gridSize; j++) {
+        if (grid[i][j] !== null) {
+          // Already drawn as path
+        }
+      }
     }
   }
 
-  function drawPath(color, path) {
-    if (path.length < 2) return;
-
+  function drawPathLine(color, path) {
     ctx.strokeStyle = color;
-    ctx.lineWidth = cellSize * 0.4;
+    ctx.lineWidth = Math.max(3, cellSize * 0.35);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    ctx.globalAlpha = 0.7;
 
     ctx.beginPath();
-    ctx.moveTo(path[0].x * cellSize + cellSize/2, path[0].y * cellSize + cellSize/2);
+    ctx.moveTo(
+      path[0].x * cellSize + cellSize / 2,
+      path[0].y * cellSize + cellSize / 2
+    );
 
     for (var i = 1; i < path.length; i++) {
-      ctx.lineTo(path[i].x * cellSize + cellSize/2, path[i].y * cellSize + cellSize/2);
+      ctx.lineTo(
+        path[i].x * cellSize + cellSize / 2,
+        path[i].y * cellSize + cellSize / 2
+      );
     }
 
     ctx.stroke();
+    ctx.globalAlpha = 1;
   }
 
-  function drawEndpoint(x, y, color) {
-    var cx = x * cellSize + cellSize/2;
-    var cy = y * cellSize + cellSize/2;
-    var radius = cellSize * 0.35;
+  function drawDot(x, y, color) {
+    var cx = x * cellSize + cellSize / 2;
+    var cy = y * cellSize + cellSize / 2;
+    var radius = Math.max(4, cellSize * 0.32);
+
+    // Glow
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
 
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.fill();
 
+    ctx.shadowBlur = 0;
+
+    // White border
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.stroke();
