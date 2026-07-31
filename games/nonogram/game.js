@@ -16,11 +16,12 @@
   var gameActive = false;
   var timerInterval = null;
   var seconds = 0;
+  var hintsUsed = 0;
 
-  var containerEl, timeEl, mistakesEl, sizeSelect;
-  var newGameBtn, checkBtn, clearBtn;
+  var containerEl, timeEl, mistakesEl, sizeSelect, hintsEl;
+  var newGameBtn, checkBtn, clearBtn, hintBtn;
   var winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn, newDifficultyBtn;
-  var toast;
+  var toast, settingsBtn;
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -61,19 +62,12 @@
       }
     }
 
-    // Ensure no empty rows or columns (valid nonogram)
     for (var i = 0; i < size; i++) {
       var rowHas = sol[i].some(function(v) { return v === 1; });
-      if (!rowHas) {
-        sol[i][Math.floor(Math.random() * size)] = 1;
-      }
+      if (!rowHas) sol[i][Math.floor(Math.random() * size)] = 1;
       var colHas = false;
-      for (var r = 0; r < size; r++) {
-        if (sol[r][i] === 1) { colHas = true; break; }
-      }
-      if (!colHas) {
-        sol[Math.floor(Math.random() * size)][i] = 1;
-      }
+      for (var r = 0; r < size; r++) { if (sol[r][i] === 1) { colHas = true; break; } }
+      if (!colHas) sol[Math.floor(Math.random() * size)][i] = 1;
     }
 
     return sol;
@@ -81,14 +75,11 @@
 
   function calculateClues(grid, size, isRow) {
     var clues = [];
-
     for (var i = 0; i < size; i++) {
       var clueGroups = [];
       var currentRun = 0;
-
       for (var j = 0; j < size; j++) {
         var val = isRow ? grid[i][j] : grid[j][i];
-
         if (val === 1) {
           currentRun++;
         } else if (currentRun > 0) {
@@ -96,15 +87,15 @@
           currentRun = 0;
         }
       }
-
-      if (currentRun > 0) {
-        clueGroups.push(currentRun);
-      }
-
+      if (currentRun > 0) clueGroups.push(currentRun);
       clues[i] = clueGroups.length > 0 ? clueGroups : [0];
     }
-
     return clues;
+  }
+
+  // Fixed: Join clues with comma for readability
+  function formatClue(clueArray) {
+    return clueArray.join(', ');
   }
 
   function initGame() {
@@ -113,10 +104,12 @@
     containerEl = document.getElementById('nonogram-container');
     timeEl = document.getElementById('time');
     mistakesEl = document.getElementById('mistakes');
+    hintsEl = document.getElementById('hints');
     sizeSelect = document.getElementById('size-select');
     newGameBtn = document.getElementById('btn-new-game');
     checkBtn = document.getElementById('btn-check');
     clearBtn = document.getElementById('btn-clear');
+    hintBtn = document.getElementById('btn-hint');
     winnerModal = document.getElementById('winner-modal');
     winnerIcon = document.getElementById('winner-icon');
     winnerTitle = document.getElementById('winner-title');
@@ -124,6 +117,7 @@
     playAgainBtn = document.getElementById('btn-play-again');
     newDifficultyBtn = document.getElementById('btn-new-difficulty');
     toast = document.getElementById('toast');
+    settingsBtn = document.querySelector('#tablo-header button[id$="settings"]');
 
     startTimer();
     startNewGame();
@@ -136,6 +130,7 @@
     if (newGameBtn) newGameBtn.addEventListener('click', startNewGame);
     if (checkBtn) checkBtn.addEventListener('click', checkPuzzle);
     if (clearBtn) clearBtn.addEventListener('click', clearGrid);
+    if (hintBtn) hintBtn.addEventListener('click', useHint);
     if (playAgainBtn) playAgainBtn.addEventListener('click', closeWinnerAndNewGame);
     if (newDifficultyBtn) newDifficultyBtn.addEventListener('click', closeWinnerAndNewGame);
 
@@ -163,6 +158,7 @@
     }
 
     mistakes = 0;
+    hintsUsed = 0;
     seconds = 0;
     gameActive = true;
     resetTimer();
@@ -200,9 +196,44 @@
 
   function updateStats() {
     if (mistakesEl) mistakesEl.textContent = mistakes;
+    if (hintsEl) hintsEl.textContent = hintsUsed;
   }
 
-  // Fixed: Completely rewritten renderBoard with proper layout structure
+  function useHint() {
+    if (!gameActive) return;
+
+    // Find first empty cell that should be filled
+    for (var i = 0; i < gridSize; i++) {
+      for (var j = 0; j < gridSize; j++) {
+        if (playerGrid[i][j] === 0 && solution[i][j] === 1) {
+          playerGrid[i][j] = 1;
+          hintsUsed++;
+          updateStats();
+          updateCells();
+          showToast(tr('nonogram_hint_used'), false);
+          return;
+        }
+      }
+    }
+    
+    // If no empty cells to fill, find wrong X mark
+    for (var i = 0; i < gridSize; i++) {
+      for (var j = 0; j < gridSize; j++) {
+        if (playerGrid[i][j] === 2 && solution[i][j] === 1) {
+          playerGrid[i][j] = 1;
+          hintsUsed++;
+          updateStats();
+          updateCells();
+          showToast(tr('nonogram_hint_used'), false);
+          return;
+        }
+      }
+    }
+
+    showToast('nonogram_no_hint_available');
+  }
+
+  // Fixed: Completely rewritten renderBoard with comma separators
   function renderBoard() {
     if (!containerEl) return;
 
@@ -215,7 +246,7 @@
     var wrapper = document.createElement('div');
     wrapper.className = 'nonogram-grid-wrapper';
 
-    // --- TOP ROW: corner + column clues ---
+    // TOP ROW: corner + column clues
     var topRow = document.createElement('div');
     topRow.className = 'nonogram-top-row';
 
@@ -232,17 +263,18 @@
       colClueEl.className = 'clue-cell col-clue';
       colClueEl.style.width = cellSize + 'px';
       colClueEl.style.height = clueColHeight + 'px';
-      for (var k = 0; k < colClues[j].length; k++) {
-        var span = document.createElement('span');
-        span.textContent = colClues[j][k];
-        colClueEl.appendChild(span);
-      }
+      
+      var clueText = formatClue(colClues[j]);
+      var span = document.createElement('span');
+      span.textContent = clueText;
+      colClueEl.appendChild(span);
+      
       colCluesContainer.appendChild(colClueEl);
     }
     topRow.appendChild(colCluesContainer);
     wrapper.appendChild(topRow);
 
-    // --- BOTTOM ROW: row clues column + grid ---
+    // BOTTOM ROW: row clues column + grid
     var bottomRow = document.createElement('div');
     bottomRow.className = 'nonogram-bottom-row';
 
@@ -253,11 +285,12 @@
       rowClueEl.className = 'clue-cell row-clue';
       rowClueEl.style.width = clueRowWidth + 'px';
       rowClueEl.style.height = cellSize + 'px';
-      for (var k = 0; k < rowClues[i].length; k++) {
-        var span = document.createElement('span');
-        span.textContent = rowClues[i][k];
-        rowClueEl.appendChild(span);
-      }
+      
+      var clueText = formatClue(rowClues[i]);
+      var span = document.createElement('span');
+      span.textContent = clueText;
+      rowClueEl.appendChild(span);
+      
       rowCluesColumn.appendChild(rowClueEl);
     }
     bottomRow.appendChild(rowCluesColumn);
@@ -344,19 +377,14 @@
 
     for (var i = 0; i < gridSize; i++) {
       for (var j = 0; j < gridSize; j++) {
-        if (playerGrid[i][j] === 1 && solution[i][j] === 0) {
-          mistakesCount++;
-        }
-        if (playerGrid[i][j] === 0 && solution[i][j] === 1) {
-          mistakesCount++;
-        }
+        if (playerGrid[i][j] === 1 && solution[i][j] === 0) mistakesCount++;
+        if (playerGrid[i][j] === 0 && solution[i][j] === 1) mistakesCount++;
       }
     }
 
     mistakes = mistakesCount;
     updateStats();
 
-    // Fixed: showToast with isRaw=true for composed messages
     if (mistakes === 0) {
       showToast('nonogram_perfect');
     } else {
@@ -401,7 +429,8 @@
     if (winnerIcon) winnerIcon.textContent = '\u{1F389}';
     if (winnerTitle) winnerTitle.textContent = tr('nonogram_solved');
     if (winnerMessage) {
-      winnerMessage.textContent = tr('nonogram_win_message') + ' ' + timeEl.textContent;
+      winnerMessage.textContent = tr('nonogram_win_message') + ' ' + timeEl.textContent + 
+        ' (' + tr('nonogram_hints') + ': ' + hintsUsed + ')';
     }
     if (winnerModal) winnerModal.classList.add('visible');
   }
