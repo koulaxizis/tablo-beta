@@ -376,5 +376,7 @@
   "reversi_draw": "Draw!",
   "reversi_final_score": "Final score:",
   "game_reversi_name": "Reversi",
-  "game_reversi_desc": "Strategy game. Flip opponent's discs to your color."
+  "game_reversi_desc": "Strategy game. Flip opponent's discs to your color.",
+  "game_flowfree_name": "Flow Free",
+"game_flowfree_desc": "Connect matching colored dots without crossing paths."
 }
