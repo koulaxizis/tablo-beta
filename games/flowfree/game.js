@@ -1,25 +1,16 @@
-// ============================================
-// Tablo — Flow Free
-// ============================================
-
 (function() {
   'use strict';
 
   console.log('[FlowFree] game.js loaded');
 
-  // ---- State ----
   var gridSize = 6;
   var cellSize = 50;
   var canvas, ctx;
   var containerEl;
 
-  // grid[y][x] = color string or null
   var grid = [];
-  // endpoints: [{color, start:{x,y}, end:{x,y}}]
   var endpoints = [];
-  // paths: { color: [{x,y}, ...] }
   var paths = {};
-  // Which color is currently being dragged
   var dragColor = null;
   var dragFromEndpoint = false;
   var lastCell = null;
@@ -28,25 +19,16 @@
   var moves = 0;
   var level = 1;
 
-  // Stats DOM
   var movesEl, levelEl, pipesEl, sizeSelect;
   var newGameBtn, clearBtn;
   var winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
   var toast;
 
-  // ---- Colors ----
   var COLOR_LIST = [
-    '#ef4444', // red
-    '#f59e0b', // orange
-    '#2dd4bf', // teal
-    '#3b82f6', // blue
-    '#a855f7', // purple
-    '#ec4899', // pink
-    '#eab308', // yellow
-    '#22c55e'  // green
+    '#ef4444', '#f59e0b', '#2dd4bf', '#3b82f6',
+    '#a855f7', '#ec4899', '#eab308', '#22c55e'
   ];
 
-  // ---- Utils ----
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
     var t = window.TABLO_TRANSLATIONS && window.TABLO_TRANSLATIONS[lang];
@@ -100,13 +82,8 @@
     return null;
   }
 
-  // ---- Level Generation ----
   function generateLevel(size) {
-    var numPairs = Math.min(
-      Math.max(3, Math.floor(size / 2)),
-      COLOR_LIST.length
-    );
-
+    var numPairs = Math.min(Math.max(3, Math.floor(size / 2)), COLOR_LIST.length);
     var pairs = [];
     var occupied = [];
 
@@ -118,29 +95,17 @@
         pos1 = randomCell(size);
         pos2 = randomCell(size);
         tries++;
-      } while (
-        (sameCell(pos1, pos2) ||
-        isInList(pos1, occupied) ||
-        isInList(pos2, occupied)) &&
-        tries < 200
-      );
+      } while ((sameCell(pos1, pos2) || isInList(pos1, occupied) || isInList(pos2, occupied)) && tries < 200);
 
       occupied.push(pos1, pos2);
-      pairs.push({
-        color: COLOR_LIST[p],
-        start: pos1,
-        end: pos2
-      });
+      pairs.push({ color: COLOR_LIST[p], start: pos1, end: pos2 });
     }
 
     return pairs;
   }
 
   function randomCell(size) {
-    return {
-      x: Math.floor(Math.random() * size),
-      y: Math.floor(Math.random() * size)
-    };
+    return { x: Math.floor(Math.random() * size), y: Math.floor(Math.random() * size) };
   }
 
   function isInList(cell, list) {
@@ -150,10 +115,8 @@
     return false;
   }
 
-  // ---- Canvas Sizing ----
   function resizeCanvas() {
     if (!canvas || !containerEl) return;
-
     var containerWidth = containerEl.clientWidth;
     var containerHeight = containerEl.clientHeight;
 
@@ -171,7 +134,6 @@
     if (cellSize < 25) cellSize = 25;
 
     var pixelSize = cellSize * gridSize;
-
     if (pixelSize > availableWidth) pixelSize = availableWidth;
     if (pixelSize > availableHeight) pixelSize = availableHeight;
 
@@ -179,15 +141,12 @@
     canvas.height = pixelSize;
     canvas.style.width = pixelSize + 'px';
     canvas.style.height = pixelSize + 'px';
-
     canvas.style.margin = '0 auto';
 
     console.log('[FlowFree] Canvas:', pixelSize, 'cellSize:', cellSize);
-
     draw();
   }
 
-  // ---- Game Init ----
   function initGame() {
     console.log('[FlowFree] initGame() called');
 
@@ -207,67 +166,23 @@
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
 
-    // Mouse events
-    canvas.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      var cell = getCellFromPointer(e);
-      startDrag(cell);
-    });
+    canvas.addEventListener('mousedown', function(e) { e.preventDefault(); var cell = getCellFromPointer(e); startDrag(cell); });
+    canvas.addEventListener('mousemove', function(e) { if (!isDragging) return; var cell = getCellFromPointer(e); continueDrag(cell); });
+    document.addEventListener('mouseup', function() { if (isDragging) endDrag(); });
 
-    canvas.addEventListener('mousemove', function(e) {
-      if (!isDragging) return;
-      var cell = getCellFromPointer(e);
-      continueDrag(cell);
-    });
+    canvas.addEventListener('touchstart', function(e) { e.preventDefault(); var cell = getCellFromPointer(e); startDrag(cell); }, { passive: false });
+    canvas.addEventListener('touchmove', function(e) { e.preventDefault(); if (!isDragging) return; var cell = getCellFromPointer(e); continueDrag(cell); }, { passive: false });
+    canvas.addEventListener('touchend', function() { if (isDragging) endDrag(); });
 
-    document.addEventListener('mouseup', function() {
-      if (isDragging) endDrag();
-    });
-
-    // Touch events
-    canvas.addEventListener('touchstart', function(e) {
-      e.preventDefault();
-      var cell = getCellFromPointer(e);
-      startDrag(cell);
-    }, { passive: false });
-
-    canvas.addEventListener('touchmove', function(e) {
-      e.preventDefault();
-      if (!isDragging) return;
-      var cell = getCellFromPointer(e);
-      continueDrag(cell);
-    }, { passive: false });
-
-    canvas.addEventListener('touchend', function() {
-      if (isDragging) endDrag();
-    });
-
-    // Buttons
-    if (sizeSelect) sizeSelect.addEventListener('change', function(e) {
-      gridSize = parseInt(e.target.value);
-      startNewGame();
-    });
-
+    if (sizeSelect) sizeSelect.addEventListener('change', function(e) { gridSize = parseInt(e.target.value); startNewGame(); });
     if (newGameBtn) newGameBtn.addEventListener('click', startNewGame);
     if (clearBtn) clearBtn.addEventListener('click', clearAllPaths);
-    if (playAgainBtn) playAgainBtn.addEventListener('click', function() {
-      if (winnerModal) winnerModal.classList.remove('visible');
-      startNewGame();
-    });
+    if (playAgainBtn) playAgainBtn.addEventListener('click', function() { if (winnerModal) winnerModal.classList.remove('visible'); startNewGame(); });
 
-    // Resize
-    window.addEventListener('resize', function() {
-      clearTimeout(resizeCanvas._t);
-      resizeCanvas._t = setTimeout(resizeCanvas, 150);
-    });
+    window.addEventListener('resize', function() { clearTimeout(resizeCanvas._t); resizeCanvas._t = setTimeout(resizeCanvas, 150); });
 
-    // Start first game with delay to ensure layout
     startNewGame();
-    setTimeout(function() {
-      resizeCanvas();
-      console.log('[FlowFree] Delayed resize done');
-    }, 200);
-
+    setTimeout(function() { resizeCanvas(); console.log('[FlowFree] Delayed resize done'); }, 200);
     console.log('[FlowFree] Init complete');
   }
 
@@ -281,9 +196,7 @@
     grid = [];
     for (var i = 0; i < gridSize; i++) {
       grid[i] = [];
-      for (var j = 0; j < gridSize; j++) {
-        grid[i][j] = null;
-      }
+      for (var j = 0; j < gridSize; j++) { grid[i][j] = null; }
     }
 
     endpoints = generateLevel(gridSize);
@@ -303,18 +216,14 @@
 
   function clearAllPaths() {
     for (var i = 0; i < gridSize; i++) {
-      for (var j = 0; j < gridSize; j++) {
-        grid[i][j] = null;
-      }
+      for (var j = 0; j < gridSize; j++) { grid[i][j] = null; }
     }
-
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       grid[ep.start.y][ep.start.x] = ep.color;
       grid[ep.end.y][ep.end.x] = ep.color;
       paths[ep.color] = [clone(ep.start)];
     }
-
     moves = 0;
     updateStats();
     draw();
@@ -322,7 +231,6 @@
 
   function updateStats() {
     if (movesEl) movesEl.textContent = moves;
-
     var connected = 0;
     var total = endpoints.length;
 
@@ -331,53 +239,39 @@
       var path = paths[ep.color];
       if (path && path.length >= 2) {
         var last = path[path.length - 1];
-        if (sameCell(last, ep.end)) {
-          connected++;
-        }
+        if (sameCell(last, ep.end)) connected++;
       }
     }
 
     if (pipesEl) pipesEl.textContent = connected + '/' + total;
   }
 
-  // ---- Pointer to Grid Cell ----
   function getCellFromPointer(e) {
     var rect = canvas.getBoundingClientRect();
     var clientX = e.clientX;
     var clientY = e.clientY;
-
     if (e.touches && e.touches.length > 0) {
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
     }
-
     var x = Math.floor((clientX - rect.left) / cellSize);
     var y = Math.floor((clientY - rect.top) / cellSize);
-
-    if (x < 0) x = 0;
-    if (x >= gridSize) x = gridSize - 1;
-    if (y < 0) y = 0;
-    if (y >= gridSize) y = gridSize - 1;
-
+    if (x < 0) x = 0; if (x >= gridSize) x = gridSize - 1;
+    if (y < 0) y = 0; if (y >= gridSize) y = gridSize - 1;
     return { x: x, y: y };
   }
 
-  // ---- Drag Logic ----
   function startDrag(cell) {
     var cellColor = grid[cell.y][cell.x];
     if (!cellColor) return;
-
     var epType = findEndpoint(cellColor, cell);
 
     if (epType) {
       dragColor = cellColor;
       dragFromEndpoint = true;
-
       clearColorFromGrid(cellColor);
-
       paths[cellColor] = [clone(cell)];
       grid[cell.y][cell.x] = cellColor;
-
       isDragging = true;
       lastCell = clone(cell);
       moves++;
@@ -386,28 +280,20 @@
     } else {
       dragColor = cellColor;
       dragFromEndpoint = false;
-
       var path = paths[cellColor];
       if (path) {
         var idx = -1;
         for (var i = 0; i < path.length; i++) {
-          if (sameCell(path[i], cell)) {
-            idx = i;
-            break;
-          }
+          if (sameCell(path[i], cell)) { idx = i; break; }
         }
-
         if (idx >= 0) {
           for (var j = idx + 1; j < path.length; j++) {
             var c = path[j];
-            if (!findEndpoint(cellColor, c)) {
-              grid[c.y][c.x] = null;
-            }
+            if (!findEndpoint(cellColor, c)) { grid[c.y][c.x] = null; }
           }
           paths[cellColor] = path.slice(0, idx + 1);
         }
       }
-
       isDragging = true;
       lastCell = clone(cell);
       moves++;
@@ -418,19 +304,15 @@
 
   function continueDrag(cell) {
     if (!isDragging || !dragColor) return;
-
     if (sameCell(cell, lastCell)) return;
 
     var path = paths[dragColor];
 
-    // Backtracking
     if (path.length >= 2) {
       var prev = path[path.length - 2];
       if (sameCell(cell, prev)) {
         var removed = path.pop();
-        if (!findEndpoint(dragColor, removed)) {
-          grid[removed.y][removed.x] = null;
-        }
+        if (!findEndpoint(dragColor, removed)) { grid[removed.y][removed.x] = null; }
         lastCell = clone(cell);
         draw();
         updateStats();
@@ -438,78 +320,61 @@
       }
     }
 
-    // Must be adjacent
-    if (!isAdjacent(lastCell, cell)) {
-      return;
-    }
+    if (!isAdjacent(lastCell, cell)) return;
 
-    // Already in this path
     for (var i = 0; i < path.length; i++) {
-      if (sameCell(path[i], cell)) {
-        return;
-      }
+      if (sameCell(path[i], cell)) return;
     }
 
-    // Blocked by other color's endpoint
     var otherEndpoint = false;
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       if (ep.color !== dragColor) {
-        if (sameCell(ep.start, cell) || sameCell(ep.end, cell)) {
-          otherEndpoint = true;
-          break;
-        }
+        if (sameCell(ep.start, cell) || sameCell(ep.end, cell)) { otherEndpoint = true; break; }
       }
     }
-
     if (otherEndpoint) return;
 
-    // Overwrite other color's path
     if (grid[cell.y][cell.x] !== null && grid[cell.y][cell.x] !== dragColor) {
       var otherColor = grid[cell.y][cell.x];
       var otherPath = paths[otherColor];
       if (otherPath) {
         var otherIdx = -1;
         for (var k = 0; k < otherPath.length; k++) {
-          if (sameCell(otherPath[k], cell)) {
-            otherIdx = k;
-            break;
-          }
+          if (sameCell(otherPath[k], cell)) { otherIdx = k; break; }
         }
         if (otherIdx >= 0) {
           for (var m = otherIdx; m < otherPath.length; m++) {
             var oc = otherPath[m];
-            if (!findEndpoint(otherColor, oc)) {
-              grid[oc.y][oc.x] = null;
-            }
+            if (!findEndpoint(otherColor, oc)) { grid[oc.y][oc.x] = null; }
           }
           paths[otherColor] = otherPath.slice(0, otherIdx);
         }
       }
     }
 
-    // Add cell to path
     paths[dragColor].push(clone(cell));
     grid[cell.y][cell.x] = dragColor;
     lastCell = clone(cell);
     moves++;
-
     draw();
     updateStats();
 
-    // Check if reached the other endpoint
     var otherEnd = getOtherEnd(dragColor, cell);
     if (otherEnd && sameCell(cell, otherEnd)) {
+      console.log('[FlowFree] Reached endpoint - checking win');
       checkWin();
     }
   }
 
   function endDrag() {
+    console.log('[FlowFree] Drag ended - checking win');
     isDragging = false;
     dragColor = null;
     dragFromEndpoint = false;
     lastCell = null;
     updateStats();
+    checkWin();
   }
 
   function clearColorFromGrid(color) {
@@ -519,37 +384,51 @@
           var isMyEndpoint = false;
           for (var p = 0; p < endpoints.length; p++) {
             if (endpoints[p].color === color) {
-              if (sameCell(endpoints[p].start, {x: j, y: i}) ||
-                  sameCell(endpoints[p].end, {x: j, y: i})) {
-                isMyEndpoint = true;
-                break;
+              if (sameCell(endpoints[p].start, {x: j, y: i}) || sameCell(endpoints[p].end, {x: j, y: i})) {
+                isMyEndpoint = true; break;
               }
             }
           }
-          if (!isMyEndpoint) {
-            grid[i][j] = null;
-          }
+          if (!isMyEndpoint) { grid[i][j] = null; }
         }
       }
     }
   }
 
-  // ---- Win Check ----
   function checkWin() {
+    console.log('[FlowFree] checkWin() called - endpoints:', endpoints.length);
     var allConnected = true;
 
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       var path = paths[ep.color];
 
+      console.log('[FlowFree] Checking color', ep.color, '- path length:', path ? path.length : 0);
+
       if (!path || path.length < 2) {
         allConnected = false;
+        console.log('[FlowFree] Path too short');
+        break;
+      }
+
+      var firstPoint = path[0];
+      var lastPoint = path[path.length - 1];
+
+      console.log('[FlowFree] First:', firstPoint, 'Last:', lastPoint, 'Start:', ep.start, 'End:', ep.end);
+
+      var startsAtStart = sameCell(firstPoint, ep.start);
+      var startsAtEnd = sameCell(firstPoint, ep.end);
+      var endsAtStart = sameCell(lastPoint, ep.start);
+      var endsAtEnd = sameCell(lastPoint, ep.end);
+
+      if (!((startsAtStart && endsAtEnd) || (startsAtEnd && endsAtStart))) {
+        allConnected = false;
+        console.log('[FlowFree] Not properly connected');
         break;
       }
 
       var hasStart = false;
       var hasEnd = false;
-
       for (var i = 0; i < path.length; i++) {
         if (sameCell(path[i], ep.start)) hasStart = true;
         if (sameCell(path[i], ep.end)) hasEnd = true;
@@ -557,16 +436,7 @@
 
       if (!hasStart || !hasEnd) {
         allConnected = false;
-        break;
-      }
-
-      // Check that path goes from one endpoint to the other
-      var firstPoint = path[0];
-      var lastPoint = path[path.length - 1];
-
-      if (!(sameCell(firstPoint, ep.start) && sameCell(lastPoint, ep.end)) &&
-          !(sameCell(firstPoint, ep.end) && sameCell(lastPoint, ep.start))) {
-        allConnected = false;
+        console.log('[FlowFree] Missing endpoint');
         break;
       }
     }
@@ -579,28 +449,26 @@
 
   function showWinner() {
     console.log('[FlowFree] showWinner() called');
-
+    
     if (winnerIcon) winnerIcon.textContent = '\u{1F389}';
     if (winnerTitle) winnerTitle.textContent = tr('flow_solved');
     if (winnerMessage) {
       winnerMessage.textContent = tr('flow_win_message') + ' ' + moves + ' ' + tr('flow_moves_lower');
     }
+    
     if (winnerModal) {
       winnerModal.classList.add('visible');
-      console.log('[FlowFree] Modal shown');
+      winnerModal.style.display = 'flex';
+      console.log('[FlowFree] Modal shown - display:', winnerModal.style.display, 'class:', winnerModal.className);
     }
   }
 
-  // ---- Drawing ----
   function draw() {
-    if (!ctx || !canvas) return;
-    if (canvas.width === 0 || canvas.height === 0) return;
+    if (!ctx || !canvas || canvas.width === 0 || canvas.height === 0) return;
 
-    // Background
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Grid lines
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1;
     for (var i = 0; i <= gridSize; i++) {
@@ -608,14 +476,12 @@
       ctx.moveTo(i * cellSize, 0);
       ctx.lineTo(i * cellSize, canvas.height);
       ctx.stroke();
-
       ctx.beginPath();
       ctx.moveTo(0, i * cellSize);
       ctx.lineTo(canvas.width, i * cellSize);
       ctx.stroke();
     }
 
-    // Draw all paths
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       var path = paths[ep.color];
@@ -624,7 +490,6 @@
       }
     }
 
-    // Draw endpoints on top
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       drawDot(ep.start.x, ep.start.y, ep.color);
@@ -638,20 +503,11 @@
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.globalAlpha = 0.7;
-
     ctx.beginPath();
-    ctx.moveTo(
-      path[0].x * cellSize + cellSize / 2,
-      path[0].y * cellSize + cellSize / 2
-    );
-
+    ctx.moveTo(path[0].x * cellSize + cellSize / 2, path[0].y * cellSize + cellSize / 2);
     for (var i = 1; i < path.length; i++) {
-      ctx.lineTo(
-        path[i].x * cellSize + cellSize / 2,
-        path[i].y * cellSize + cellSize / 2
-      );
+      ctx.lineTo(path[i].x * cellSize + cellSize / 2, path[i].y * cellSize + cellSize / 2);
     }
-
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
@@ -660,17 +516,13 @@
     var cx = x * cellSize + cellSize / 2;
     var cy = y * cellSize + cellSize / 2;
     var radius = Math.max(4, cellSize * 0.32);
-
     ctx.shadowColor = color;
     ctx.shadowBlur = 10;
-
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.fill();
-
     ctx.shadowBlur = 0;
-
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.stroke();
