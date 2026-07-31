@@ -1,7 +1,3 @@
-// ============================================
-// Tablo — Global Header Component
-// ============================================
-
 (function() {
   'use strict';
 
@@ -17,7 +13,9 @@
     'hexagon-puzzle', 'chess', 'sudoku',
     'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble-shooter',
     'gomoku', 'checkers', 'mastermind', 'battleship',
-    'rock-paper-scissors', 'hangman', 'snakes-and-ladders', 'pong', 'backgammon', 'mancala'
+    'rock-paper-scissors', 'hangman', 'snakes-and-ladders',
+    'pong', 'backgammon', 'mancala',
+    'flowfree', 'nonogram', 'breakout', 'reversi'
   ];
 
   console.log('[Header] Script loaded');
@@ -80,6 +78,10 @@
     if (path.indexOf('/pong/') !== -1) return 'pong';
     if (path.indexOf('/backgammon/') !== -1) return 'backgammon';
     if (path.indexOf('/mancala/') !== -1) return 'mancala';
+    if (path.indexOf('/flowfree/') !== -1) return 'flowfree';
+    if (path.indexOf('/nonogram/') !== -1) return 'nonogram';
+    if (path.indexOf('/breakout/') !== -1) return 'breakout';
+    if (path.indexOf('/reversi/') !== -1) return 'reversi';
     console.log('[Header] No game detected');
     return null;
   }
@@ -293,7 +295,11 @@
       currentGame === 'snakes' ? 'rules_snakes' :
       currentGame === 'pong' ? 'rules_pong' :
       currentGame === 'backgammon' ? 'rules_backgammon' :
-      currentGame === 'mancala' ? 'rules_mancala' : 'rules_home';
+      currentGame === 'mancala' ? 'rules_mancala' :
+      currentGame === 'flowfree' ? 'rules_flowfree' :
+      currentGame === 'nonogram' ? 'rules_nonogram' :
+      currentGame === 'breakout' ? 'rules_breakout' :
+      currentGame === 'reversi' ? 'rules_reversi' : 'rules_home';
 
     var installSection = '';
     if ('serviceWorker' in navigator && BEFORE_INSTALL_PROMPT) {
@@ -452,7 +458,9 @@
       mastermind: 'share_text_mastermind', battleship: 'share_text_battleship',
       rps: 'share_text_rps', hangman: 'share_text_hangman',
       snakes: 'share_text_snakes', pong: 'share_text_pong',
-      backgammon: 'share_text_backgammon', mancala: 'share_text_mancala'
+      backgammon: 'share_text_backgammon', mancala: 'share_text_mancala',
+      flowfree: 'share_text_flowfree', nonogram: 'share_text_nonogram',
+      breakout: 'share_text_breakout', reversi: 'share_text_reversi'
     };
     var key = keys[game] || 'share_text_home';
     return (t && t[key]) || 'Playing mini board games on Tablo!';
@@ -475,7 +483,7 @@
   function exportStats() {
     console.log('[Header] Exporting stats...');
     var stats = {};
-    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku', 'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble', 'gomoku', 'checkers', 'mastermind', 'battleship', 'rps', 'hangman', 'snakes', 'pong', 'backgammon', 'mancala'];
+    var games = ['memory', 'connect4', 'dots', 'tictactoe', 'simon', 'slider', 'lights', 'whack', 'snake', '2048', 'wordle', 'spot', 'hex', 'chess', 'sudoku', 'tetris', 'minesweeper', 'mahjong', 'puzzle', 'bubble', 'gomoku', 'checkers', 'mastermind', 'battleship', 'rps', 'hangman', 'snakes', 'pong', 'backgammon', 'mancala', 'flowfree', 'nonogram', 'breakout', 'reversi'];
     games.forEach(function(game) {
       var best = localStorage.getItem('tablo-' + game + '-best');
       var wins = localStorage.getItem('tablo-' + game + '-wins');

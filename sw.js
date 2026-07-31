@@ -1,8 +1,4 @@
-// ============================================
-// Tablo — Service Worker (v0.7.0)
-// ============================================
-
-const CACHE_NAME = 'tablo-v0.7.0';
+const CACHE_NAME = 'tablo-v0.7.1';
 
 const PRECACHE_URLS = [
   './',
@@ -12,6 +8,7 @@ const PRECACHE_URLS = [
   './assets/js/config.js',
   './assets/js/header.js',
   './assets/js/footer.js',
+  './assets/js/pwa-install.js',
   './assets/js/translations/en.json',
   './assets/js/translations/el.json',
   './assets/js/translations/es.json',
@@ -121,12 +118,72 @@ const PRECACHE_URLS = [
   // Bubble Shooter
   './games/bubble-shooter/index.html',
   './games/bubble-shooter/game.js',
-  './games/bubble-shooter/styles.css'
-  
+  './games/bubble-shooter/styles.css',
+
+  // Gomoku
+  './games/gomoku/index.html',
+  './games/gomoku/game.js',
+  './games/gomoku/styles.css',
+
+  // Checkers
+  './games/checkers/index.html',
+  './games/checkers/game.js',
+  './games/checkers/styles.css',
+
+  // Mastermind
+  './games/mastermind/index.html',
+  './games/mastermind/game.js',
+  './games/mastermind/styles.css',
+
+  // Battleship
+  './games/battleship/index.html',
+  './games/battleship/game.js',
+  './games/battleship/styles.css',
+
+  // Rock Paper Scissors
+  './games/rock-paper-scissors/index.html',
+  './games/rock-paper-scissors/game.js',
+  './games/rock-paper-scissors/styles.css',
+
+  // Hangman
+  './games/hangman/index.html',
+  './games/hangman/game.js',
+  './games/hangman/styles.css',
+
+  // Flow Free
+  './games/flowfree/index.html',
+  './games/flowfree/game.js',
+  './games/flowfree/styles.css',
+
+  // Nonogram
+  './games/nonogram/index.html',
+  './games/nonogram/game.js',
+  './games/nonogram/styles.css',
+
+  // Breakout
+  './games/breakout/index.html',
+  './games/breakout/game.js',
+  './games/breakout/styles.css',
+
+  // Reversi
+  './games/reversi/index.html',
+  './games/reversi/game.js',
+  './games/reversi/styles.css',
+
   // Mancala
-'./games/mancala/index.html',
-'./games/mancala/game.js',
-'./games/mancala/styles.css',
+  './games/mancala/index.html',
+  './games/mancala/game.js',
+  './games/mancala/styles.css',
+
+  // Pong
+  './games/pong/index.html',
+  './games/pong/game.js',
+  './games/pong/styles.css',
+
+  // Backgammon
+  './games/backgammon/index.html',
+  './games/backgammon/game.js',
+  './games/backgammon/styles.css'
 ];
 
 self.addEventListener('install', function(event) {

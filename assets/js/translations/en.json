@@ -382,5 +382,9 @@
 "flow_solved": "Puzzle Solved!",
 "flow_win_message": "Great job in",
 "flow_moves_lower": "moves!",
-"btn_play_again": "Play Again"
+"btn_play_again": "Play Again",
+"rules_flowfree": "Connect matching colored dots with pipes. Fill every cell on the board. Pipes cannot cross or overlap!",
+"share_text_flowfree": "Playing Flow Free on Tablo!",
+"game_flowfree_name": "Flow Free",
+"game_flowfree_desc": "Connect matching colored dots without crossing paths."
 }
