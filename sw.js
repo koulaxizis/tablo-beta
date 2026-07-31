@@ -1,8 +1,8 @@
 // ============================================
-// Tablo — Service Worker (v0.4.0)
+// Tablo — Service Worker (v0.7.0)
 // ============================================
 
-const CACHE_NAME = 'tablo-v0.4.0';
+const CACHE_NAME = 'tablo-v0.7.0';
 
 const PRECACHE_URLS = [
   './',
