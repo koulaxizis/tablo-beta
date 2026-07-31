@@ -1,5 +1,5 @@
 // ============================================
-// Tablo — Solitaire (Klondike)
+// Tablo — Solitaire (Klondike) — Clean Rewrite
 // ============================================
 
 (function() {
@@ -12,7 +12,6 @@
   var suitColors = { h: '#ef4444', d: '#ef4444', c: '#1e293b', s: '#1e293b' };
   var ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
-  var deck = [];
   var stock = [];
   var waste = [];
   var foundations = { h: [], d: [], c: [], s: [] };
@@ -24,9 +23,7 @@
   var gameActive = false;
   var timerInterval = null;
   var seconds = 0;
-
   var undoStack = [];
-  var MAX_UNDO = 30;
 
   var scoreEl, movesEl, timeEl;
   var stockEl, wasteEl, newGameBtn, undoBtn;
@@ -58,8 +55,8 @@
       score: score,
       moves: moves
     }));
-    if (undoStack.length > MAX_UNDO) undoStack.shift();
-    updateUndoBtn();
+    if (undoStack.length > 30) undoStack.shift();
+    if (undoBtn) undoBtn.disabled = false;
   }
 
   function undo() {
@@ -67,24 +64,20 @@
       showToast(tr('solitaire_nothing_to_undo'));
       return;
     }
-    var state = JSON.parse(undoStack.pop());
-    stock = state.stock;
-    waste = state.waste;
-    foundations = state.foundations;
-    tableau = state.tableau;
-    score = state.score;
-    moves = state.moves;
+    var s = JSON.parse(undoStack.pop());
+    stock = s.stock;
+    waste = s.waste;
+    foundations = s.foundations;
+    tableau = s.tableau;
+    score = s.score;
+    moves = s.moves;
     selected = null;
     renderAll();
-    updateUndoBtn();
-  }
-
-  function updateUndoBtn() {
     if (undoBtn) undoBtn.disabled = undoStack.length === 0;
   }
 
   function createDeck() {
-    deck = [];
+    var deck = [];
     for (var i = 0; i < suits.length; i++) {
       for (var j = 0; j < ranks.length; j++) {
         deck.push({
@@ -99,10 +92,11 @@
     }
     for (var i = deck.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
-      var temp = deck[i];
+      var tmp = deck[i];
       deck[i] = deck[j];
-      deck[j] = temp;
+      deck[j] = tmp;
     }
+    return deck;
   }
 
   function dealCards() {
@@ -110,7 +104,7 @@
     waste = [];
     foundations = { h: [], d: [], c: [], s: [] };
     tableau = [[], [], [], [], [], [], []];
-
+    var deck = createDeck();
     for (var col = 0; col < 7; col++) {
       for (var row = 0; row <= col; row++) {
         var card = deck.pop();
@@ -119,7 +113,6 @@
       }
     }
     stock = deck;
-    deck = [];
   }
 
   function initGame() {
@@ -144,22 +137,22 @@
 
     if (stockEl) stockEl.addEventListener('click', drawFromStock);
 
-    document.querySelectorAll('.foundation').forEach(function(el) {
+    document.querySelectorAll('.sol-foundation').forEach(function(el) {
       el.addEventListener('click', function() {
         handleFoundationClick(this.id);
       });
     });
 
-    document.querySelectorAll('.column').forEach(function(colEl) {
+    document.querySelectorAll('.sol-column').forEach(function(colEl) {
       colEl.addEventListener('click', function() {
-        handleTableauClick(parseInt(this.dataset.col));
+        handleColumnClick(parseInt(this.dataset.col));
       });
     });
 
     if (wasteEl) {
       wasteEl.addEventListener('click', function() {
         if (waste.length > 0) {
-          handleCardClick('waste', 0, waste[waste.length - 1]);
+          handleCardClick('waste', 0, waste[waste.length - 1], 0);
         }
       });
     }
@@ -174,8 +167,7 @@
     console.log('[Solitaire] Init complete');
   }
 
-  function startNewGame() {
-    createDeck();
+    function startNewGame() {
     dealCards();
     score = 0;
     moves = 0;
@@ -183,7 +175,7 @@
     selected = null;
     gameActive = true;
     undoStack = [];
-    updateUndoBtn();
+    if (undoBtn) undoBtn.disabled = true;
     renderAll();
   }
 
@@ -218,19 +210,14 @@
     stockEl.innerHTML = '';
     if (stock.length > 0) {
       var back = document.createElement('div');
-      back.className = 'card-back';
+      back.className = 'sol-cardback';
       stockEl.appendChild(back);
-      stockEl.classList.remove('empty');
-    } else {
-      stockEl.classList.add('empty');
     }
   }
 
   function drawFromStock() {
     if (!gameActive) return;
-
     saveState();
-
     if (stock.length === 0) {
       stock = waste.reverse().map(function(c) { c.faceUp = false; return c; });
       waste = [];
@@ -267,9 +254,7 @@
         var card = foundations[suit][foundations[suit].length - 1];
         var cardEl = createCardElement(card);
         el.appendChild(cardEl);
-        el.classList.remove('empty');
       } else {
-        el.classList.add('empty');
         var ph = document.createElement('div');
         ph.className = 'foundation-placeholder';
         ph.textContent = suitNames[suit];
@@ -280,26 +265,22 @@
 
   function renderTableau() {
     for (var col = 0; col < 7; col++) {
-      var colEl = document.querySelector('.column[data-col="' + col + '"]');
+      var colEl = document.querySelector('.sol-column[data-col="' + col + '"]');
       if (!colEl) continue;
       colEl.innerHTML = '';
-
       for (var i = 0; i < tableau[col].length; i++) {
         var card = tableau[col][i];
         var cardEl = createCardElement(card);
         cardEl.style.top = (i * 25) + 'px';
-
         if (selected && selected.source === 'tableau' && selected.col === col && i >= selected.cardIndex) {
           cardEl.classList.add('selected');
         }
-
         (function(colNum, cardIdx, cardObj) {
           cardEl.addEventListener('click', function(e) {
             e.stopPropagation();
             handleCardClick('tableau', colNum, cardObj, cardIdx);
           });
         })(col, i, card);
-
         colEl.appendChild(cardEl);
       }
     }
@@ -307,18 +288,15 @@
 
   function createCardElement(card) {
     var div = document.createElement('div');
-    div.className = 'card';
-
+    div.className = 'sol-card';
     if (!card.faceUp) {
       div.classList.add('face-down');
     } else {
       div.classList.add('face-up');
       var inner = document.createElement('div');
-      inner.className = 'card-inner';
+      inner.className = 'sol-card-inner';
       inner.style.color = card.color;
-      inner.innerHTML =
-        '<span class="rank">' + card.rank + '</span>' +
-        '<span class="suit">' + card.symbol + '</span>';
+      inner.innerHTML = '<span class="rank">' + card.rank + '</span><span class="suit">' + card.symbol + '</span>';
       div.appendChild(inner);
     }
     return div;
@@ -332,7 +310,6 @@
   function handleCardClick(source, col, card, cardIndex) {
     if (!gameActive) return;
     if (!card.faceUp) return;
-
     if (selected) {
       if (selected.source === source && selected.col === col && selected.cardIndex === cardIndex) {
         selected = null;
@@ -350,9 +327,8 @@
     }
   }
 
-  function handleTableauClick(col) {
+  function handleColumnClick(col) {
     if (!gameActive) return;
-
     if (selected) {
       tryMoveToTableau(col);
     } else {
@@ -365,10 +341,8 @@
   function handleFoundationClick(foundationId) {
     if (!gameActive) return;
     if (!selected) return;
-
     var suit = foundationId.replace('foundation-', '');
     var card = selected.card;
-
     if (card.suit === suit && canMoveToFoundation(card)) {
       moveToFoundation(selected);
     } else {
@@ -392,13 +366,11 @@
   }
 
   function tryMoveToTableau(destCol) {
-    var source = selected.source;
+    var src = selected.source;
     var card = selected.card;
-    var sourceCol = selected.col;
+    var srcCol = selected.col;
     var cardIndex = selected.cardIndex;
-
     var dest = tableau[destCol];
-
     if (dest.length === 0) {
       if (card.value !== 13) {
         showToast(tr('solitaire_only_king_on_empty'));
@@ -408,29 +380,25 @@
       }
     } else {
       var topDest = dest[dest.length - 1];
-      if (card.color === topDest.color || card.value !== topDest.value - 1) {
+      if (card.color !== topDest.color || card.value !== topDest.value - 1) {
         showToast(tr('solitaire_invalid_move'));
         selected = null;
         renderAll();
         return;
       }
     }
-
     saveState();
-
-    if (source === 'waste') {
+    if (src === 'waste') {
       var moved = waste.pop();
       tableau[destCol].push(moved);
     } else {
-      var cardsToMove = tableau[sourceCol].splice(cardIndex);
+      var cardsToMove = tableau[srcCol].splice(cardIndex);
       tableau[destCol] = tableau[destCol].concat(cardsToMove);
-
-      if (tableau[sourceCol].length > 0) {
-        tableau[sourceCol][tableau[sourceCol].length - 1].faceUp = true;
+      if (tableau[srcCol].length > 0) {
+        tableau[srcCol][tableau[srcCol].length - 1].faceUp = true;
         score += 5;
       }
     }
-
     moves++;
     score += 5;
     selected = null;
@@ -440,22 +408,18 @@
 
   function moveToFoundation(sel) {
     var suit = sel.card.suit;
-
     saveState();
-
     if (sel.source === 'waste') {
       var card = waste.pop();
       foundations[suit].push(card);
     } else {
       var card = tableau[sel.col].pop();
       foundations[suit].push(card);
-
       if (tableau[sel.col].length > 0) {
         tableau[sel.col][tableau[sel.col].length - 1].faceUp = true;
         score += 5;
       }
     }
-
     moves++;
     score += 10;
     selected = null;
@@ -476,10 +440,10 @@
   }
 
   function showWinner() {
-    if (winnerIcon) winnerIcon.textContent = '\u{1F389}';
+    if (winnerIcon) winnerIcon.textContent = '🎉';
     if (winnerTitle) winnerTitle.textContent = tr('solitaire_you_win');
     if (winnerMessage) {
-      winnerMessage.textContent = tr('solitaire_win_message') + ' ' + score + ' ' + tr('solitaire_points') + ', ' + moves + ' ' + tr('solitaire_moves_word') + ', ' + timeEl.textContent;
+      winnerMessage.textContent = tr('solitaire_win_message') + ' ' + score + ' ' + tr('solitaire_points') + ', ' + moves + ' ' + tr('solitaire_moves_word');
     }
     if (winnerModal) winnerModal.classList.add('visible');
   }

@@ -1,327 +1,353 @@
 /* ============================================
-   Tablo — Solitaire Styles (v1)
+   Tablo — Solitaire Styles (Clean Rewrite)
+   Works WITH main style.css, not against it.
+   Unique class names: sol-* / solitaire-*
    ============================================ */
 
-.game-wrapper {
-  flex: 1 1 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  padding: 20px !important;
-  gap: 16px !important;
-  width: 100% !important;
-  position: relative !important;
-  overflow: visible !important;
-  min-height: 0 !important;
+.solitaire-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
 }
 
-.game-stats {
-  display: flex !important;
-  gap: 24px !important;
-  padding: 16px 24px !important;
-  background: #1e293b !important;
-  border: 1px solid #334155 !important;
-  border-radius: 12px !important;
-  flex-wrap: wrap !important;
-  justify-content: center !important;
-  max-width: 600px !important;
-  margin: 0 auto !important;
+/* ===== STATS ===== */
+.solitaire-stats {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
+  flex-shrink: 0;
 }
 
-.stat-item {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 4px !important;
-  min-width: 80px !important;
+.solitaire-stats .stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
 }
 
-.stat-label {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  color: #94a3b8 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
+.solitaire-stats .stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.stat-value {
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  color: #2dd4bf !important;
+.solitaire-stats .stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2dd4bf;
 }
 
+/* ===== BOARD ===== */
 .solitaire-board {
-  width: 100% !important;
-  max-width: 900px !important;
-  padding: 16px !important;
-  background: #1e293b !important;
-  border-radius: 16px !important;
-  border: 4px solid #334155 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
-  position: relative !important;
-  overflow: visible !important;
-  margin-bottom: 20px !important;
-  display: block !important;
+  width: 100%;
+  max-width: 900px;
+  padding: 16px;
+  background: #1e293b;
+  border-radius: 16px;
+  border: 4px solid #334155;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
 }
 
-.top-row {
-  display: flex !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  margin-bottom: 24px !important;
-  min-height: 100px !important;
-  position: relative !important;
-  width: 100% !important;
+/* ===== TOP ROW ===== */
+.solitaire-toprow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  min-height: 100px;
 }
 
-.pile {
-  width: 80px !important;
-  height: 100px !important;
-  border: 2px dashed #334155 !important;
-  border-radius: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  position: relative !important;
+.sol-pile {
+  width: 80px;
+  height: 100px;
+  border: 2px dashed #334155;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.empty-slot {
-  opacity: 0.5 !important;
+.sol-empty {
+  opacity: 0.5;
+  border: none;
 }
 
 .stock {
-  cursor: pointer !important;
+  cursor: pointer;
 }
 
 .stock:hover {
-  border-color: #2dd4bf !important;
+  border-color: #2dd4bf;
 }
 
-.card-back {
-  width: 70px !important;
-  height: 90px !important;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
-  border: 2px solid #2dd4bf !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
-  position: relative !important;
+.sol-cardback {
+  width: 70px;
+  height: 90px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent 6px,
+      rgba(45, 212, 191, 0.1) 6px,
+      rgba(45, 212, 191, 0.1) 12px
+    ),
+    linear-gradient(135deg, #1e293b, #0f172a);
+  border: 2px solid #2dd4bf;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
-.foundation {
-  width: 80px !important;
-  height: 100px !important;
-  border: 2px dashed #334155 !important;
-  border-radius: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  position: relative !important;
+.sol-cardback::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  border-radius: 4px;
 }
 
-.foundation:hover {
-  border-color: #f59e0b !important;
+.sol-foundation {
+  width: 80px;
+  height: 100px;
+  border: 2px dashed #334155;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  flex-shrink: 0;
 }
 
-.foundation .foundation-placeholder {
-  font-size: 40px !important;
-  color: #334155 !important;
-  opacity: 0.5 !important;
+.sol-foundation:hover {
+  border-color: #f59e0b;
 }
 
-.tableau {
-  display: flex !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
-  min-height: 700px !important;
-  position: relative !important;
-  overflow: visible !important;
-  padding-bottom: 150px !important;
-  width: 100% !important;
+.sol-foundation .foundation-placeholder {
+  font-size: 40px;
+  color: #334155;
+  opacity: 0.5;
 }
 
-.column {
-  width: calc((100% - 48px) / 7) !important;
-  min-height: 600px !important;
-  position: relative !important;
-  overflow: visible !important;
+/* ===== TABLEAU ===== */
+.solitaire-tableau {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 450px;
 }
 
-.card {
-  width: 100% !important;
-  height: 90px !important;
-  background: #fff !important;
-  border-radius: 6px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-  position: absolute !important;
-  cursor: pointer !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-  border-left: 3px solid !important;
-  border-right: 3px solid !important;
-  z-index: 1 !important;
-  overflow: visible !important;
-  left: 0 !important;
-  display: block !important;
+.sol-column {
+  width: calc((100% - 48px) / 7);
+  min-height: 450px;
+  position: relative;
 }
 
-.card.face-down {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
-  border-color: #2dd4bf !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+/* ===== CARDS ===== */
+.sol-card {
+  width: 100%;
+  height: 90px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  left: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-left: 3px solid;
+  border-right: 3px solid;
+  z-index: 1;
 }
 
-.card.face-up {
-  display: flex !important;
-  flex-direction: column !important;
-  padding: 4px 6px !important;
+.sol-card.face-down {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent 6px,
+      rgba(45, 212, 191, 0.1) 6px,
+      rgba(45, 212, 191, 0.1) 12px
+    ),
+    linear-gradient(135deg, #1e293b, #0f172a);
+  border-color: #2dd4bf;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.card.face-up:hover {
-  transform: translateY(-4px) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
-  z-index: 100 !important;
+.sol-card.face-down::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  border-radius: 4px;
 }
 
-.card.selected {
-  box-shadow: 0 0 0 3px #2dd4bf, 0 6px 16px rgba(0, 0, 0, 0.4) !important;
-  z-index: 200 !important;
+.sol-card.face-up {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 6px;
+  border-color: #cbd5e1;
 }
 
-.card-inner {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: flex-start !important;
-  width: 100% !important;
+.sol-card.face-up:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  z-index: 100;
 }
 
-.card .rank {
-  font-size: 14px !important;
-  font-weight: 700 !important;
+.sol-card.selected {
+  box-shadow: 0 0 0 3px #2dd4bf, 0 6px 16px rgba(0, 0, 0, 0.4);
+  z-index: 200;
 }
 
-.card .suit {
-  font-size: 16px !important;
-  font-weight: 700 !important;
+.sol-card-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
 }
 
-.game-controls {
-  display: flex !important;
-  gap: 8px !important;
-  justify-content: center !important;
-  flex-wrap: wrap !important;
-  margin-top: 8px !important;
-  padding-bottom: 20px !important;
+.sol-card .rank {
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.game-btn {
-  background: #1e293b !important;
-  border: 1px solid #334155 !important;
-  color: #e2e8f0 !important;
-  padding: 10px 20px !important;
-  border-radius: 8px !important;
-  font-family: 'Nunito', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: 0.2s ease !important;
+.sol-card .suit {
+  font-size: 16px;
+  font-weight: 700;
 }
 
-.game-btn:hover:not(:disabled) {
-  background: #243044 !important;
-  border-color: #2dd4bf !important;
-  color: #2dd4bf !important;
+/* ===== WIN MODAL ===== */
+.solitaire-winmodal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
 }
 
-.game-btn:disabled {
-  opacity: 0.4 !important;
-  cursor: not-allowed !important;
+.solitaire-winmodal.visible {
+  display: flex;
 }
 
-.game-btn.primary {
-  background: #2dd4bf !important;
-  border-color: #2dd4bf !important;
-  color: #0f1923 !important;
+.solitaire-winoverlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
 }
 
-.game-hint {
-  font-size: 12px !important;
-  color: #64748b !important;
-  text-align: center !important;
-  margin: 8px auto !important;
-  max-width: 700px !important;
-  line-height: 1.5 !important;
+.solitaire-wincontent {
+  position: relative;
+  background: #1e293b;
+  border: 2px solid #2dd4bf;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6);
 }
 
-.tablo-toast {
-  position: fixed !important;
-  bottom: 80px !important;
-  left: 50% !important;
-  transform: translateX(-50%) translateY(20px) !important;
-  background: #1e293b !important;
-  border: 1px solid #334155 !important;
-  color: #e2e8f0 !important;
-  padding: 12px 24px !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-  z-index: 10001 !important;
-  opacity: 0 !important;
-  transition: opacity 0.3s ease, transform 0.3s ease !important;
-  pointer-events: none !important;
+.solitaire-winicon {
+  font-size: 48px;
+  margin-bottom: 16px;
 }
 
-.tablo-toast.visible {
-  opacity: 1 !important;
-  transform: translateX(-50%) translateY(0) !important;
+.solitaire-wintitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #e2e8f0;
 }
 
+.solitaire-winmsg {
+  font-size: 16px;
+  color: #94a3b8;
+  margin-bottom: 24px;
+}
+
+.solitaire-winbuttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ===== CONTROLS ===== */
+.solitaire-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+.solitaire-hint {
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  margin: 8px auto;
+  max-width: 700px;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+/* ===== MOBILE ===== */
 @media (max-width: 600px) {
   .solitaire-board {
-    padding: 8px !important;
-    min-width: 700px !important;
+    padding: 8px;
+    overflow-x: auto;
+    min-width: 700px;
   }
 
-  .top-row {
-    min-width: 700px !important;
+  .solitaire-toprow {
+    min-width: 700px;
   }
 
-  .pile, .foundation {
-    width: 50px !important;
-    height: 70px !important;
+  .sol-pile, .sol-foundation {
+    width: 50px;
+    height: 70px;
   }
 
-  .card-back {
-    width: 45px !important;
-    height: 65px !important;
+  .sol-cardback {
+    width: 45px;
+    height: 65px;
   }
 
-  .tableau {
-    min-width: 700px !important;
-    gap: 4px !important;
-    min-height: 400px !important;
+  .solitaire-tableau {
+    min-width: 700px;
+    gap: 4px;
+    min-height: 350px;
   }
 
-  .column {
-    width: calc((700px - 24px) / 7) !important;
-    min-height: 250px !important;
+  .sol-column {
+    width: calc((700px - 24px) / 7);
+    min-height: 350px;
   }
 
-  .card {
-    height: 65px !important;
+  .sol-card {
+    height: 65px;
   }
 
-  .game-stats {
-    gap: 12px !important;
-    padding: 12px 16px !important;
-    max-width: 100% !important;
+  .sol-card .rank {
+    font-size: 10px;
   }
 
-  .stat-label {
-    font-size: 10px !important;
-  }
-
-  .stat-value {
-    font-size: 14px !important;
+  .sol-card .suit {
+    font-size: 12px;
   }
 }
