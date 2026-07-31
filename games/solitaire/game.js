@@ -25,8 +25,11 @@
   var timerInterval = null;
   var seconds = 0;
 
+  var undoStack = [];
+  var MAX_UNDO = 30;
+
   var scoreEl, movesEl, timeEl;
-  var stockEl, wasteEl, newGameBtn;
+  var stockEl, wasteEl, newGameBtn, undoBtn;
   var winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn;
   var toast;
 
@@ -44,6 +47,40 @@
     showToast._t = setTimeout(function() {
       toast.classList.remove('visible');
     }, 2000);
+  }
+
+  function saveState() {
+    undoStack.push(JSON.stringify({
+      stock: stock,
+      waste: waste,
+      foundations: foundations,
+      tableau: tableau,
+      score: score,
+      moves: moves
+    }));
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    updateUndoBtn();
+  }
+
+  function undo() {
+    if (undoStack.length === 0) {
+      showToast(tr('solitaire_nothing_to_undo'));
+      return;
+    }
+    var state = JSON.parse(undoStack.pop());
+    stock = state.stock;
+    waste = state.waste;
+    foundations = state.foundations;
+    tableau = state.tableau;
+    score = state.score;
+    moves = state.moves;
+    selected = null;
+    renderAll();
+    updateUndoBtn();
+  }
+
+  function updateUndoBtn() {
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
   }
 
   function createDeck() {
@@ -94,6 +131,7 @@
     stockEl = document.getElementById('stock');
     wasteEl = document.getElementById('waste');
     newGameBtn = document.getElementById('btn-new-game');
+    undoBtn = document.getElementById('btn-undo');
     winnerModal = document.getElementById('winner-modal');
     winnerIcon = document.getElementById('winner-icon');
     winnerTitle = document.getElementById('winner-title');
@@ -127,6 +165,7 @@
     }
 
     if (newGameBtn) newGameBtn.addEventListener('click', startNewGame);
+    if (undoBtn) undoBtn.addEventListener('click', undo);
     if (playAgainBtn) playAgainBtn.addEventListener('click', function() {
       if (winnerModal) winnerModal.classList.remove('visible');
       startNewGame();
@@ -143,6 +182,8 @@
     seconds = 0;
     selected = null;
     gameActive = true;
+    undoStack = [];
+    updateUndoBtn();
     renderAll();
   }
 
@@ -187,6 +228,8 @@
 
   function drawFromStock() {
     if (!gameActive) return;
+
+    saveState();
 
     if (stock.length === 0) {
       stock = waste.reverse().map(function(c) { c.faceUp = false; return c; });
@@ -373,6 +416,8 @@
       }
     }
 
+    saveState();
+
     if (source === 'waste') {
       var moved = waste.pop();
       tableau[destCol].push(moved);
@@ -395,6 +440,8 @@
 
   function moveToFoundation(sel) {
     var suit = sel.card.suit;
+
+    saveState();
 
     if (sel.source === 'waste') {
       var card = waste.pop();

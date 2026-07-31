@@ -102,10 +102,27 @@
 .card-back {
   width: 70px;
   height: 90px;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 6px,
+      rgba(45, 212, 191, 0.12) 6px,
+      rgba(45, 212, 191, 0.12) 12px
+    ),
+    linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border: 2px solid #2dd4bf;
   border-radius: 6px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.card-back::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  border-radius: 4px;
 }
 
 .foundation {
@@ -138,7 +155,7 @@
 
 .card {
   width: 100%;
-  min-height: 90px;
+  height: 90px;
   background: #fff;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -147,11 +164,29 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   border-left: 3px solid;
   border-right: 3px solid;
+  overflow: hidden;
 }
 
 .card.face-down {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 6px,
+      rgba(45, 212, 191, 0.12) 6px,
+      rgba(45, 212, 191, 0.12) 12px
+    ),
+    linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border-color: #2dd4bf;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card.face-down::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  border-radius: 4px;
 }
 
 .card.face-up {
@@ -338,7 +373,7 @@
   }
 
   .card {
-    min-height: 65px;
+    height: 65px;
   }
 
   .card .rank {
