@@ -1,7 +1,3 @@
-============================================
-Tablo — Flow Free Game.js (FINAL v5 — FIXED PLAY AGAIN + TRANSLATIONS)
-============================================
-
 (function() {
   'use strict';
 
