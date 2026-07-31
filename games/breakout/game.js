@@ -79,7 +79,6 @@
     canvas = document.getElementById('game-canvas');
     ctx = canvas.getContext('2d');
 
-    // Fixed: Get actual canvas dimensions after DOM is ready
     canvasWidth = canvas.width;
     canvasHeight = canvas.height;
 
@@ -97,6 +96,7 @@
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
 
+    // Fixed mouse/touch tracking for scaled canvas
     canvas.addEventListener('mousemove', function(e) {
       var rect = canvas.getBoundingClientRect();
       var scaleX = canvas.width / rect.width;
@@ -194,7 +194,6 @@
   }
 
   function resetPaddle() {
-    // Fixed: Use canvas.height instead of canvasHeight variable
     paddle.y = canvas.height - 40;
     paddle.x = (canvas.width - paddle.width) / 2;
     paddle.dx = 0;
@@ -248,7 +247,6 @@
       ball.dy = -ball.dy;
     }
 
-    // Paddle collision
     if (ball.y + ball.radius >= paddle.y &&
         ball.y + ball.radius <= paddle.y + paddle.height + 5 &&
         ball.x >= paddle.x &&
@@ -267,7 +265,6 @@
       }
     }
 
-    // Brick collisions
     for (var r = 0; r < brickRows; r++) {
       for (var c = 0; c < brickCols; c++) {
         var b = bricks[r][c];
@@ -297,7 +294,6 @@
       }
     }
 
-    // Ball falls below
     if (ball.y + ball.radius > canvas.height) {
       lives--;
       updateStats();
