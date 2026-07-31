@@ -14,7 +14,6 @@ html, body {
   min-height: 100vh;
 }
 
-/* Force no horizontal scroll */
 .game-wrapper {
   display: flex;
   flex-direction: column;
@@ -23,12 +22,11 @@ html, body {
   gap: 12px;
   width: 100%;
   max-width: 100%;
+  /* Fixed: spacing from header */
+  margin-top: 24px;
 }
 
-/* Remove the ::before spacer that adds extra height */
-.game-wrapper::before {
-  display: none;
-}
+/* Removed ::before spacer entirely */
 
 .game-stats {
   display: flex;
@@ -65,13 +63,11 @@ html, body {
   color: #2dd4bf;
 }
 
-/* Fixed: Container that respects viewport height */
 .canvas-wrapper {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
   position: relative;
-  /* Dynamic height based on viewport, respecting aspect ratio */
   height: calc(min(60vh, 500px));
   max-height: 500px;
 }
@@ -236,22 +232,8 @@ html, body {
   line-height: 1.4;
 }
 
-/* Fixed: Header icon sizing - override any global styles */
-#tablo-header svg.icon,
-#tablo-header svg[id^="icon-"] {
-  width: 22px !important;
-  height: 22px !important;
-  flex-shrink: 0;
-  min-width: 22px;
-  min-height: 22px;
-}
+/* REMOVED: All #tablo-header SVG overrides — they were causing the gear distortion */
 
-/* Fixed: Ensure header doesn't cause overflow */
-#tablo-header {
-  width: 100%;
-}
-
-/* Mobile responsive - tighter constraints */
 @media (max-width: 600px) {
   .canvas-wrapper {
     height: calc(min(55vh, 400px));
@@ -263,14 +245,8 @@ html, body {
     border-width: 2px;
   }
 
-  .start-title {
-    font-size: 22px;
-  }
-
-  .start-text {
-    font-size: 12px;
-    max-width: 300px;
-  }
+  .start-title { font-size: 22px; }
+  .start-text { font-size: 12px; max-width: 300px; }
 
   .game-stats {
     gap: 10px;
@@ -278,13 +254,8 @@ html, body {
     max-width: 100%;
   }
 
-  .stat-label {
-    font-size: 9px;
-  }
-
-  .stat-value {
-    font-size: 14px;
-  }
+  .stat-label { font-size: 9px; }
+  .stat-value { font-size: 14px; }
 
   .game-hint {
     font-size: 10px;
@@ -297,12 +268,9 @@ html, body {
     font-size: 12px;
   }
 
-  .game-controls {
-    margin-top: 4px;
-  }
+  .game-controls { margin-top: 4px; }
 }
 
-/* Very small screens - prioritize game area */
 @media (max-height: 600px), (max-width: 400px) {
   .canvas-wrapper {
     height: calc(min(50vh, 320px));
@@ -316,7 +284,6 @@ html, body {
 
   .stat-label { font-size: 8px; }
   .stat-value { font-size: 13px; }
-
   .start-title { font-size: 20px; }
   .start-text { font-size: 11px; }
 }

@@ -51,6 +51,9 @@
   var leftPressed = false;
   var rightPressed = false;
 
+  // Fixed: Track which input method is active
+  var inputMode = 'none'; // 'mouse', 'keyboard', or 'none'
+
   var scoreEl, livesEl, levelEl;
   var newGameBtn, pauseBtn, startBtn;
   var startOverlay;
@@ -96,11 +99,11 @@
     playAgainBtn = document.getElementById('btn-play-again');
     toast = document.getElementById('toast');
 
-    // Fixed mouse/touch tracking for scaled canvas
     canvas.addEventListener('mousemove', function(e) {
       var rect = canvas.getBoundingClientRect();
       var scaleX = canvas.width / rect.width;
       mouseX = (e.clientX - rect.left) * scaleX;
+      inputMode = 'mouse';
     });
 
     canvas.addEventListener('touchmove', function(e) {
@@ -108,11 +111,18 @@
       var rect = canvas.getBoundingClientRect();
       var scaleX = canvas.width / rect.width;
       mouseX = (e.touches[0].clientX - rect.left) * scaleX;
+      inputMode = 'mouse';
     }, { passive: false });
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'ArrowLeft' || e.key === 'a') leftPressed = true;
-      if (e.key === 'ArrowRight' || e.key === 'd') rightPressed = true;
+      if (e.key === 'ArrowLeft' || e.key === 'a') {
+        leftPressed = true;
+        inputMode = 'keyboard';
+      }
+      if (e.key === 'ArrowRight' || e.key === 'd') {
+        rightPressed = true;
+        inputMode = 'keyboard';
+      }
       if (e.key === ' ' || e.key === 'p') {
         e.preventDefault();
         togglePause();
@@ -141,6 +151,7 @@
     lives = 3;
     level = 1;
     gameState = 'idle';
+    inputMode = 'none';
     initBricks();
     resetBall();
     resetPaddle();
@@ -221,7 +232,8 @@
       paddle.x += paddle.speed;
     }
 
-    if (mouseX > 0 && !leftPressed && !rightPressed) {
+    // Fixed: Only follow mouse when mouse is the active input method
+    if (inputMode === 'mouse' && !leftPressed && !rightPressed) {
       var target = mouseX - paddle.width / 2;
       paddle.x += (target - paddle.x) * 0.25;
     }
