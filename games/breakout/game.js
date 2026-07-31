@@ -1,3 +1,7 @@
+============================================
+Tablo — Breakout Game.js (CORRECTED)
+============================================
+
 // ============================================
 // Tablo — Breakout
 // ============================================
@@ -78,6 +82,10 @@
 
     canvas = document.getElementById('game-canvas');
     ctx = canvas.getContext('2d');
+
+    // Fixed: Get actual canvas dimensions after DOM is ready
+    canvasWidth = canvas.width;
+    canvasHeight = canvas.height;
 
     scoreEl = document.getElementById('score');
     livesEl = document.getElementById('lives');
@@ -190,14 +198,15 @@
   }
 
   function resetPaddle() {
-    paddle.x = (canvasWidth - paddle.width) / 2;
-    paddle.y = canvasHeight - 40;
+    // Fixed: Use canvas.height instead of canvasHeight variable
+    paddle.y = canvas.height - 40;
+    paddle.x = (canvas.width - paddle.width) / 2;
     paddle.dx = 0;
   }
 
   function resetBall() {
-    ball.x = canvasWidth / 2;
-    ball.y = canvasHeight - 60;
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height - 60;
     var baseSpeed = 5 + (level - 1) * 0.5;
     ball.speed = baseSpeed;
     var angle = (Math.random() * 60 - 30) * Math.PI / 180;
@@ -223,15 +232,15 @@
     }
 
     if (paddle.x < 0) paddle.x = 0;
-    if (paddle.x + paddle.width > canvasWidth) paddle.x = canvasWidth - paddle.width;
+    if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
   }
 
   function updateBall() {
     ball.x += ball.dx;
     ball.y += ball.dy;
 
-    if (ball.x + ball.radius > canvasWidth) {
-      ball.x = canvasWidth - ball.radius;
+    if (ball.x + ball.radius > canvas.width) {
+      ball.x = canvas.width - ball.radius;
       ball.dx = -ball.dx;
     }
     if (ball.x - ball.radius < 0) {
@@ -293,7 +302,7 @@
     }
 
     // Ball falls below
-    if (ball.y + ball.radius > canvasHeight) {
+    if (ball.y + ball.radius > canvas.height) {
       lives--;
       updateStats();
 
@@ -403,7 +412,7 @@
 
   function draw() {
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     drawBricks();
     drawPaddle();
@@ -411,11 +420,11 @@
 
     if (gameState === 'paused') {
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#e2e8f0';
       ctx.font = 'bold 32px Nunito, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(tr('breakout_paused'), canvasWidth / 2, canvasHeight / 2);
+      ctx.fillText(tr('breakout_paused'), canvas.width / 2, canvas.height / 2);
     }
   }
 

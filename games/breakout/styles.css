@@ -1,3 +1,7 @@
+============================================
+Tablo — Breakout Styles (CORRECTED)
+============================================
+
 /* ============================================
    Tablo — Breakout Styles
    ============================================ */
@@ -56,10 +60,21 @@
   color: #2dd4bf;
 }
 
-.canvas-container {
-  position: relative;
+/* Fixed: Wrapper for proper aspect ratio */
+.canvas-wrapper {
   width: 100%;
   max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  padding-top: calc(500 / 720 * 100%); /* 69.44% aspect ratio */
+}
+
+.canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: #0f172a;
   border: 4px solid #334155;
   border-radius: 12px;
@@ -68,10 +83,11 @@
 }
 
 #game-canvas {
-  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: auto;
-  aspect-ratio: 720 / 500;
+  height: 100%;
   touch-action: none;
 }
 
@@ -213,6 +229,13 @@
   line-height: 1.5;
 }
 
+/* Fixed: Header icon sizing */
+#tablo-header svg.icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
 /* Mobile responsive */
 @media (max-width: 600px) {
   .canvas-container {
@@ -240,5 +263,10 @@
 
   .stat-value {
     font-size: 14px;
+  }
+
+  .game-hint {
+    font-size: 11px;
+    padding: 0 16px;
   }
 }
