@@ -107,15 +107,6 @@
       COLOR_LIST.length
     );
 
-    // Create empty grid
-    var g = [];
-    for (var i = 0; i < size; i++) {
-      g[i] = [];
-      for (var j = 0; j < size; j++) {
-        g[i][j] = null;
-      }
-    }
-
     var pairs = [];
     var occupied = [];
 
@@ -171,7 +162,6 @@
       return;
     }
 
-    // Account for padding (16px each side = 32px total)
     var availableWidth = containerWidth - 32;
     var availableHeight = containerHeight - 32;
     var maxHeight = window.innerHeight * 0.5;
@@ -182,7 +172,6 @@
 
     var pixelSize = cellSize * gridSize;
 
-    // Ensure pixel size doesn't exceed available space
     if (pixelSize > availableWidth) pixelSize = availableWidth;
     if (pixelSize > availableHeight) pixelSize = availableHeight;
 
@@ -191,11 +180,9 @@
     canvas.style.width = pixelSize + 'px';
     canvas.style.height = pixelSize + 'px';
 
-    // Center the canvas
     canvas.style.margin = '0 auto';
 
     console.log('[FlowFree] Canvas:', pixelSize, 'cellSize:', cellSize);
-    console.log('[FlowFree] Available:', availableWidth, 'x', availableHeight);
 
     draw();
   }
@@ -302,12 +289,10 @@
     endpoints = generateLevel(gridSize);
     paths = {};
 
-    // Place endpoints on grid
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       grid[ep.start.y][ep.start.x] = ep.color;
       grid[ep.end.y][ep.end.x] = ep.color;
-      // Each path starts with just the start endpoint
       paths[ep.color] = [clone(ep.start)];
     }
 
@@ -317,14 +302,12 @@
   }
 
   function clearAllPaths() {
-    // Reset grid
     for (var i = 0; i < gridSize; i++) {
       for (var j = 0; j < gridSize; j++) {
         grid[i][j] = null;
       }
     }
 
-    // Reset paths to just start endpoints
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       grid[ep.start.y][ep.start.x] = ep.color;
@@ -371,7 +354,6 @@
     var x = Math.floor((clientX - rect.left) / cellSize);
     var y = Math.floor((clientY - rect.top) / cellSize);
 
-    // Clamp
     if (x < 0) x = 0;
     if (x >= gridSize) x = gridSize - 1;
     if (y < 0) y = 0;
@@ -385,25 +367,16 @@
     var cellColor = grid[cell.y][cell.x];
     if (!cellColor) return;
 
-    // Check if this cell is an endpoint
     var epType = findEndpoint(cellColor, cell);
 
     if (epType) {
-      // Starting from an endpoint — reset this color's path
       dragColor = cellColor;
       dragFromEndpoint = true;
 
-      // Clear this color's path from grid (except endpoints)
       clearColorFromGrid(cellColor);
 
-      // If starting from 'end' endpoint, reverse the path
-      if (epType === 'end') {
-        paths[cellColor] = [clone(cell)];
-        grid[cell.y][cell.x] = cellColor;
-      } else {
-        paths[cellColor] = [clone(cell)];
-        grid[cell.y][cell.x] = cellColor;
-      }
+      paths[cellColor] = [clone(cell)];
+      grid[cell.y][cell.x] = cellColor;
 
       isDragging = true;
       lastCell = clone(cell);
@@ -411,8 +384,6 @@
       draw();
       updateStats();
     } else {
-      // Starting from middle of an existing path
-      // Trim the path to this cell
       dragColor = cellColor;
       dragFromEndpoint = false;
 
@@ -427,14 +398,12 @@
         }
 
         if (idx >= 0) {
-          // Remove all cells after this one from grid
           for (var j = idx + 1; j < path.length; j++) {
             var c = path[j];
             if (!findEndpoint(cellColor, c)) {
               grid[c.y][c.x] = null;
             }
           }
-          // Trim path
           paths[cellColor] = path.slice(0, idx + 1);
         }
       }
@@ -450,16 +419,14 @@
   function continueDrag(cell) {
     if (!isDragging || !dragColor) return;
 
-    // Same cell, ignore
     if (sameCell(cell, lastCell)) return;
 
     var path = paths[dragColor];
 
-    // Check if going back on path (backtracking)
+    // Backtracking
     if (path.length >= 2) {
       var prev = path[path.length - 2];
       if (sameCell(cell, prev)) {
-        // Backtrack: remove last cell
         var removed = path.pop();
         if (!findEndpoint(dragColor, removed)) {
           grid[removed.y][removed.x] = null;
@@ -473,19 +440,17 @@
 
     // Must be adjacent
     if (!isAdjacent(lastCell, cell)) {
-      // Not adjacent, ignore
       return;
     }
 
-    // Check if cell is already in this color's path
+    // Already in this path
     for (var i = 0; i < path.length; i++) {
       if (sameCell(path[i], cell)) {
-        // Already in path, ignore
         return;
       }
     }
 
-    // Check if cell is occupied by another color's endpoint
+    // Blocked by other color's endpoint
     var otherEndpoint = false;
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
@@ -499,9 +464,8 @@
 
     if (otherEndpoint) return;
 
-    // Check if cell is occupied by another color's path
+    // Overwrite other color's path
     if (grid[cell.y][cell.x] !== null && grid[cell.y][cell.x] !== dragColor) {
-      // Clear the other color's path from this cell onward
       var otherColor = grid[cell.y][cell.x];
       var otherPath = paths[otherColor];
       if (otherPath) {
@@ -536,7 +500,6 @@
     // Check if reached the other endpoint
     var otherEnd = getOtherEnd(dragColor, cell);
     if (otherEnd && sameCell(cell, otherEnd)) {
-      // Connected!
       checkWin();
     }
   }
@@ -553,7 +516,6 @@
     for (var i = 0; i < gridSize; i++) {
       for (var j = 0; j < gridSize; j++) {
         if (grid[i][j] === color) {
-          // Don't clear other colors' endpoints
           var isMyEndpoint = false;
           for (var p = 0; p < endpoints.length; p++) {
             if (endpoints[p].color === color) {
@@ -574,45 +536,59 @@
 
   // ---- Win Check ----
   function checkWin() {
-    // All pairs must be connected
+    var allConnected = true;
+
     for (var p = 0; p < endpoints.length; p++) {
       var ep = endpoints[p];
       var path = paths[ep.color];
-      if (!path || path.length < 2) return;
 
-      var lastPoint = path[path.length - 1];
-      if (!sameCell(lastPoint, ep.end) && !sameCell(lastPoint, ep.start)) {
-        return;
+      if (!path || path.length < 2) {
+        allConnected = false;
+        break;
       }
 
-      // Make sure both endpoints are in path
       var hasStart = false;
       var hasEnd = false;
+
       for (var i = 0; i < path.length; i++) {
         if (sameCell(path[i], ep.start)) hasStart = true;
         if (sameCell(path[i], ep.end)) hasEnd = true;
       }
-      if (!hasStart || !hasEnd) return;
-    }
 
-    // All cells must be filled
-    for (var i = 0; i < gridSize; i++) {
-      for (var j = 0; j < gridSize; j++) {
-        if (grid[i][j] === null) return;
+      if (!hasStart || !hasEnd) {
+        allConnected = false;
+        break;
+      }
+
+      // Check that path goes from one endpoint to the other
+      var firstPoint = path[0];
+      var lastPoint = path[path.length - 1];
+
+      if (!(sameCell(firstPoint, ep.start) && sameCell(lastPoint, ep.end)) &&
+          !(sameCell(firstPoint, ep.end) && sameCell(lastPoint, ep.start))) {
+        allConnected = false;
+        break;
       }
     }
 
-    // Win!
-    showWinner();
+    if (allConnected) {
+      console.log('[FlowFree] WIN DETECTED!');
+      showWinner();
+    }
   }
 
   function showWinner() {
+    console.log('[FlowFree] showWinner() called');
+
     if (winnerIcon) winnerIcon.textContent = '\u{1F389}';
     if (winnerTitle) winnerTitle.textContent = tr('flow_solved');
     if (winnerMessage) {
       winnerMessage.textContent = tr('flow_win_message') + ' ' + moves + ' ' + tr('flow_moves_lower');
     }
-    if (winnerModal) winnerModal.classList.add('visible');
+    if (winnerModal) {
+      winnerModal.classList.add('visible');
+      console.log('[FlowFree] Modal shown');
+    }
   }
 
   // ---- Drawing ----
@@ -685,7 +661,6 @@
     var cy = y * cellSize + cellSize / 2;
     var radius = Math.max(4, cellSize * 0.32);
 
-    // Glow
     ctx.shadowColor = color;
     ctx.shadowBlur = 10;
 
@@ -696,7 +671,6 @@
 
     ctx.shadowBlur = 0;
 
-    // White border
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.stroke();
