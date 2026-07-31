@@ -6,19 +6,22 @@
   box-sizing: border-box;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
 .game-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 20px 20px;
   gap: 16px;
-}
-
-.game-wrapper::before {
-  content: '';
-  display: block;
-  height: 12px;
-  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 24px;
 }
 
 .game-stats {
@@ -67,73 +70,110 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  min-width: 70px;
+  min-width: 80px;
 }
 
 .size-select:hover {
   border-color: #2dd4bf;
 }
 
+/* Fixed: Container with controlled overflow */
 .nonogram-container {
   width: 100%;
-  overflow: auto;
-  padding: 12px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 16px;
   background: #0f172a;
   border-radius: 12px;
   border: 2px solid #334155;
+  display: flex;
+  justify-content: center;
 }
 
+/* Fixed: Proper layout structure */
 .nonogram-grid-wrapper {
   display: inline-flex;
   flex-direction: column;
 }
 
-.nonogram-corner {
-  width: 60px;
-  height: 60px;
-  background: transparent;
-}
-
-.nonogram-col-clues {
+/* Top row: corner + column clues */
+.nonogram-top-row {
   display: flex;
-  margin-left: 60px;
+  flex-direction: row;
 }
 
-.clue-cell {
+/* Bottom row: row clues column + grid */
+.nonogram-bottom-row {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Column clues container */
+.col-clues-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1px;
+}
+
+/* Row clues container */
+.row-clues-column {
   display: flex;
   flex-direction: column;
+  gap: 1px;
+}
+
+/* Corner cell */
+.nonogram-corner {
+  width: 60px;
+  height: 50px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* Clue cells */
+.clue-cell {
+  display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 2px;
-  padding: 4px 2px;
+  padding: 3px;
   font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
-  min-width: 35px;
   line-height: 1.2;
+  flex-shrink: 0;
 }
 
-.clue-cell span {
+/* Column clues: stack numbers vertically, align bottom */
+.col-clue {
+  width: 35px;
+  height: 50px;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1px;
+}
+
+.col-clue span {
   display: block;
 }
 
-.col-clue {
-  height: 60px;
-}
-
+/* Row clues: numbers in a row, align right */
 .row-clue {
+  width: 60px;
+  height: 35px;
   flex-direction: row;
   justify-content: flex-end;
-  gap: 4px;
-  min-width: 60px;
-  height: 35px;
+  align-items: center;
+  gap: 3px;
   text-align: right;
 }
 
-.nonogram-main {
-  display: flex;
+.row-clue span {
+  display: inline;
 }
 
+/* Cell grid */
 .nonogram-cell-grid {
   display: grid;
   gap: 1px;
@@ -150,6 +190,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.1s ease;
+  flex-shrink: 0;
 }
 
 .cell:hover {
@@ -282,29 +323,28 @@
 
 /* Mobile responsive */
 @media (max-width: 600px) {
-  .nonogram-container {
-    padding: 8px;
-  }
-
   .cell {
     width: 28px;
     height: 28px;
   }
 
-  .clue-cell {
+  .col-clue {
+    width: 28px;
+    height: 40px;
     font-size: 9px;
-    min-width: 28px;
-    padding: 3px 1px;
+    padding: 2px 1px;
   }
 
   .row-clue {
-    min-width: 28px;
+    width: 45px;
     height: 28px;
+    font-size: 9px;
+    padding: 2px 1px;
   }
 
   .nonogram-corner {
-    width: 28px;
-    height: 28px;
+    width: 45px;
+    height: 40px;
   }
 
   .cell.marked::after {
@@ -323,5 +363,9 @@
 
   .stat-value {
     font-size: 14px;
+  }
+
+  .nonogram-container {
+    padding: 8px;
   }
 }

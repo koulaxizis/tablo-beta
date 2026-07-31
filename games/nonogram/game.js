@@ -28,14 +28,26 @@
     return t ? (t[key] || key) : key;
   }
 
-  function showToast(msg) {
+  function showToast(msg, isRaw) {
     if (!toast) return;
-    toast.textContent = tr(msg);
+    toast.textContent = isRaw ? msg : tr(msg);
     toast.classList.add('visible');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(function() {
       toast.classList.remove('visible');
     }, 2000);
+  }
+
+  function getCellSize() {
+    return window.innerWidth <= 600 ? 28 : 35;
+  }
+
+  function getClueColHeight() {
+    return window.innerWidth <= 600 ? 40 : 50;
+  }
+
+  function getClueRowWidth() {
+    return window.innerWidth <= 600 ? 45 : 60;
   }
 
   function generateSolution(size) {
@@ -190,25 +202,36 @@
     if (mistakesEl) mistakesEl.textContent = mistakes;
   }
 
+  // Fixed: Completely rewritten renderBoard with proper layout structure
   function renderBoard() {
     if (!containerEl) return;
 
     containerEl.innerHTML = '';
 
+    var cellSize = getCellSize();
+    var clueColHeight = getClueColHeight();
+    var clueRowWidth = getClueRowWidth();
+
     var wrapper = document.createElement('div');
     wrapper.className = 'nonogram-grid-wrapper';
 
-    // Corner
+    // --- TOP ROW: corner + column clues ---
+    var topRow = document.createElement('div');
+    topRow.className = 'nonogram-top-row';
+
     var corner = document.createElement('div');
     corner.className = 'nonogram-corner';
-    wrapper.appendChild(corner);
+    corner.style.width = clueRowWidth + 'px';
+    corner.style.height = clueColHeight + 'px';
+    topRow.appendChild(corner);
 
-    // Column clues
     var colCluesContainer = document.createElement('div');
-    colCluesContainer.className = 'nonogram-col-clues';
+    colCluesContainer.className = 'col-clues-row';
     for (var j = 0; j < gridSize; j++) {
       var colClueEl = document.createElement('div');
       colClueEl.className = 'clue-cell col-clue';
+      colClueEl.style.width = cellSize + 'px';
+      colClueEl.style.height = clueColHeight + 'px';
       for (var k = 0; k < colClues[j].length; k++) {
         var span = document.createElement('span');
         span.textContent = colClues[j][k];
@@ -216,32 +239,40 @@
       }
       colCluesContainer.appendChild(colClueEl);
     }
-    wrapper.appendChild(colCluesContainer);
+    topRow.appendChild(colCluesContainer);
+    wrapper.appendChild(topRow);
 
-    // Main container (row clues + grid)
-    var mainContainer = document.createElement('div');
-    mainContainer.className = 'nonogram-main';
+    // --- BOTTOM ROW: row clues column + grid ---
+    var bottomRow = document.createElement('div');
+    bottomRow.className = 'nonogram-bottom-row';
 
+    var rowCluesColumn = document.createElement('div');
+    rowCluesColumn.className = 'row-clues-column';
     for (var i = 0; i < gridSize; i++) {
       var rowClueEl = document.createElement('div');
       rowClueEl.className = 'clue-cell row-clue';
+      rowClueEl.style.width = clueRowWidth + 'px';
+      rowClueEl.style.height = cellSize + 'px';
       for (var k = 0; k < rowClues[i].length; k++) {
         var span = document.createElement('span');
         span.textContent = rowClues[i][k];
         rowClueEl.appendChild(span);
       }
-      mainContainer.appendChild(rowClueEl);
+      rowCluesColumn.appendChild(rowClueEl);
     }
+    bottomRow.appendChild(rowCluesColumn);
 
     var gridContainer = document.createElement('div');
     gridContainer.className = 'nonogram-cell-grid';
     gridContainer.id = 'grid-container';
-    gridContainer.style.gridTemplateColumns = 'repeat(' + gridSize + ', auto)';
+    gridContainer.style.gridTemplateColumns = 'repeat(' + gridSize + ', ' + cellSize + 'px)';
 
     for (var i = 0; i < gridSize; i++) {
       for (var j = 0; j < gridSize; j++) {
         var cell = document.createElement('div');
         cell.className = 'cell';
+        cell.style.width = cellSize + 'px';
+        cell.style.height = cellSize + 'px';
         cell.dataset.row = i;
         cell.dataset.col = j;
 
@@ -261,8 +292,8 @@
       }
     }
 
-    mainContainer.appendChild(gridContainer);
-    wrapper.appendChild(mainContainer);
+    bottomRow.appendChild(gridContainer);
+    wrapper.appendChild(bottomRow);
     containerEl.appendChild(wrapper);
   }
 
@@ -325,10 +356,11 @@
     mistakes = mistakesCount;
     updateStats();
 
+    // Fixed: showToast with isRaw=true for composed messages
     if (mistakes === 0) {
       showToast('nonogram_perfect');
     } else {
-      showToast(tr('nonogram_errors_found') + ' ' + mistakes);
+      showToast(tr('nonogram_errors_found') + ' ' + mistakes, true);
     }
 
     checkWin();
