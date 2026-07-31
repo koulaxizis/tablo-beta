@@ -164,26 +164,38 @@
     if (!canvas || !containerEl) return;
 
     var containerWidth = containerEl.clientWidth;
-    if (containerWidth === 0) {
-      // Container not laid out yet, retry
+    var containerHeight = containerEl.clientHeight;
+
+    if (containerWidth === 0 || containerHeight === 0) {
       setTimeout(resizeCanvas, 50);
       return;
     }
 
-    var maxWidth = containerWidth - 32; // padding
-    var maxHeight = window.innerHeight * 0.6;
-    var maxDim = Math.min(maxWidth, maxHeight, 550);
+    // Account for padding (16px each side = 32px total)
+    var availableWidth = containerWidth - 32;
+    var availableHeight = containerHeight - 32;
+    var maxHeight = window.innerHeight * 0.5;
+    var maxDim = Math.min(availableWidth, availableHeight, maxHeight, 580);
 
     cellSize = Math.floor(maxDim / gridSize);
-    if (cellSize < 20) cellSize = 20;
+    if (cellSize < 25) cellSize = 25;
 
     var pixelSize = cellSize * gridSize;
+
+    // Ensure pixel size doesn't exceed available space
+    if (pixelSize > availableWidth) pixelSize = availableWidth;
+    if (pixelSize > availableHeight) pixelSize = availableHeight;
+
     canvas.width = pixelSize;
     canvas.height = pixelSize;
     canvas.style.width = pixelSize + 'px';
     canvas.style.height = pixelSize + 'px';
 
-    console.log('[FlowFree] Canvas sized:', pixelSize, 'cellSize:', cellSize);
+    // Center the canvas
+    canvas.style.margin = '0 auto';
+
+    console.log('[FlowFree] Canvas:', pixelSize, 'cellSize:', cellSize);
+    console.log('[FlowFree] Available:', availableWidth, 'x', availableHeight);
 
     draw();
   }
@@ -641,15 +653,6 @@
       var ep = endpoints[p];
       drawDot(ep.start.x, ep.start.y, ep.color);
       drawDot(ep.end.x, ep.end.y, ep.color);
-    }
-
-    // Draw pipe fill for connected cells
-    for (var i = 0; i < gridSize; i++) {
-      for (var j = 0; j < gridSize; j++) {
-        if (grid[i][j] !== null) {
-          // Already drawn as path
-        }
-      }
     }
   }
 
