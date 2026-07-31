@@ -12,6 +12,8 @@
   align-items: center;
   padding: 0 20px 20px;
   gap: 16px;
+  position: relative;
+  overflow: visible;
 }
 
 .game-wrapper::before {
@@ -74,6 +76,7 @@
   gap: 12px;
   margin-bottom: 24px;
   min-height: 100px;
+  position: relative;
 }
 
 .pile {
@@ -152,13 +155,16 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  min-height: 400px;
+  min-height: 500px;
+  position: relative;
+  overflow: visible;
 }
 
 .column {
   width: calc((100% - 48px) / 7);
-  min-height: 300px;
+  min-height: 400px;
   position: relative;
+  overflow: visible;
 }
 
 .card {
@@ -172,6 +178,8 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   border-left: 3px solid;
   border-right: 3px solid;
+  z-index: 1;
+  overflow: visible;
 }
 
 .card.face-down {
