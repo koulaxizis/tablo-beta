@@ -17,11 +17,12 @@
   var timerInterval = null;
   var seconds = 0;
   var hintsUsed = 0;
+  var solutionVisible = false;
 
-  var containerEl, timeEl, mistakesEl, sizeSelect, hintsEl;
-  var newGameBtn, checkBtn, clearBtn, hintBtn;
+  var containerEl, timeEl, mistakesEl, hintsEl, sizeSelect;
+  var newGameBtn, checkBtn, clearBtn, hintBtn, solutionBtn;
   var winnerModal, winnerIcon, winnerTitle, winnerMessage, playAgainBtn, newDifficultyBtn;
-  var toast, settingsBtn;
+  var toast;
 
   function tr(key) {
     var lang = localStorage.getItem('tablo-language') || 'en';
@@ -43,36 +44,34 @@
     return window.innerWidth <= 600 ? 28 : 35;
   }
 
-  function getClueColHeight() {
-    return window.innerWidth <= 600 ? 40 : 50;
-  }
-
-  function getClueRowWidth() {
-    return window.innerWidth <= 600 ? 45 : 60;
-  }
-
   function generateSolution(size) {
     var sol = [];
     var density = 0.45;
 
+    // Initialize empty grid
     for (var i = 0; i < size; i++) {
       sol[i] = [];
       for (var j = 0; j < size; j++) {
-        sol[i][j] = Math.random() < density ? 1 : 0;
+        sol[i][j] = 0;
       }
     }
 
-    for (var i = 0; i < size; i++) {
-      var rowHas = sol[i].some(function(v) { return v === 1; });
-      if (!rowHas) sol[i][Math.floor(Math.random() * size)] = 1;
-      var colHas = false;
-      for (var r = 0; r < size; r++) { if (sol[r][i] === 1) { colHas = true; break; } }
-      if (!colHas) sol[Math.floor(Math.random() * size)][i] = 1;
+    // Generate filled cells randomly
+    var numCells = Math.floor(size * size * density);
+    var placed = 0;
+    while (placed < numCells) {
+      var r = Math.floor(Math.random() * size);
+      var c = Math.floor(Math.random() * size);
+      if (sol[r][c] === 0) {
+        sol[r][c] = 1;
+        placed++;
+      }
     }
 
     return sol;
   }
 
+  // Fixed: Calculate clues from ACTUAL filled cells in solution
   function calculateClues(grid, size, isRow) {
     var clues = [];
     for (var i = 0; i < size; i++) {
@@ -87,13 +86,14 @@
           currentRun = 0;
         }
       }
-      if (currentRun > 0) clueGroups.push(currentRun);
+      if (currentRun > 0) {
+        clueGroups.push(currentRun);
+      }
       clues[i] = clueGroups.length > 0 ? clueGroups : [0];
     }
     return clues;
   }
 
-  // Fixed: Join clues with comma for readability
   function formatClue(clueArray) {
     return clueArray.join(', ');
   }
@@ -110,6 +110,7 @@
     checkBtn = document.getElementById('btn-check');
     clearBtn = document.getElementById('btn-clear');
     hintBtn = document.getElementById('btn-hint');
+    solutionBtn = document.getElementById('btn-solution');
     winnerModal = document.getElementById('winner-modal');
     winnerIcon = document.getElementById('winner-icon');
     winnerTitle = document.getElementById('winner-title');
@@ -117,7 +118,6 @@
     playAgainBtn = document.getElementById('btn-play-again');
     newDifficultyBtn = document.getElementById('btn-new-difficulty');
     toast = document.getElementById('toast');
-    settingsBtn = document.querySelector('#tablo-header button[id$="settings"]');
 
     startTimer();
     startNewGame();
@@ -131,6 +131,10 @@
     if (checkBtn) checkBtn.addEventListener('click', checkPuzzle);
     if (clearBtn) clearBtn.addEventListener('click', clearGrid);
     if (hintBtn) hintBtn.addEventListener('click', useHint);
+    
+    // Fixed: Added Solution button handler
+    if (solutionBtn) solutionBtn.addEventListener('click', toggleSolution);
+    
     if (playAgainBtn) playAgainBtn.addEventListener('click', closeWinnerAndNewGame);
     if (newDifficultyBtn) newDifficultyBtn.addEventListener('click', closeWinnerAndNewGame);
 
@@ -159,9 +163,11 @@
 
     mistakes = 0;
     hintsUsed = 0;
+    solutionVisible = false;
     seconds = 0;
     gameActive = true;
     resetTimer();
+    updateSolutionButton();
     renderBoard();
     updateStats();
   }
@@ -200,48 +206,47 @@
   }
 
   function useHint() {
-    if (!gameActive) return;
+    if (!gameActive || solutionVisible) return;
 
-    // Find first empty cell that should be filled
+    // Find first cell where player is wrong or empty but should be filled
     for (var i = 0; i < gridSize; i++) {
       for (var j = 0; j < gridSize; j++) {
-        if (playerGrid[i][j] === 0 && solution[i][j] === 1) {
-          playerGrid[i][j] = 1;
+        if (playerGrid[i][j] !== solution[i][j]) {
+          playerGrid[i][j] = solution[i][j];
           hintsUsed++;
           updateStats();
           updateCells();
-          showToast(tr('nonogram_hint_used'), false);
+          showToast('nonogram_hint_used', false);
           return;
         }
       }
     }
-    
-    // If no empty cells to fill, find wrong X mark
-    for (var i = 0; i < gridSize; i++) {
-      for (var j = 0; j < gridSize; j++) {
-        if (playerGrid[i][j] === 2 && solution[i][j] === 1) {
-          playerGrid[i][j] = 1;
-          hintsUsed++;
-          updateStats();
-          updateCells();
-          showToast(tr('nonogram_hint_used'), false);
-          return;
-        }
-      }
-    }
-
     showToast('nonogram_no_hint_available');
   }
 
-  // Fixed: Completely rewritten renderBoard with comma separators
+  // New: Toggle solution visibility
+  function toggleSolution() {
+    solutionVisible = !solutionVisible;
+    updateSolutionButton();
+    renderBoard();
+    showToast(solutionVisible ? 'nonogram_solution_shown' : 'nonogram_solution_hidden');
+  }
+
+  function updateSolutionButton() {
+    if (solutionBtn) {
+      solutionBtn.textContent = solutionVisible ? tr('nonogram_hide_solution') : tr('nonogram_show_solution');
+      solutionBtn.style.opacity = solutionVisible ? '0.7' : '1';
+    }
+  }
+
   function renderBoard() {
     if (!containerEl) return;
 
     containerEl.innerHTML = '';
 
     var cellSize = getCellSize();
-    var clueColHeight = getClueColHeight();
-    var clueRowWidth = getClueRowWidth();
+    var clueColHeight = window.innerWidth <= 600 ? 40 : 50;
+    var clueRowWidth = window.innerWidth <= 600 ? 45 : 60;
 
     var wrapper = document.createElement('div');
     wrapper.className = 'nonogram-grid-wrapper';
@@ -309,17 +314,27 @@
         cell.dataset.row = i;
         cell.dataset.col = j;
 
-        if (playerGrid[i][j] === 1) {
-          cell.classList.add('filled');
-        } else if (playerGrid[i][j] === 2) {
-          cell.classList.add('marked');
+        // Fixed: Show solution if solutionVisible is true
+        if (solutionVisible) {
+          if (solution[i][j] === 1) {
+            cell.classList.add('filled');
+            cell.classList.add('solution-preview');
+          }
+        } else {
+          if (playerGrid[i][j] === 1) {
+            cell.classList.add('filled');
+          } else if (playerGrid[i][j] === 2) {
+            cell.classList.add('marked');
+          }
         }
 
-        (function(r, c) {
-          cell.addEventListener('click', function(e) {
-            handleCellLeftClick(r, c);
-          });
-        })(i, j);
+        if (!solutionVisible) {
+          (function(r, c) {
+            cell.addEventListener('click', function(e) {
+              handleCellLeftClick(r, c);
+            });
+          })(i, j);
+        }
 
         gridContainer.appendChild(cell);
       }
@@ -331,7 +346,7 @@
   }
 
   function handleCellLeftClick(row, col) {
-    if (!gameActive) return;
+    if (!gameActive || solutionVisible) return;
 
     if (playerGrid[row][col] === 1) {
       playerGrid[row][col] = 0;
@@ -344,7 +359,7 @@
   }
 
   function handleCellRightClick(cellEl) {
-    if (!gameActive) return;
+    if (!gameActive || solutionVisible) return;
 
     var row = parseInt(cellEl.dataset.row);
     var col = parseInt(cellEl.dataset.col);
@@ -363,7 +378,7 @@
     cells.forEach(function(cell) {
       var r = parseInt(cell.dataset.row);
       var c = parseInt(cell.dataset.col);
-      cell.classList.remove('filled', 'marked');
+      cell.classList.remove('filled', 'marked', 'solution-preview');
       if (playerGrid[r][c] === 1) {
         cell.classList.add('filled');
       } else if (playerGrid[r][c] === 2) {
@@ -406,7 +421,6 @@
 
   function checkWin() {
     var isComplete = true;
-
     for (var i = 0; i < gridSize; i++) {
       for (var j = 0; j < gridSize; j++) {
         var playerVal = playerGrid[i][j] === 1 ? 1 : 0;
