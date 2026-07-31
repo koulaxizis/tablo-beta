@@ -378,5 +378,9 @@
   "game_reversi_name": "Reversi",
   "game_reversi_desc": "Παιχνίδι στρατηγικής. Αντίστρεψε τα πούλια του αντιπάλου.",
   "game_flowfree_name": "Flow Free",
-"game_flowfree_desc": "Σύνδεσε τα αντίστοιχα χρωματιστά σημεία χωρίς να τέμνονται οι γραμμές."
+"game_flowfree_desc": "Σύνδεσε τα αντίστοιχα χρωματιστά σημεία χωρίς να τέμνονται οι γραμμές.",
+"flow_solved": "Γρίφος Λυμένος!",
+"flow_win_message": "Μπράβο σε",
+"flow_moves_lower": "κινήσεις!",
+"btn_play_again": "Παίξε ξανά"
 }

@@ -378,5 +378,9 @@
   "game_reversi_name": "Reversi",
   "game_reversi_desc": "Strategy game. Flip opponent's discs to your color.",
   "game_flowfree_name": "Flow Free",
-"game_flowfree_desc": "Connect matching colored dots without crossing paths."
+"game_flowfree_desc": "Connect matching colored dots without crossing paths.",
+"flow_solved": "Puzzle Solved!",
+"flow_win_message": "Great job in",
+"flow_moves_lower": "moves!",
+"btn_play_again": "Play Again"
 }

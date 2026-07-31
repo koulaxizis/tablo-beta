@@ -1,3 +1,7 @@
+============================================
+Tablo — Flow Free Game.js (FINAL v5 — FIXED PLAY AGAIN + TRANSLATIONS)
+============================================
+
 (function() {
   'use strict';
 
@@ -177,7 +181,21 @@
     if (sizeSelect) sizeSelect.addEventListener('change', function(e) { gridSize = parseInt(e.target.value); startNewGame(); });
     if (newGameBtn) newGameBtn.addEventListener('click', startNewGame);
     if (clearBtn) clearBtn.addEventListener('click', clearAllPaths);
-    if (playAgainBtn) playAgainBtn.addEventListener('click', function() { if (winnerModal) winnerModal.classList.remove('visible'); startNewGame(); });
+    
+    // FIXED: Close modal FIRST, then new game
+    if (playAgainBtn) playAgainBtn.addEventListener('click', function() {
+      console.log('[FlowFree] Play Again clicked');
+      if (winnerModal) {
+        winnerModal.classList.remove('visible');
+        winnerModal.style.display = 'none';
+        console.log('[FlowFree] Modal hidden');
+        // Small delay before new game starts
+        setTimeout(function() {
+          console.log('[FlowFree] Starting new game');
+          startNewGame();
+        }, 100);
+      }
+    });
 
     window.addEventListener('resize', function() { clearTimeout(resizeCanvas._t); resizeCanvas._t = setTimeout(resizeCanvas, 150); });
 
